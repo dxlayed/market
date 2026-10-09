@@ -112,13 +112,13 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
     <section class="banner">
       <div>
         <h1 id="hTitle">Buy and sell MM2 items.</h1>
-        <p id="hSub">Every item on SplitzMarket is already held by us, so you get exactly what you pay for. It lands in your inventory the moment you buy, and our official accounts trade it to you in game.</p>
+        <p id="hSub">Every item on SplitzMarket is already held by us, so you get exactly what you pay for. It lands in your inventory the moment you buy, and our bot trades it to you in game.</p>
         <div class="acts"><a class="btn" href="/inventory.html">Sell your items</a><button class="ghost" type="button" onclick="document.getElementById('q').focus()">Browse</button></div>
       </div>
       <div class="steps">
         <div><i>1</i>Add funds to your balance</div>
         <div><i>2</i>Buy, and it's yours instantly</div>
-        <div><i>3</i>Withdraw it in game with a code</div>
+        <div><i>3</i>Withdraw it and our bot sends it in game</div>
       </div>
     </section>
     <div class="ticker"><span class="live">RECENT SALES</span><div class="track" id="track"></div></div>
@@ -267,7 +267,13 @@ async function buy() {
     cart = []; saveCart(); me.balance = r.balance; setBalance(r.balance);
     toast('Bought ' + r.bought + ' item' + (r.bought === 1 ? '' : 's') + '. They are in your inventory now.');
     busy = false; await load();
-    $('lines').replaceChildren(el('div', { className: 'none' }, el('b', { textContent: 'Purchase complete' }), el('br'), 'Your items are in your inventory.', el('br'), el('br'), el('a', { className: 'btn', href: '/inventory.html', textContent: 'Go to inventory' })));
+    const send = el('button', { className: 'btn', type: 'button', textContent: 'Withdraw now', onclick: async () => {
+      send.disabled = true;
+      try { await api('/api/trades/withdraw', 'POST', { inventory_ids: r.inventory_ids }); location.href = '/inventory.html'; }
+      catch (e) { send.disabled = false; toast(e.message, true); }
+    } });
+    $('lines').replaceChildren(el('div', { className: 'none' }, el('b', { textContent: 'Purchase complete' }), el('br'), 'Your items are in your inventory. Withdraw them now and our bot will trade them to you in MM2, or keep them to sell later.', el('br'), el('br'),
+      info.open || me.owner ? send : null, ' ', el('a', { className: 'ghost sm', href: '/inventory.html', textContent: 'Go to inventory', style: 'color:var(--text)' })));
   } catch (e) {
     busy = false;
     if (e.status === 409) await load();
