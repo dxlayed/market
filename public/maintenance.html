@@ -1,1 +1,71 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Back soon | SplitzMarket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0707;--surface:#140c0c;--raise:#1e1111;--line:#3a1717;--text:#f6efee;--mute:#a88a88;--gold:#e8202a;--violet:#8f0d14;--bad:#ff7a45}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:Manrope,system-ui,sans-serif;color:var(--text);background:var(--bg);overflow-x:hidden}
+/* one slow red seam running behind everything */
+.seam{position:fixed;inset:-20% -10%;background:linear-gradient(103deg,transparent 49.6%,#e8202a 49.85%,#ff5a5f 50%,#e8202a 50.15%,transparent 50.4%);opacity:.55;filter:drop-shadow(0 0 22px #e8202a);pointer-events:none}
+.glow{position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,#3a0a0d 0%,transparent 70%);pointer-events:none}
+main{position:relative;min-height:100%;display:grid;place-items:center;padding:48px 20px;text-align:center}
+.wrap{max-width:620px}
+/* the split wordmark */
+.mark{position:relative;display:inline-block;font-family:Outfit,system-ui,sans-serif;font-weight:900;font-size:clamp(64px,15vw,150px);line-height:.9;letter-spacing:-.04em;user-select:none;margin-bottom:34px}
+.mark .a,.mark .b{display:block}
+.mark .a{clip-path:polygon(0 0,100% 0,100% 44%,0 60%)}
+.mark .b{position:absolute;inset:0;color:var(--gold);clip-path:polygon(0 60%,100% 44%,100% 100%,0 100%);transform:translate(.06em,.035em)}
+h1{font-family:Outfit,system-ui,sans-serif;font-size:clamp(26px,4.4vw,38px);font-weight:800;letter-spacing:-.02em;margin:0 0 12px}
+p{color:#d4bfbe;font-size:17px;line-height:1.6;margin:0 auto 30px;max-width:46ch}
+.acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.discord{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:12px;font-size:16px;box-shadow:0 8px 30px #e8202a55;transition:filter .15s}
+.discord:hover{filter:brightness(1.12)}
+.discord svg{width:22px;height:22px}
+.status{margin-top:40px;display:inline-flex;align-items:center;gap:10px;color:var(--mute);font-size:14px}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 0 #e8202a88;animation:beat 2s infinite}
+@keyframes beat{70%{box-shadow:0 0 0 9px #e8202a00}100%{box-shadow:0 0 0 0 #e8202a00}}
+.owner{position:fixed;right:16px;bottom:14px;background:none;border:0;color:#6e5554;font:inherit;font-size:12px;cursor:pointer;padding:6px}
+.owner:hover{color:var(--mute)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+input{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.btn{background:var(--gold);color:#fff;border:0;border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer}
+.ghost{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.status i{animation:none}}
+</style>
+</head>
+<body data-nochat="1" data-nowelcome="1">
+<div class="glow"></div>
+<div class="seam" aria-hidden="true"></div>
+<main>
+  <div class="wrap">
+    <div class="mark" aria-label="Splitz"><span class="a" aria-hidden="true">Splitz</span><span class="b" aria-hidden="true">Splitz</span></div>
+    <h1>We're making SplitzMarket better.</h1>
+    <p>The site is down for maintenance while we ship some updates. Your balance and items are safe. We'll be back soon, and the Discord will know first.</p>
+    <div class="acts">
+      <a class="discord" href="https://discord.gg/splitzmarket" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.6 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1a19.9 19.9 0 0 0 6 3l1.3-2.1a12.9 12.9 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.2-.8-9.7-3.6-13.7zM8 15.3c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.5 8 10.5s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>
+        Join discord.gg/splitzmarket
+      </a>
+    </div>
+    <div class="status" role="status"><i></i><span id="st">Checking again every 30 seconds</span></div>
+  </div>
+</main>
+<button class="owner" type="button" id="ownerLogin">Staff login</button>
+<script src="/auth.js"></script>
+<script>
+// Owners log in from here and land on the normal site. Everyone else is sent back automatically when maintenance ends.
+document.getElementById('ownerLogin').onclick = () => RbxAuth.open(() => location.replace('/'));
+setInterval(() => fetch('/api/status', { cache: 'no-store' }).then((r) => r.json()).then((s) => {
+  if (!s.maintenance) location.replace(location.pathname === '/maintenance.html' ? '/' : location.href);
+}).catch(() => {}), 30000);
+</script>
+</body>
+</html>
