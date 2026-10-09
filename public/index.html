@@ -3,275 +3,311 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SplitzMarket | MM2 listings</title>
+<title>SplitzMarket | Buy and sell MM2 items</title>
+<meta name="description" content="Buy and sell Murder Mystery 2 items. Every item is held by SplitzMarket and delivered in game by our official trade accounts.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0707;--surface:#140c0c;--raise:#1e1111;--line:#3a1717;--text:#f6efee;--mute:#a88a88;--gold:#e8202a;--violet:#8f0d14;--ok:#4ade80;--bad:#ff7a45}
 *{box-sizing:border-box}
-body{margin:0;font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+body{margin:0;font-family:Manrope,system-ui,sans-serif;color:var(--text);background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transparent 60%) fixed,var(--bg)}
 h1,h2,h3,.logo{font-family:Outfit,system-ui,sans-serif;margin:0}
-button,input,select,textarea{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+button,input,select{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
 button{cursor:pointer;font-weight:700}
-button:focus-visible,input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
-.btn{background:var(--gold);color:#fff;border:0}
+button:disabled{opacity:.55;cursor:not-allowed}
+button:focus-visible,input:focus,select:focus,a:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.btn{background:var(--gold);color:#fff;border:0;transition:filter .15s,box-shadow .15s}.btn:hover:not(:disabled){filter:brightness(1.12);box-shadow:0 0 20px #e8202a55}
+a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:700}
 .ghost{background:transparent}.sm{padding:6px 12px;font-size:13px;border-radius:8px}
 .mute{color:var(--mute);font-size:13px}
-.bar{display:flex;align-items:center;gap:14px;padding:12px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.logo{font-size:22px;font-weight:800;text-decoration:none;color:var(--text)}.logo b{color:var(--gold)}
+::selection{background:#e8202a;color:#fff}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#3a1717;border-radius:99px}
+
+.bar{display:flex;align-items:center;gap:14px;padding:12px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:#0a0707cc;backdrop-filter:blur(8px);position:sticky;top:0;z-index:15}
+.logo{font-size:22px;font-weight:800;text-decoration:none;color:var(--text)}.logo b{color:var(--gold);text-shadow:0 0 18px #e8202a88}
 .bar nav{display:flex;gap:6px;margin-right:auto}
 .bar nav a{padding:8px 14px;border-radius:10px;color:var(--mute);text-decoration:none;font-weight:700}
 .bar nav a.on{background:var(--surface);color:var(--text);box-shadow:inset 0 -2px 0 var(--gold)}
-#who{display:flex;gap:10px;align-items:center}
-.me{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px 12px 5px 6px}
-.av{width:32px;height:32px;border-radius:9px;background:var(--violet);display:grid;place-items:center;font-weight:800;font-family:Outfit,sans-serif}
-.me small{display:block;color:var(--gold);font-size:12px}
-.layout{display:grid;grid-template-columns:230px minmax(0,1fr) 290px;gap:20px;padding:20px 24px;max-width:1560px;margin:0 auto;align-items:start}
+.av{width:32px;height:32px;border-radius:9px;background:var(--violet);display:grid;place-items:center;font-weight:800;font-family:Outfit,sans-serif;flex:none}
+
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr) 300px;gap:20px;padding:20px 24px;max-width:1600px;margin:0 auto;align-items:start}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
-.side{position:sticky;top:12px}
+.side{position:sticky;top:76px}
 .panel h3{font-size:17px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.panel h4{margin:16px 0 8px;font-size:13px;color:var(--mute)}
-.chk{display:flex;align-items:center;gap:10px;padding:5px 2px;cursor:pointer;font-weight:700;font-size:14px}
+.panel h4{margin:16px 0 8px;font-size:12px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pills button{padding:6px 12px;font-size:13px;border-radius:99px;background:var(--raise)}
+.pills button.on{background:var(--gold);border-color:var(--gold);color:#fff}
+.chk{display:flex;align-items:center;gap:10px;padding:4px 2px;cursor:pointer;font-weight:700;font-size:14px}
 .chk input{accent-color:var(--gold);width:16px;height:16px;padding:0}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
-.seg{display:grid;gap:6px}.seg button{text-align:left;background:var(--raise)}.seg button.on{background:var(--violet);border-color:var(--violet)}
-.banner{border-radius:16px;padding:34px 30px;background:radial-gradient(circle at 85% 20%,#e8202a55,transparent 45%),linear-gradient(120deg,#3a0a0d,#120707 70%);border:1px solid var(--line)}
-.banner h1{font-size:clamp(26px,4vw,44px);font-weight:800;letter-spacing:-1px}
-.banner p{color:var(--mute);margin:8px 0 18px;max-width:480px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.range{display:flex;gap:6px;align-items:center}.range input{width:100%;min-width:0}
+
+.banner{border-radius:18px;padding:30px;background:radial-gradient(circle at 88% 10%,#e8202a50,transparent 45%),linear-gradient(120deg,#3a0a0d,#120707 70%);border:1px solid var(--line);display:flex;gap:24px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.banner h1{font-size:clamp(26px,3.6vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.05}
+.banner p{color:#d9c3c2;margin:10px 0 18px;max-width:520px}
+.banner .acts{display:flex;gap:10px;flex-wrap:wrap}
+.steps{display:grid;gap:8px;min-width:240px}
+.steps div{display:flex;gap:10px;align-items:center;background:#0006;border:1px solid #ffffff10;border-radius:12px;padding:9px 12px;font-size:14px;font-weight:700}
+.steps i{font-style:normal;width:24px;height:24px;border-radius:7px;background:var(--gold);display:grid;place-items:center;font-size:12px;flex:none}
+
 .ticker{margin:14px 0;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--surface);display:flex;align-items:center}
 .live{background:#4ade8022;color:#4ade80;font-weight:800;font-size:12px;padding:6px 12px;margin:6px;border-radius:99px;flex:none}
-.track{display:flex;gap:28px;white-space:nowrap;animation:slide 40s linear infinite;padding:10px 0;font-size:14px;font-weight:700}
-.track em{font-style:normal;color:var(--gold)}
+.track{display:flex;gap:28px;white-space:nowrap;animation:slide 45s linear infinite;padding:10px 0;font-size:14px;font-weight:700}
+.track em{font-style:normal;color:#4ade80;margin-left:6px}
 @keyframes slide{to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.track{animation:none}}
-.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.tools input{flex:1;min-width:180px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
-.art{height:130px;display:grid;place-items:center;position:relative;background:radial-gradient(circle at 50% 55%,color-mix(in srgb,var(--c) 38%,transparent),transparent 70%),var(--raise);color:var(--c)}
-.art svg{width:64px;height:64px}
-.badge{position:absolute;top:10px;left:10px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;background:#0008;border:1px solid var(--c);color:#fff}
-.kind{position:absolute;top:10px;right:10px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px}
-.k-sell{background:#4ade8033;color:#4ade80}.k-buy{background:#e8202a33;color:#ff9a9a}
-.info{padding:12px;display:flex;flex-direction:column;gap:6px;flex:1}
-.info h3{font-size:17px;line-height:1.2}
-.want{background:var(--raise);border-radius:10px;padding:8px 10px;font-weight:700;font-size:14px;overflow-wrap:anywhere}
-.want small{display:block;color:var(--mute);font-weight:500;font-size:11px}
-.desc{margin:0;color:var(--mute);font-size:13px}
-.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:6px}.acts .btn{flex:1}
-.empty{grid-column:1/-1;text-align:center;padding:48px 16px;border:1px dashed var(--line);border-radius:14px;color:var(--mute)}
-.cart{position:sticky;top:12px;display:flex;flex-direction:column;min-height:360px}
-.lines{flex:1;display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:50vh}
-.none{margin:auto;text-align:center;color:var(--mute);font-size:14px;padding:40px 0}
-.line{display:flex;align-items:center;gap:8px;background:var(--raise);border-radius:10px;padding:8px 10px;font-size:14px;font-weight:700}
-.line span{flex:1;overflow-wrap:anywhere}.line button{padding:2px 8px;background:transparent}
-.cart .foot{border-top:1px solid var(--line);margin-top:12px;padding-top:12px;display:grid;gap:8px}
-dialog{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:16px;width:min(420px,92vw);padding:24px}
-dialog::backdrop{background:#000b}dialog form{display:flex;flex-direction:column;gap:10px}
-.err{color:var(--bad);font-size:14px;min-height:18px}
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#4ade80;color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s}
-#toast.show{opacity:1}
-.soon{opacity:.6;cursor:not-allowed}
-.soon i{font-style:normal;font-size:10px;font-weight:800;background:var(--raise);color:var(--gold);border-radius:6px;padding:1px 6px;margin-left:6px}
-.wallet{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
-.wallet span{padding:9px 16px;font-weight:800}.wallet button{border:0;border-radius:0;padding:9px 14px;background:var(--raise)}
-.me{cursor:pointer;color:var(--text);text-align:left}
-.pt{display:flex;gap:14px;align-items:center}
-.pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
-.pstats div{background:var(--surface);border-radius:10px;padding:10px;text-align:center;font-family:Outfit,sans-serif;font-size:22px;font-weight:700}
-.pstats span{display:block;font-family:Manrope,sans-serif;font-size:12px;color:var(--mute);font-weight:500}
-.rows{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;margin:8px 0 12px}
-.rw{display:flex;gap:8px;align-items:center;background:var(--surface);border-radius:10px;padding:8px 10px;font-size:14px}.rw .mute{margin-left:auto}
-@media (max-width:1100px){.layout{grid-template-columns:1fr}.side,.cart{position:static}}
 
-body{background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transparent 60%) fixed,var(--bg)}
-.logo b{color:var(--gold);text-shadow:0 0 18px #e8202a88}
-.btn{transition:filter .15s,box-shadow .15s}.btn:hover{filter:brightness(1.12);box-shadow:0 0 20px #e8202a55}
-.card,.panel{transition:border-color .15s}.card:hover,.panel:hover{border-color:#5a1f1f}
-::selection{background:#e8202a;color:#fff}
-::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#3a1717;border-radius:99px}::-webkit-scrollbar-track{background:transparent}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}.tools input{flex:1;min-width:180px}
+.notice{background:#e8202a14;border:1px solid #e8202a55;border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:14px}
+.notice b{color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s,transform .15s}
+.card:hover{border-color:#6a2222;transform:translateY(-2px)}
+.art{height:140px;display:grid;place-items:center;position:relative;background:radial-gradient(circle at 50% 58%,color-mix(in srgb,var(--c) 42%,transparent),transparent 68%),var(--raise);color:var(--c)}
+.art svg{width:66px;height:66px;filter:drop-shadow(0 4px 14px color-mix(in srgb,var(--c) 60%,transparent))}
+.art img{max-width:78%;max-height:110px}
+.badge{position:absolute;top:10px;left:10px;font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;background:#000a;border:1px solid var(--c);color:#fff;letter-spacing:.04em}
+.qty{position:absolute;top:10px;right:10px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;background:#000a;color:var(--text)}
+.info{padding:12px;display:flex;flex-direction:column;gap:4px;flex:1}
+.info h3{font-size:17px;line-height:1.2}
+.price{font-family:Outfit,sans-serif;font-size:24px;font-weight:800;margin-top:6px}
+.acts{margin-top:auto;padding-top:8px;display:flex;gap:6px}.acts>*{flex:1}
+.empty{grid-column:1/-1;text-align:center;padding:56px 16px;border:1px dashed var(--line);border-radius:14px;color:var(--mute)}
+
+.cart{position:sticky;top:76px;display:flex;flex-direction:column;min-height:380px}
+.lines{flex:1;display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:46vh}
+.none{margin:auto;text-align:center;color:var(--mute);font-size:14px;padding:36px 0}
+.line{display:flex;align-items:center;gap:8px;background:var(--raise);border-radius:10px;padding:8px 10px;font-size:14px;font-weight:700}
+.line .n{flex:1;overflow-wrap:anywhere}.line .n small{display:block;color:var(--mute);font-weight:500;font-size:12px}
+.line button{padding:2px 8px;background:transparent;border:0;color:var(--mute);font-size:18px}
+.foot{border-top:1px solid var(--line);margin-top:12px;padding-top:12px;display:grid;gap:6px}
+.sum{display:flex;justify-content:space-between;font-size:14px}.sum.big{font-size:18px;font-weight:800;font-family:Outfit,sans-serif}
+.sum .short{color:var(--bad)}
+.foot .btn{padding:12px;font-size:15px;margin-top:6px}
+.err{color:var(--bad);font-size:13px;min-height:16px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#4ade80;color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
+#toast.show{opacity:1}
+@media (max-width:1150px){.layout{grid-template-columns:1fr}.side,.cart{position:static}.cart{min-height:0}}
 </style>
 </head>
 <body>
 <div class="bar">
   <a class="logo" href="/">Splitz<b>Market</b></a>
-  <nav><a class="on" href="/">Shop</a><a href="/board.html">Board &amp; chat</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a></nav>
-  <button class="soon" data-t="Withdrawals are coming soon" aria-disabled="true">Withdraw <i>Soon</i></button>
-  <div class="wallet"><span>$0.00</span><button class="soon" data-t="Deposits are coming soon" aria-disabled="true" aria-label="Add funds (coming soon)">+</button></div>
+  <nav><a class="on" href="/">Market</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a></nav>
   <div id="who"></div>
 </div>
 
 <div class="layout">
   <aside class="panel side">
-    <h3>Filters <button class="ghost sm" id="reset">Reset</button></h3>
-    <h4>Looking for</h4>
-    <div class="seg" id="kinds"></div>
-    <h4>Category</h4><div id="cats"></div>
+    <h3>Filters <button class="ghost sm" id="reset" type="button">Reset</button></h3>
+    <h4>Type</h4><div class="pills" id="types"></div>
+    <h4>Rarity</h4><div id="rars"></div>
+    <h4>Price (USD)</h4>
+    <div class="range"><input id="pmin" inputmode="decimal" placeholder="Min" aria-label="Minimum price"><span class="mute">to</span><input id="pmax" inputmode="decimal" placeholder="Max" aria-label="Maximum price"></div>
   </aside>
 
   <main>
     <section class="banner">
-      <h1>Find your next MM2 trade.</h1>
-      <p>Real offers from real players. Find what you want, then message them on Discord.</p>
-      <button class="btn" id="heroPost">Post a listing</button>
+      <div>
+        <h1 id="hTitle">Buy and sell MM2 items.</h1>
+        <p id="hSub">Every item on SplitzMarket is already held by us, so you get exactly what you pay for. It lands in your inventory the moment you buy, and our official accounts trade it to you in game.</p>
+        <div class="acts"><a class="btn" href="/inventory.html">Sell your items</a><button class="ghost" type="button" onclick="document.getElementById('q').focus()">Browse</button></div>
+      </div>
+      <div class="steps">
+        <div><i>1</i>Add funds to your balance</div>
+        <div><i>2</i>Buy, and it's yours instantly</div>
+        <div><i>3</i>Withdraw it in game with a code</div>
+      </div>
     </section>
-    <div class="ticker"><span class="live">LIVE</span><div class="track" id="track"></div></div>
+    <div class="ticker"><span class="live">RECENT SALES</span><div class="track" id="track"></div></div>
+    <div id="notice"></div>
     <div class="tools">
-      <input id="q" placeholder="Quick search" aria-label="Quick search">
-      <select id="sort" aria-label="Sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="az">Name: A to Z</option></select>
+      <input id="q" placeholder="Search items, like Harvester" aria-label="Search items">
+      <select id="sort" aria-label="Sort"><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="new">Newest first</option><option value="value">Highest value</option></select>
+      <span class="mute" id="count"></span>
     </div>
     <div class="grid" id="grid"></div>
   </main>
 
-  <aside class="panel cart">
-    <h3>Your cart</h3>
+  <aside class="panel cart" aria-label="Cart">
+    <h3>Cart <span class="mute" id="cartN"></span></h3>
     <div class="lines" id="lines"></div>
-    <div class="foot" id="cartFoot"></div>
+    <div class="foot" id="foot"></div>
   </aside>
 </div>
-
-<dialog id="postDlg"><form id="postForm">
-  <h2>New listing</h2>
-  <select name="kind"><option value="sell">I'm selling</option><option value="buy">I'm buying</option></select>
-  <input name="item" placeholder="Item name" maxlength="60" required>
-  <select name="category"><option>Godly</option><option>Ancient</option><option>Chroma</option><option>Vintage</option><option>Pet</option><option>Set</option><option>Other</option></select>
-  <input name="price" placeholder="Asking for (e.g. 2 Harvesters)" maxlength="40" required>
-  <input name="discord" placeholder="Your Discord username" maxlength="40" required>
-  <textarea name="description" placeholder="Details (optional)" maxlength="300" rows="3"></textarea>
-  <div class="err" id="err2"></div>
-  <button class="btn">Post listing</button>
-  <button type="button" class="ghost" onclick="postDlg.close()">Cancel</button>
-</form></dialog>
-<dialog id="profileDlg">
-  <div class="pt"><div id="pAv"></div><div><h2 id="pName" style="margin:0"></h2><div class="mute" id="pSub"></div></div></div>
-  <div class="pstats"><div id="pOpen">0<span>Open listings</span></div><div id="pDone">0<span>Trades done</span></div><div id="pMsgs">0<span>Chat messages</span></div></div>
-  <h3 style="font-size:16px">Your listings</h3>
-  <div class="rows" id="pList"></div>
-  <p class="mute" id="pNext" style="margin:0 0 12px"></p>
-  <button class="ghost" id="pOut">Log out</button> <button class="ghost" onclick="profileDlg.close()">Close</button>
-</dialog>
 <div id="toast" role="status"></div>
 
 <script src="/auth.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
-if (typeof avEl === 'undefined') window.avEl = (u) => { const s = document.createElement('span'); s.className = 'av'; s.textContent = u.username[0].toUpperCase(); return s; };
-if (typeof RbxAuth === 'undefined') window.RbxAuth = { open() { toast('Login script missing. Add public/auth.js on GitHub, then refresh.'); } };
-const el = (t, p = {}, ...k) => { const e = document.createElement(t); for (const [a, v] of Object.entries(p)) { if (a.includes('-')) e.setAttribute(a, v); else e[a] = v; } k.forEach((x) => e.append(x)); return e; };
-const toast = (t) => { const x = $('toast'); x.textContent = t; x.classList.add('show'); setTimeout(() => x.classList.remove('show'), 1800); };
-const ago = (d) => { const s = (Date.now() - new Date(d)) / 1000; return s < 3600 ? Math.max(1, Math.floor(s / 60)) + 'm ago' : s < 86400 ? Math.floor(s / 3600) + 'h ago' : Math.floor(s / 86400) + 'd ago'; };
+const el = (t, p = {}, ...k) => { const e = document.createElement(t); for (const [a, v] of Object.entries(p)) { if (a.includes('-')) e.setAttribute(a, v); else e[a] = v; } k.forEach((x) => x != null && e.append(x)); return e; };
+const toast = (t, bad) => { const x = $('toast'); x.textContent = t; x.style.background = bad ? 'var(--bad)' : ''; x.classList.add('show'); clearTimeout(x._t); x._t = setTimeout(() => x.classList.remove('show'), 2600); };
+const usd = (c) => window.money ? window.money(c) : '$' + (c / 100).toFixed(2);
 async function api(url, method = 'GET', body) {
   const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
   const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(d.error || 'Something went wrong');
+  if (!r.ok) { const e = new Error(d.error || 'Something went wrong'); e.status = r.status; throw e; }
   return d;
 }
-const copy = (t) => navigator.clipboard.writeText(t).then(() => toast('Copied ' + t));
 
-const CC = { Godly: '#d94fd0', Ancient: '#7c5cff', Chroma: '#b78bff', Vintage: '#d9b98a', Pet: '#7ee787', Set: '#7cb8ff', Other: '#b9b6d4' };
+const RC = { Chroma: '#c58bff', Ancient: '#8a6cff', Godly: '#e05ad8', Unique: '#e6b422', Vintage: '#d9b98a', Legendary: '#ff4d4d', Rare: '#2fb36a', Uncommon: '#4d7cff', Common: '#8a8fa3' };
 const ICON = {
   Knife: '<svg viewBox="0 0 64 64"><path d="M14 54 40 10l8 5-24 42z" fill="currentColor"/><rect x="8" y="46" width="16" height="6" rx="2" fill="currentColor" opacity=".55" transform="rotate(-30 16 49)"/></svg>',
   Gun: '<svg viewBox="0 0 64 64"><path d="M6 22h42v11H31l-4 17H15l3-17H6z" fill="currentColor"/></svg>',
   Pet: '<svg viewBox="0 0 64 64"><circle cx="32" cy="38" r="16" fill="currentColor"/><circle cx="19" cy="17" r="7" fill="currentColor"/><circle cx="45" cy="17" r="7" fill="currentColor"/></svg>',
   Misc: '<svg viewBox="0 0 64 64"><path d="m32 6 8 18h19L44 36l5 20-17-11-17 11 5-20L5 24h19z" fill="currentColor"/></svg>'
 };
-const iconFor = (l) => l.category === 'Pet' ? 'Pet' : ['Set', 'Other'].includes(l.category) ? 'Misc' : /gun|scope|cannon|blaster|pistol|rifle|sniper|shot|laser|bow/i.test(l.item) ? 'Gun' : 'Knife';
+function art(i) {
+  const a = el('div', { className: 'art' });
+  if (i.image_url && /^https:\/\//.test(i.image_url)) a.append(el('img', { src: i.image_url, alt: '', loading: 'lazy' }));
+  else a.insertAdjacentHTML('beforeend', ICON[i.type] || ICON.Misc);
+  return a;
+}
 
 const seller = new URLSearchParams(location.search).get('seller');
-let me = null, signup = false, rows = [], kind = '', cats = new Set(), saved = [], myRank = '';
-try { saved = JSON.parse(localStorage.getItem('saved') || '[]'); } catch {}
-const persist = () => { try { localStorage.setItem('saved', JSON.stringify(saved)); } catch {} draw(); drawSaved(); };
-const toggleSave = (l) => { const i = saved.findIndex((s) => s.id === l.id); i >= 0 ? saved.splice(i, 1) : saved.push({ id: l.id, item: l.item, kind: l.kind, price: l.price, discord: l.discord }); persist(); };
+let me = null, info = { market: false }, rows = [], type = '', rars = new Set(), cart = [], busy = false;
+try { cart = JSON.parse(localStorage.getItem('cart') || '[]').filter(Number.isInteger); } catch {}
+const saveCart = () => { try { localStorage.setItem('cart', JSON.stringify(cart)); } catch {} };
+const canBuy = () => info.market || (me && me.owner);
 
-[['', 'All listings'], ['sell', 'Selling'], ['buy', 'Buying']].forEach(([k, label]) => {
-  const b = el('button', { textContent: label, className: k === kind ? 'on' : '', onclick: () => { kind = k; [...$('kinds').children].forEach((x) => x.classList.toggle('on', x === b)); draw(); } });
-  $('kinds').append(b);
+['', 'Knife', 'Gun', 'Pet', 'Misc'].forEach((t) => $('types').append(el('button', { type: 'button', textContent: t || 'All', className: t === type ? 'on' : '',
+  onclick: (e) => { type = t; [...$('types').children].forEach((b) => b.classList.toggle('on', b === e.target)); draw(); } })));
+Object.keys(RC).forEach((r) => {
+  const cb = el('input', { type: 'checkbox', onchange: () => { cb.checked ? rars.add(r) : rars.delete(r); draw(); } });
+  const dot = el('span', { className: 'dot' }); dot.style.setProperty('--c', RC[r]);
+  $('rars').append(el('label', { className: 'chk' }, cb, dot, r));
 });
-Object.keys(CC).forEach((c) => {
-  const cb = el('input', { type: 'checkbox', onchange: () => { cb.checked ? cats.add(c) : cats.delete(c); draw(); } });
-  const dot = el('span', { className: 'dot' }); dot.style.setProperty('--c', CC[c]);
-  $('cats').append(el('label', { className: 'chk' }, cb, dot, c));
-});
-$('reset').onclick = () => { kind = ''; cats.clear(); $('q').value = ''; document.querySelectorAll('#cats input').forEach((c) => (c.checked = false)); [...$('kinds').children].forEach((x, i) => x.classList.toggle('on', i === 0)); draw(); };
-$('q').oninput = draw; $('sort').onchange = draw;
-$('kinds').firstChild.classList.add('on');
+$('reset').onclick = () => {
+  type = ''; rars.clear(); $('q').value = $('pmin').value = $('pmax').value = '';
+  document.querySelectorAll('#rars input').forEach((c) => (c.checked = false));
+  [...$('types').children].forEach((b, i) => b.classList.toggle('on', i === 0)); draw();
+};
+['q', 'pmin', 'pmax'].forEach((id) => ($(id).oninput = draw)); $('sort').onchange = draw;
+
+// Identical items from the same seller at the same price show as one card with a count.
+function groups() {
+  const q = $('q').value.toLowerCase().trim();
+  const min = parseFloat($('pmin').value) * 100, max = parseFloat($('pmax').value) * 100;
+  const m = new Map();
+  rows.filter((l) => (!q || l.name.toLowerCase().includes(q)) && (!type || l.type === type) && (!rars.size || rars.has(l.rarity))
+    && (isNaN(min) || l.price_cents >= min) && (isNaN(max) || l.price_cents <= max))
+    .forEach((l) => {
+      const k = l.item_id + ':' + l.seller_id + ':' + l.price_cents;
+      if (!m.has(k)) m.set(k, { ...l, ids: [], newest: l.created_at });
+      const g = m.get(k); g.ids.push(l.id); if (l.created_at > g.newest) g.newest = l.created_at;
+    });
+  const s = $('sort').value, list = [...m.values()];
+  list.sort((a, b) => s === 'high' ? b.price_cents - a.price_cents : s === 'new' ? (b.newest > a.newest ? 1 : -1) : s === 'value' ? b.value - a.value : a.price_cents - b.price_cents);
+  return list;
+}
 
 function draw() {
-  const q = $('q').value.toLowerCase(), s = $('sort').value;
-  const list = rows.filter((l) => l.item.toLowerCase().includes(q) && (!seller || l.username.toLowerCase() === seller.toLowerCase()) && (!kind || l.kind === kind) && (!cats.size || cats.has(l.category)));
-  list.sort((a, b) => s === 'az' ? a.item.localeCompare(b.item) : s === 'old' ? new Date(a.created_at) - new Date(b.created_at) : new Date(b.created_at) - new Date(a.created_at));
-  const g = $('grid'); g.replaceChildren();
-  if (!list.length) g.append(el('div', { className: 'empty', textContent: rows.length ? 'No listings match these filters. Try resetting them.' : 'No listings yet. Post the first one and it will show up here.' }));
-  list.forEach((l) => {
-    const art = el('div', { className: 'art' }, el('span', { className: 'badge', textContent: l.category.toUpperCase() }), el('span', { className: 'kind ' + (l.kind === 'sell' ? 'k-sell' : 'k-buy'), textContent: l.kind === 'sell' ? 'SELLING' : 'BUYING' }));
-    art.insertAdjacentHTML('beforeend', ICON[iconFor(l)]);
+  const list = groups(), g = $('grid');
+  g.replaceChildren();
+  const units = list.reduce((a, x) => a + x.ids.length, 0);
+  $('count').textContent = units + ' item' + (units === 1 ? '' : 's') + ' for sale';
+  if (!list.length) g.append(el('div', { className: 'empty' }, rows.length ? 'Nothing matches these filters. Try resetting them.' : el('span', {}, el('b', { textContent: 'Nothing for sale yet.' }), el('br'), 'Deposit items in your inventory, then list them here for other players to buy.')));
+  list.forEach((x) => {
+    const c = RC[x.rarity] || RC.Common;
+    const a = art(x);
+    a.append(el('span', { className: 'badge', textContent: x.rarity.toUpperCase() }));
+    if (x.ids.length > 1) a.append(el('span', { className: 'qty', textContent: '×' + x.ids.length }));
+    const inCart = x.ids.filter((id) => cart.includes(id)).length;
     const acts = el('div', { className: 'acts' });
-    if (me && me.id === l.user_id) {
-      acts.append(soonBtn('Mark done'), soonBtn('Delete'));
-    } else {
-      acts.append(soonBtn('Buy', 'btn sm'), soonBtn('Save'));
+    if (me && me.id === x.seller_id) acts.append(el('a', { className: 'btn sm', href: '/inventory.html', textContent: 'Your listing', style: 'text-align:center;background:var(--raise)' }));
+    else {
+      const free = x.ids.find((id) => !cart.includes(id));
+      acts.append(el('button', { className: 'btn sm', type: 'button', disabled: !free, textContent: !free ? 'All in cart' : inCart ? 'Add another (' + inCart + ')' : 'Add to cart',
+        onclick: () => { if (!me) return login(); cart.push(free); saveCart(); draw(); drawCart(); } }));
     }
-    const card = el('article', { className: 'card' }, art, el('div', { className: 'info' },
-      el('h3', { textContent: l.item }),
-      el('div', { className: 'mute', textContent: 'by ' + l.username + ' · ' + ago(l.created_at) }),
-      el('div', { className: 'want' }, el('small', { textContent: l.kind === 'sell' ? 'Wants' : 'Offering' }), l.price),
-      l.description ? el('p', { className: 'desc', textContent: l.description }) : '', acts));
-    card.style.setProperty('--c', CC[l.category] || CC.Other);
+    const card = el('article', { className: 'card' }, a, el('div', { className: 'info' },
+      el('h3', { textContent: x.name }),
+      el('div', { className: 'mute' }, x.type + ' · value ' + x.value.toLocaleString() + ' · by ', el('a', { href: '/?seller=' + encodeURIComponent(x.seller), textContent: x.seller, style: 'color:inherit' })),
+      el('div', { className: 'price', textContent: usd(x.price_cents) }), acts));
+    card.style.setProperty('--c', c);
     g.append(card);
   });
-  const t = rows.slice(0, 12).map((l) => `<span>${esc(l.item)} <em>${esc(l.price)}</em></span>`).join('');
-  $('track').innerHTML = rows.length ? t + t : '<span class="mute">Waiting for the first listing</span>';
+}
+
+function drawCart() {
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const before = cart.length;
+  cart = cart.filter((id) => byId.has(id) && !(me && byId.get(id).seller_id === me.id));
+  if (cart.length !== before) saveCart();
+  const lines = $('lines'), foot = $('foot');
+  lines.replaceChildren(); foot.replaceChildren();
+  $('cartN').textContent = cart.length ? cart.length + ' item' + (cart.length === 1 ? '' : 's') : '';
+  if (!cart.length) { lines.append(el('div', { className: 'none' }, el('b', { textContent: 'Your cart is empty' }), el('br'), 'Add items from the market to buy them.')); }
+  let total = 0;
+  cart.forEach((id) => {
+    const l = byId.get(id); total += l.price_cents;
+    lines.append(el('div', { className: 'line' }, el('span', { className: 'n' }, l.name, el('small', { textContent: l.rarity + ' · from ' + l.seller })),
+      el('span', { textContent: usd(l.price_cents) }),
+      el('button', { type: 'button', textContent: '×', 'aria-label': 'Remove ' + l.name, onclick: () => { cart = cart.filter((c) => c !== id); saveCart(); draw(); drawCart(); } })));
+  });
+  const bal = me ? me.balance : 0, short = total - bal;
+  foot.append(el('div', { className: 'sum big' }, el('span', { textContent: 'Total' }), el('span', { textContent: usd(total) })));
+  if (me) foot.append(el('div', { className: 'sum mute' }, el('span', { textContent: 'Your balance' }), el('span', { textContent: usd(bal) })));
+  const err = el('div', { className: 'err', id: 'buyErr' });
+  if (!me) foot.append(el('button', { className: 'btn', type: 'button', textContent: 'Log in to buy', onclick: login }));
+  else if (!canBuy()) foot.append(el('button', { className: 'btn', type: 'button', disabled: true, textContent: 'Checkout opens soon' }));
+  else if (cart.length && short > 0) {
+    foot.append(el('div', { className: 'sum' }, el('span', { textContent: 'You need' }), el('span', { className: 'short', textContent: usd(short) + ' more' })),
+      el('button', { className: 'btn', type: 'button', textContent: 'Add funds', onclick: () => openFunds('add') }));
+  } else foot.append(el('button', { className: 'btn', type: 'button', disabled: !cart.length || busy, textContent: busy ? 'Buying...' : 'Buy now', onclick: buy }));
+  foot.append(err);
+}
+
+async function buy() {
+  busy = true; drawCart();
+  try {
+    const r = await api('/api/market/buy', 'POST', { listing_ids: cart });
+    cart = []; saveCart(); me.balance = r.balance; setBalance(r.balance);
+    toast('Bought ' + r.bought + ' item' + (r.bought === 1 ? '' : 's') + '. They are in your inventory now.');
+    busy = false; await load();
+    $('lines').replaceChildren(el('div', { className: 'none' }, el('b', { textContent: 'Purchase complete' }), el('br'), 'Your items are in your inventory.', el('br'), el('br'), el('a', { className: 'btn', href: '/inventory.html', textContent: 'Go to inventory' })));
+  } catch (e) {
+    busy = false;
+    if (e.status === 409) await load();
+    else drawCart();
+    $('buyErr').textContent = e.message;
+  }
+}
+
+function login() { RbxAuth.open((u) => location.reload()); }
+function drawWho() {
+  const w = $('who'); w.replaceChildren();
+  if (me) w.append(RbxAuth.menu(me, async () => { await api('/api/logout', 'POST'); me = null; drawWho(); drawCart(); draw(); }));
+  else w.append(el('button', { className: 'btn sm', type: 'button', textContent: 'Log in with Roblox', onclick: login }));
+}
+function drawNotice() {
+  const n = $('notice'); n.replaceChildren();
+  if (!info.market) n.append(el('div', { className: 'notice' }, el('b', { textContent: 'Checkout opens soon. ' }),
+    me && me.owner ? 'You can test buying and selling because you are an owner. Other players can browse but not buy yet.' : 'You can browse what is for sale now. Buying opens shortly.'));
+}
+
+async function load() {
+  try { rows = await api('/api/market' + (seller ? '?seller=' + encodeURIComponent(seller) : '')); } catch { rows = []; }
+  if (me) { const u = await refreshBalance(); if (u) me.balance = u.balance; }
+  draw(); drawCart();
+}
+async function loadSales() {
+  try {
+    const s = await api('/api/market/recent');
+    const t = s.map((x) => '<span>' + esc(x.name) + '<em>' + usd(x.price_cents) + '</em></span>').join('');
+    $('track').innerHTML = s.length ? t + t : '<span class="mute">Sales will show up here as they happen</span>';
+  } catch {}
 }
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-function drawSaved() {
-  $('lines').replaceChildren(el('div', { className: 'none' }, el('b', { textContent: 'Cart is coming soon' }), el('br'), 'Buying and saving items will open here once checkout is ready.'));
-  $('cartFoot').replaceChildren(soonBtn('Buy now', 'btn'));
-}
-
-
-
-function drawWho() {
-  const w = $('who'); w.replaceChildren();
-  if (me) {
-    w.append(soonBtn('Post listing', 'btn sm'),
-      RbxAuth.menu(me, async () => { await api('/api/logout', 'POST'); me = null; drawWho(); load(); }));
-  } else {
-    w.append(el('button', { className: 'btn sm', textContent: 'Log in with Roblox', onclick: openAuth }));
-  }
-}
-function openAuth() { RbxAuth.open((u) => { me = u; drawWho(); load(); }); }
-$('heroPost').replaceWith(soonBtn('Post a listing', 'btn'));
-$('postForm').onsubmit = async (e) => {
-  e.preventDefault();
-  try { await api('/api/listings', 'POST', Object.fromEntries(new FormData(e.target))); postDlg.close(); e.target.reset(); $('err2').textContent = ''; toast('Listing posted'); load(); }
-  catch (x) { $('err2').textContent = x.message; }
-};
-
-async function openProfile() {
-  let p;
-  try { p = await api('/api/profile'); } catch (e) { return toast(e.message); }
-  myRank = p.rank;
-  const av = avEl(me); av.style.width = av.style.height = '56px'; av.style.fontSize = '24px';
-  $('pAv').replaceChildren(av);
-  $('pName').textContent = p.username;
-  $('pSub').textContent = p.rank + ' · joined ' + new Date(p.joined).toLocaleDateString();
-  $('pOpen').firstChild.textContent = p.open; $('pDone').firstChild.textContent = p.done; $('pMsgs').firstChild.textContent = p.messages;
-  const next = p.done >= 15 ? null : p.done >= 5 ? [15, 'Broker'] : p.done >= 1 ? [5, 'Dealer'] : [1, 'Trader'];
-  $('pNext').textContent = next ? 'Mark ' + (next[0] - p.done) + ' more listing(s) as done to reach ' + next[1] + '.' : 'You reached the top rank.';
-  const box = $('pList'); box.replaceChildren();
-  if (!p.listings.length) box.append(el('p', { className: 'mute', textContent: 'You have not posted anything yet.' }));
-  p.listings.forEach((l) => box.append(el('div', { className: 'rw' }, el('span', { textContent: l.item }), el('span', { className: 'mute', textContent: (l.kind === 'sell' ? 'Selling' : 'Buying') + ' · ' + (l.status === 'done' ? 'Done' : 'Open') }))));
-  profileDlg.showModal();
-}
-$('pOut').onclick = async () => { await api('/api/logout', 'POST'); me = null; myRank = ''; profileDlg.close(); drawWho(); load(); };
-
-async function load() { try { rows = await api('/api/listings'); } catch {} draw(); }
-api('/api/me').then((u) => { me = u; try { drawWho(); } catch (e) { console.error(e); } load(); }).catch(() => { drawWho(); load(); });
-setInterval(load, 30000);
-drawSaved();
-if (seller) { document.querySelector('.banner h1').textContent = seller + "'s shop"; document.querySelector('.banner p').textContent = 'Every open listing from this player.'; }
-document.querySelectorAll('.soon').forEach((b) => (b.onclick = () => toast(b.dataset.t)));
+if (seller) { $('hTitle').textContent = seller + "'s shop"; $('hSub').textContent = 'Everything this player has for sale right now. Every item is held by SplitzMarket until you buy it.'; }
+(async () => {
+  [me, info] = await Promise.all([api('/api/me').catch(() => null), api('/api/trading-info').catch(() => info)]);
+  drawWho(); drawNotice(); await load(); loadSales();
+  setInterval(() => { if (!busy) load(); loadSales(); }, 20000);
+})();
 </script>
 </body>
 </html>
