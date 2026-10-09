@@ -62,7 +62,7 @@ details p{color:var(--mute);margin:8px 0 0;font-size:14px;line-height:1.5}
 <body>
 <div class="bar">
   <a class="logo" href="/">Splitz<b>Market</b></a>
-  <nav><a href="/">Shop</a><a href="/board.html">Board &amp; chat</a><a class="on" href="/support.html">Support</a></nav>
+  <nav><a href="/">Shop</a><a href="/board.html">Board &amp; chat</a><a href="/inventory.html">Inventory</a><a class="on" href="/support.html">Support</a></nav>
   <div id="who"></div>
 </div>
 
@@ -75,7 +75,7 @@ details p{color:var(--mute);margin:8px 0 0;font-size:14px;line-height:1.5}
 <script src="/auth.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
-const el = (t, p = {}, ...k) => { const e = document.createElement(t); Object.assign(e, p); k.forEach((x) => x != null && e.append(x)); return e; };
+const el = (t, p = {}, ...k) => { const e = document.createElement(t); for (const [a, v] of Object.entries(p)) { if (a.includes('-')) e.setAttribute(a, v); else e[a] = v; } k.forEach((x) => x != null && e.append(x)); return e; };
 const toast = (t) => { const x = $('toast'); x.textContent = t; x.classList.add('show'); setTimeout(() => x.classList.remove('show'), 2000); };
 const when = (d) => new Date(d).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 async function api(url, method = 'GET', body) {
