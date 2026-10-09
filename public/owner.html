@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Owner panel | SplitzMarket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#12101f;--surface:#1d1a30;--raise:#26223e;--line:#37325a;--text:#f1eefc;--mute:#a29fc0;--gold:#ffb938;--violet:#8b6cff;--ok:#4ade80;--bad:#ff6b6b}
+*{box-sizing:border-box}
+body{margin:0;font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+h1,h2,h3,.logo{font-family:Outfit,system-ui,sans-serif;margin:0}
+button,input,select,textarea{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+textarea{resize:vertical}
+button{cursor:pointer;font-weight:700}
+button:focus-visible,input:focus,textarea:focus,select:focus,a:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+button:disabled{opacity:.6;cursor:wait}
+.btn{background:var(--gold);color:#241a00;border:0}.ghost{background:transparent}.sm{padding:5px 11px;font-size:13px;border-radius:8px}
+.danger{color:var(--bad);border-color:#ff6b6b66}.danger.arm{background:var(--bad);color:#2a0606;border-color:var(--bad)}
+.mute{color:var(--mute);font-size:13px}
+a{color:var(--gold)}
+.bar{display:flex;align-items:center;gap:14px;padding:12px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font-size:22px;font-weight:800;text-decoration:none;color:var(--text)}.logo b{color:var(--gold)}
+.badge{font-size:11px;font-weight:800;background:#ffb93826;color:var(--gold);border-radius:6px;padding:3px 8px;margin-right:auto}
+.av{width:32px;height:32px;border-radius:9px;background:var(--violet);display:grid;place-items:center;font-weight:800;font-family:Outfit,sans-serif;flex:none}
+.wrap{max-width:1240px;margin:0 auto;padding:24px 24px 60px;display:grid;grid-template-columns:210px minmax(0,1fr);gap:22px;align-items:start}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;display:grid;gap:4px;position:sticky;top:12px}
+.side button{text-align:left;background:transparent;border:0;color:var(--mute);display:flex;justify-content:space-between;align-items:center}
+.side button.on{background:var(--gold);color:#241a00}
+.side button:hover:not(.on){background:var(--raise);color:var(--text)}
+.side i{font-style:normal;font-size:11px;background:var(--bad);color:#2a0606;border-radius:99px;padding:1px 7px}
+.side button.on i{background:#241a00;color:var(--gold)}
+h1{font-size:28px;margin-bottom:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px}
+.card h2{font-size:18px;margin-bottom:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stats div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;font-family:Outfit,sans-serif;font-size:30px;font-weight:700}
+.stats span{display:block;font-family:Manrope,sans-serif;font-size:12px;font-weight:700;color:var(--mute);margin-bottom:6px}
+.stats em{display:block;font-style:normal;font-family:Manrope,sans-serif;font-size:12px;color:var(--mute);font-weight:500;margin-top:4px}
+.stats .hot{border-color:#ffb93888}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.tools input{flex:1;min-width:200px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{text-align:left;font-size:12px;color:var(--mute);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--line)}
+.tbl td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.scroll{overflow-x:auto}
+.who{display:flex;gap:10px;align-items:center;font-weight:700}
+.pill{font-size:11px;font-weight:800;border-radius:99px;padding:2px 9px;background:var(--raise);color:var(--mute);white-space:nowrap}
+.pill.ok{background:#4ade8022;color:var(--ok)}.pill.bad{background:#ff6b6b26;color:var(--bad)}.pill.gold{background:#ffb93826;color:var(--gold)}
+.split{display:grid;grid-template-columns:320px minmax(0,1fr);gap:16px;align-items:start}
+.tk{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;color:var(--text)}
+.tk.on{border-color:var(--gold)}
+.tk b{display:block;margin-bottom:4px;overflow-wrap:anywhere}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.thread{display:flex;flex-direction:column;min-height:480px}
+.thead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.thead h2{margin:0;overflow-wrap:anywhere}
+.msgs{flex:1;display:flex;flex-direction:column;gap:10px;padding:16px 0;overflow-y:auto;max-height:58vh}
+.msg{max-width:80%;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 14px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45}
+.msg.staff{align-self:flex-end;background:#ffb9381a;border-color:#ffb93866}
+.msg small{display:block;font-size:12px;color:var(--mute);margin-bottom:4px;font-weight:700}
+.reply{display:flex;gap:8px;border-top:1px solid var(--line);padding-top:12px}.reply textarea{flex:1;min-width:0}
+.chat{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.chat:last-child{border-bottom:0}
+.chat p{margin:2px 0 0;overflow-wrap:anywhere;flex:1}
+.chat .acts{display:flex;gap:6px;flex:none}
+.empty{text-align:center;color:var(--mute);padding:36px 16px}
+.denied{grid-column:1/-1;text-align:center;padding:90px 20px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s}#toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+@media (max-width:980px){.wrap{grid-template-columns:1fr}.side{position:static;grid-auto-flow:column;overflow-x:auto}.stats{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <a class="logo" href="/">Splitz<b>Market</b></a>
+  <span class="badge" id="badge" hidden>Owner panel</span>
+  <div id="who"></div>
+</div>
+<div class="wrap" id="wrap"><div class="card mute" style="grid-column:1/-1">Loading...</div></div>
+<div id="toast" role="status"></div>
+
+<script src="/auth.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const el = (t, p = {}, ...k) => { const e = document.createElement(t); Object.assign(e, p); k.forEach((x) => x != null && e.append(x)); return e; };
+const toast = (t, bad) => { const x = $('toast'); x.textContent = t; x.style.background = bad ? 'var(--bad)' : ''; x.classList.add('show'); setTimeout(() => x.classList.remove('show'), 2200); };
+const when = (d) => new Date(d).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+async function api(url, method = 'GET', body) {
+  const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(d.error || 'Something went wrong'); e.status = r.status; throw e; }
+  return d;
+}
+// Two-click confirm instead of a browser popup.
+function armed(label, armedLabel, run, cls = 'ghost sm danger') {
+  const b = el('button', { className: cls, textContent: label });
+  let t = null;
+  b.onclick = async () => {
+    if (!b.classList.contains('arm')) { b.classList.add('arm'); b.textContent = armedLabel; t = setTimeout(() => { b.classList.remove('arm'); b.textContent = label; }, 3000); return; }
+    clearTimeout(t); b.disabled = true;
+    try { await run(); } catch (e) { toast(e.message, true); b.disabled = false; b.classList.remove('arm'); b.textContent = label; }
+  };
+  return b;
+}
+const userCell = (name, avatar) => el('span', { className: 'who' }, avEl({ username: name || '?', avatar }), name || 'deleted');
+
+let me = null, tab = 'overview', stats = null, poll = null;
+const TABS = [['overview', 'Overview'], ['users', 'Users'], ['support', 'Support chats'], ['chat', 'Live chat'], ['listings', 'Listings']];
+
+function shell() {
+  const side = el('aside', { className: 'side', id: 'side' });
+  $('wrap').replaceChildren(side, el('main', { id: 'main' }));
+  drawSide();
+}
+function drawSide() {
+  $('side').replaceChildren(...TABS.map(([k, label]) => el('button', { className: tab === k ? 'on' : '', onclick: () => go(k) },
+    label, k === 'support' && stats && stats.waiting ? el('i', { textContent: stats.waiting }) : null)));
+}
+async function go(k) {
+  tab = k; clearInterval(poll); drawSide();
+  try { await ({ overview, users, support, chat, listings })[k](); }
+  catch (e) { $('main').replaceChildren(el('div', { className: 'card', textContent: e.message })); }
+}
+async function refreshStats() { stats = await api('/api/admin/stats'); drawSide(); }
+
+async function overview() {
+  await refreshStats();
+  const s = stats;
+  const tile = (label, n, sub, hot) => el('div', { className: hot ? 'hot' : '' }, el('span', { textContent: label }), String(n), sub ? el('em', { textContent: sub }) : null);
+  const waiting = await api('/api/admin/tickets');
+  const list = el('div', {});
+  const need = waiting.filter((t) => !t.last_staff);
+  if (!need.length) list.append(el('p', { className: 'mute', textContent: 'Nobody is waiting on a reply.' }));
+  need.slice(0, 8).forEach((t) => list.append(el('button', { className: 'tk', onclick: () => { go('support').then(() => openTicket(t.id)); } },
+    el('b', { textContent: t.subject }), el('span', { className: 'mute', textContent: t.username + ' · ' + when(t.updated_at) }))));
+  $('main').replaceChildren(el('h1', { textContent: 'Overview' }),
+    el('div', { className: 'stats' },
+      tile('Users', s.users, s.newUsers + ' joined in the last 24h'),
+      tile('Waiting on reply', s.waiting, s.openTickets + ' open tickets', s.waiting > 0),
+      tile('Chat messages', s.messages, s.messagesToday + ' in the last 24h'),
+      tile('Banned users', s.banned, s.listings + ' open listings')),
+    el('section', { className: 'card' }, el('h2', { textContent: 'Tickets waiting on you' }), list),
+    el('p', { className: 'mute', textContent: 'Owners: ' + s.owners.join(', ') + '. Change this with the OWNERS variable in Railway.' }));
+}
+
+async function users() {
+  const q = el('input', { placeholder: 'Search by Roblox username' });
+  const body = el('tbody');
+  const table = el('div', { className: 'card scroll' }, el('table', { className: 'tbl' },
+    el('thead', {}, el('tr', {}, ...['User', 'Roblox ID', 'Joined', 'Listings', 'Chat', 'Tickets', 'Status', ''].map((h) => el('th', { textContent: h })))), body));
+  async function load() {
+    const rows = await api('/api/admin/users?q=' + encodeURIComponent(q.value));
+    body.replaceChildren();
+    if (!rows.length) body.append(el('tr', {}, el('td', { colSpan: 8, className: 'empty', textContent: 'No users found.' })));
+    rows.forEach((u) => {
+      const status = u.owner ? el('span', { className: 'pill gold', textContent: 'Owner' }) : u.banned ? el('span', { className: 'pill bad', textContent: 'Banned' }) : el('span', { className: 'pill ok', textContent: 'Active' });
+      const act = u.owner ? '' : u.banned
+        ? el('button', { className: 'ghost sm', textContent: 'Unban', onclick: async () => { await api(`/api/admin/users/${u.id}/ban`, 'POST', { banned: false }); toast('Unbanned ' + u.username); load(); } })
+        : armed('Ban', 'Confirm ban', async () => { await api(`/api/admin/users/${u.id}/ban`, 'POST', { banned: true }); toast('Banned ' + u.username); load(); });
+      body.append(el('tr', {},
+        el('td', {}, userCell(u.username, u.avatar_url)),
+        el('td', {}, u.roblox_id ? el('a', { href: 'https://www.roblox.com/users/' + u.roblox_id + '/profile', target: '_blank', rel: 'noopener', textContent: u.roblox_id }) : el('span', { className: 'mute', textContent: 'Not verified' })),
+        el('td', { className: 'mute', textContent: when(u.created_at) }),
+        el('td', { textContent: u.listings }), el('td', { textContent: u.messages }), el('td', { textContent: u.tickets }),
+        el('td', {}, status), el('td', {}, act)));
+    });
+  }
+  let t; q.oninput = () => { clearTimeout(t); t = setTimeout(load, 250); };
+  $('main').replaceChildren(el('h1', { textContent: 'Users' }), el('div', { className: 'tools' }, q), table);
+  await load();
+}
+
+let curTicket = null, lastCount = -1;
+async function support() {
+  const filter = el('select', {}, el('option', { value: 'open', textContent: 'Open tickets' }), el('option', { value: 'closed', textContent: 'Closed tickets' }), el('option', { value: 'all', textContent: 'All tickets' }));
+  const list = el('div', { id: 'tlist' });
+  const thread = el('section', { className: 'card thread', id: 'thread' }, el('div', { className: 'empty', textContent: 'Pick a ticket to read and reply.' }));
+  async function loadList() {
+    const rows = await api('/api/admin/tickets?status=' + filter.value);
+    list.replaceChildren();
+    if (!rows.length) list.append(el('p', { className: 'mute', textContent: 'No tickets here.' }));
+    rows.forEach((t) => list.append(el('button', { className: 'tk' + (curTicket === t.id ? ' on' : ''), onclick: () => openTicket(t.id) },
+      el('b', { textContent: t.subject }),
+      el('span', { className: 'row' },
+        t.status === 'open' && !t.last_staff ? el('span', { className: 'pill gold', textContent: 'Needs reply' }) : el('span', { className: 'pill' + (t.status === 'open' ? ' ok' : ''), textContent: t.status === 'open' ? 'Open' : 'Closed' }),
+        el('span', { className: 'mute', textContent: t.username + ' · ' + when(t.updated_at) })))));
+  }
+  window.reloadTickets = loadList;
+  filter.onchange = loadList;
+  $('main').replaceChildren(el('h1', { textContent: 'Support chats' }),
+    el('div', { className: 'split' }, el('section', { className: 'card' }, el('div', { className: 'tools' }, filter), list), thread));
+  await loadList();
+  poll = setInterval(() => { loadList().catch(() => {}); if (curTicket) drawThread(false).catch(() => {}); refreshStats().catch(() => {}); }, 6000);
+  if (curTicket) drawThread(true).catch(() => {});
+}
+async function openTicket(id) { curTicket = id; lastCount = -1; await drawThread(true); if (window.reloadTickets) window.reloadTickets().catch(() => {}); }
+async function drawThread(fresh) {
+  if (!$('thread')) return;
+  const d = await api('/api/tickets/' + curTicket);
+  if (!fresh && d.messages.length === lastCount) return;
+  lastCount = d.messages.length;
+  const box = el('div', { className: 'msgs' });
+  d.messages.forEach((m) => box.append(el('div', { className: 'msg' + (m.staff ? ' staff' : '') },
+    el('small', { textContent: (m.staff ? 'Staff · ' + (m.username || '') : (m.username || 'user')) + ' · ' + when(m.created_at) }), m.body)));
+  const keep = fresh ? '' : ($('thread').querySelector('textarea') || {}).value || '';
+  const input = el('textarea', { rows: 2, maxLength: 1000, placeholder: 'Reply as SplitzMarket staff', value: keep });
+  const send = el('button', { className: 'btn', textContent: 'Send' });
+  const sendIt = async () => {
+    if (!input.value.trim()) return; send.disabled = true;
+    try { await api('/api/tickets/' + curTicket + '/messages', 'POST', { body: input.value }); input.value = ''; await drawThread(true); window.reloadTickets && window.reloadTickets(); refreshStats().catch(() => {}); }
+    catch (e) { toast(e.message, true); }
+    send.disabled = false;
+  };
+  send.onclick = sendIt;
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendIt(); } });
+  const open = d.ticket.status === 'open';
+  const toggle = el('button', { className: 'ghost sm', textContent: open ? 'Close ticket' : 'Reopen', onclick: async () => {
+    await api(`/api/admin/tickets/${curTicket}/status`, 'POST', { status: open ? 'closed' : 'open' }); toast(open ? 'Ticket closed' : 'Ticket reopened');
+    await drawThread(true); window.reloadTickets && window.reloadTickets(); refreshStats().catch(() => {});
+  } });
+  $('thread').replaceChildren(
+    el('div', { className: 'thead' },
+      el('div', {}, el('h2', { textContent: d.ticket.subject }), el('div', { className: 'mute', textContent: '#' + d.ticket.id + ' · from ' + d.ticket.username + ' · ' + when(d.ticket.created_at) })),
+      el('div', { className: 'row' }, el('span', { className: 'pill' + (open ? ' ok' : ''), textContent: open ? 'Open' : 'Closed' }), toggle)),
+    box, el('div', { className: 'reply' }, input, send));
+  box.scrollTop = box.scrollHeight;
+}
+
+async function chat() {
+  const box = el('section', { className: 'card' });
+  async function load() {
+    const rows = await api('/api/admin/chat');
+    box.replaceChildren(el('h2', { textContent: 'Latest 200 messages' }));
+    if (!rows.length) box.append(el('p', { className: 'empty', textContent: 'No chat messages yet.' }));
+    rows.forEach((m) => box.append(el('div', { className: 'chat' },
+      el('div', { style: 'flex:1;min-width:0' }, el('span', { className: 'row' }, el('b', { textContent: m.username }), el('span', { className: 'mute', textContent: when(m.created_at) })), el('p', { textContent: m.body })),
+      el('div', { className: 'acts' }, armed('Delete', 'Confirm', async () => { await api('/api/admin/chat/' + m.id, 'DELETE'); toast('Message deleted'); load(); })))));
+  }
+  $('main').replaceChildren(el('h1', { textContent: 'Live chat' }), el('p', { className: 'mute', textContent: 'Deleted messages disappear for people when they reload the page. Ban users from the Users tab.' }), box);
+  await load();
+  poll = setInterval(() => load().catch(() => {}), 10000);
+}
+
+async function listings() {
+  const rows = await api('/api/admin/listings');
+  const body = el('tbody');
+  if (!rows.length) body.append(el('tr', {}, el('td', { colSpan: 6, className: 'empty', textContent: 'No listings yet. Posting is still coming soon.' })));
+  rows.forEach((l) => body.append(el('tr', {},
+    el('td', {}, el('b', { textContent: l.item })), el('td', { textContent: l.kind === 'sell' ? 'Selling' : 'Buying' }),
+    el('td', { textContent: l.username }), el('td', { textContent: l.price }),
+    el('td', {}, el('span', { className: 'pill' + (l.status === 'open' ? ' ok' : ''), textContent: l.status })),
+    el('td', {}, armed('Delete', 'Confirm', async () => { await api('/api/admin/listings/' + l.id, 'DELETE'); toast('Listing deleted'); listings(); })))));
+  $('main').replaceChildren(el('h1', { textContent: 'Listings' }),
+    el('div', { className: 'card scroll' }, el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['Item', 'Type', 'By', 'Price', 'Status', ''].map((h) => el('th', { textContent: h })))), body)));
+}
+
+function denied() {
+  $('wrap').replaceChildren(el('div', { className: 'denied' }, el('h1', { textContent: 'Page not found' }), el('p', { className: 'mute' }, el('a', { href: '/', textContent: 'Back to the shop' }))));
+}
+
+async function init() {
+  me = await api('/api/me').catch(() => null);
+  if (me) $('who').replaceChildren(RbxAuth.menu(me, async () => { await api('/api/logout', 'POST'); location.href = '/'; }));
+  else $('who').replaceChildren(el('button', { className: 'btn sm', textContent: 'Log in with Roblox', onclick: () => RbxAuth.open(() => location.reload()) }));
+  if (!me || !me.owner) return denied();
+  $('badge').hidden = false;
+  shell();
+  go('overview');
+}
+init();
+</script>
+</body>
+</html>
