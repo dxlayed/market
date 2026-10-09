@@ -196,7 +196,7 @@ function renderNav() {
   const nav = $('nav'); nav.replaceChildren();
   nav.append(el('button', { className: 'ghost sm', textContent: 'Saved (' + saved.length + ')', onclick: openSaved }), ' ');
   if (me) {
-    nav.append(el('button', { className: 'btn sm', textContent: 'Post listing', onclick: () => postDlg.showModal() }), ' ',
+    nav.append(soonBtn('Post listing', 'btn sm'), ' ',
       RbxAuth.menu(me, async () => { await api('/api/logout', 'POST'); me = null; renderNav(); load(); }));
   } else {
     nav.append(el('button', { className: 'btn sm', textContent: 'Log in with Roblox', onclick: needLogin }));
@@ -216,10 +216,9 @@ async function load() {
     const foot = el('div', { className: 'foot' }, el('span', { className: 'meta', textContent: 'by ' + l.username + ' · ' + ago(l.created_at) }));
     if (me && me.id === l.user_id) {
       foot.append(
-        el('button', { className: 'ghost sm', textContent: 'Mark done', onclick: async () => { await api(`/api/listings/${l.id}/done`, 'PATCH'); load(); } }),
-        el('button', { className: 'ghost sm', textContent: 'Delete', onclick: async () => { await api('/api/listings/' + l.id, 'DELETE'); load(); } }));
+        soonBtn('Mark done'), soonBtn('Delete'));
     } else {
-      foot.append(el('button', { className: 'ghost sm', textContent: saved.some((s) => s.id === l.id) ? 'Saved' : 'Save', onclick: () => toggleSave(l) }), el('button', { className: 'btn sm', textContent: 'Copy Discord', onclick: () => { navigator.clipboard.writeText(l.discord).then(() => toast('Copied ' + l.discord)); } }));
+      foot.append(soonBtn('Save'), soonBtn('Buy', 'btn sm'));
     }
     list.append(el('article', { className: 'card' },
       el('div', { className: 'top' },
@@ -232,7 +231,7 @@ async function load() {
   });
 }
 
-$('heroPost').onclick = () => (me ? postDlg.showModal() : needLogin());
+$('heroPost').replaceWith(soonBtn('Post a listing', 'btn'));
 $('postForm').onsubmit = async (e) => {
   e.preventDefault();
   try {
