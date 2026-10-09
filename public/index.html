@@ -148,6 +148,8 @@ dialog::backdrop{background:#000b}dialog form{display:flex;flex-direction:column
 <script src="/auth.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
+if (typeof avEl === 'undefined') window.avEl = (u) => { const s = document.createElement('span'); s.className = 'av'; s.textContent = u.username[0].toUpperCase(); return s; };
+if (typeof RbxAuth === 'undefined') window.RbxAuth = { open() { toast('Login script missing. Add public/auth.js on GitHub, then refresh.'); } };
 const el = (t, p = {}, ...k) => { const e = document.createElement(t); Object.assign(e, p); k.forEach((x) => e.append(x)); return e; };
 const toast = (t) => { const x = $('toast'); x.textContent = t; x.classList.add('show'); setTimeout(() => x.classList.remove('show'), 1800); };
 const ago = (d) => { const s = (Date.now() - new Date(d)) / 1000; return s < 3600 ? Math.max(1, Math.floor(s / 60)) + 'm ago' : s < 86400 ? Math.floor(s / 3600) + 'h ago' : Math.floor(s / 86400) + 'd ago'; };
@@ -168,6 +170,7 @@ const ICON = {
 };
 const iconFor = (l) => l.category === 'Pet' ? 'Pet' : ['Set', 'Other'].includes(l.category) ? 'Misc' : /gun|scope|cannon|blaster|pistol|rifle|sniper|shot|laser|bow/i.test(l.item) ? 'Gun' : 'Knife';
 
+const seller = new URLSearchParams(location.search).get('seller');
 let me = null, signup = false, rows = [], kind = '', cats = new Set(), saved = [], myRank = '';
 try { saved = JSON.parse(localStorage.getItem('saved') || '[]'); } catch {}
 const persist = () => { try { localStorage.setItem('saved', JSON.stringify(saved)); } catch {} draw(); drawSaved(); };
@@ -188,7 +191,7 @@ $('kinds').firstChild.classList.add('on');
 
 function draw() {
   const q = $('q').value.toLowerCase(), s = $('sort').value;
-  const list = rows.filter((l) => l.item.toLowerCase().includes(q) && (!kind || l.kind === kind) && (!cats.size || cats.has(l.category)));
+  const list = rows.filter((l) => l.item.toLowerCase().includes(q) && (!seller || l.username.toLowerCase() === seller.toLowerCase()) && (!kind || l.kind === kind) && (!cats.size || cats.has(l.category)));
   list.sort((a, b) => s === 'az' ? a.item.localeCompare(b.item) : s === 'old' ? new Date(a.created_at) - new Date(b.created_at) : new Date(b.created_at) - new Date(a.created_at));
   const g = $('grid'); g.replaceChildren();
   if (!list.length) g.append(el('div', { className: 'empty', textContent: rows.length ? 'No listings match these filters. Try resetting them.' : 'No listings yet. Post the first one and it will show up here.' }));
@@ -230,9 +233,7 @@ function drawWho() {
   const w = $('who'); w.replaceChildren();
   if (me) {
     w.append(el('button', { className: 'btn sm', textContent: 'Post listing', onclick: () => postDlg.showModal() }),
-      el('button', { className: 'me', onclick: openProfile, 'aria-label': 'Open your profile' }, avEl(me), el('span', {}, el('b', { textContent: me.username }), el('small', { id: 'rk', textContent: myRank }))),
-      el('button', { className: 'ghost sm', textContent: 'Log out', onclick: async () => { await api('/api/logout', 'POST'); me = null; myRank = ''; drawWho(); load(); } }));
-    api('/api/profile').then((p) => { myRank = p.rank; const r = $('rk'); if (r) r.textContent = p.rank; }).catch(() => {});
+      RbxAuth.menu(me, async () => { await api('/api/logout', 'POST'); me = null; drawWho(); load(); }));
   } else {
     w.append(el('button', { className: 'btn sm', textContent: 'Log in with Roblox', onclick: openAuth }));
   }
@@ -264,9 +265,10 @@ async function openProfile() {
 $('pOut').onclick = async () => { await api('/api/logout', 'POST'); me = null; myRank = ''; profileDlg.close(); drawWho(); load(); };
 
 async function load() { try { rows = await api('/api/listings'); } catch {} draw(); }
-api('/api/me').then((u) => { me = u; drawWho(); load(); });
+api('/api/me').then((u) => { me = u; try { drawWho(); } catch (e) { console.error(e); } load(); }).catch(() => { drawWho(); load(); });
 setInterval(load, 30000);
 drawSaved();
+if (seller) { document.querySelector('.banner h1').textContent = seller + "'s shop"; document.querySelector('.banner p').textContent = 'Every open listing from this player.'; }
 document.querySelectorAll('.soon').forEach((b) => (b.onclick = () => toast(b.dataset.t)));
 </script>
 </body>
