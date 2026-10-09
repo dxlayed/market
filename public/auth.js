@@ -79,6 +79,36 @@
     open(fn) { cb = fn; $('#e1').textContent = ''; step(1); d.showModal(); $('#nm').focus(); },
   };
 
+
+  const mcss = document.createElement('style');
+  mcss.textContent = `.um{position:relative}
+.um-btn{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px 12px 5px 6px;color:var(--text);text-align:left;cursor:pointer;font:inherit;font-weight:700}
+.um-btn small{display:block;color:var(--gold);font-size:12px;font-weight:500;min-height:14px}
+.um-pop{position:absolute;right:0;top:calc(100% + 8px);min-width:220px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px;z-index:30;box-shadow:0 12px 40px #000a;display:grid;gap:2px}
+.um-pop[hidden]{display:none}
+.um-pop a,.um-pop button{display:block;width:100%;text-align:left;padding:9px 12px;border-radius:8px;background:transparent;border:0;color:var(--text);font:inherit;font-weight:700;font-size:14px;text-decoration:none;cursor:pointer}
+.um-pop a:hover,.um-pop button:hover{background:var(--raise)}
+.um-pop button.soon{opacity:.55;cursor:not-allowed}
+.um-pop hr{border:0;border-top:1px solid var(--line);margin:6px 0;width:100%}`;
+  document.head.append(mcss);
+
+  window.RbxAuth.menu = function (u, onLogout) {
+    const mk = (tag, props, ...kids) => { const e = document.createElement(tag); Object.assign(e, props); kids.forEach((k) => e.append(k)); return e; };
+    const rk = mk('small');
+    const btn = mk('button', { className: 'um-btn', type: 'button' }, window.avEl(u), mk('span', {}, mk('b', { textContent: u.username }), rk), document.createTextNode('\u25BE'));
+    btn.setAttribute('aria-haspopup', 'true');
+    const pop = mk('div', { className: 'um-pop' }); pop.hidden = true;
+    const soon = (label) => mk('button', { className: 'soon', type: 'button', textContent: label + '  (Soon)', onclick: () => { if (typeof toast === 'function') toast(label + ' is coming soon'); } });
+    const out = mk('button', { type: 'button', textContent: 'Log out', onclick: onLogout }); out.style.color = 'var(--bad)';
+    pop.append(mk('a', { href: '/profile.html', textContent: 'Profile' }), mk('a', { href: '/?seller=' + encodeURIComponent(u.username), textContent: 'My shop' }), mk('hr'), soon('Deposit'), soon('Withdraw'), mk('hr'), out);
+    const wrap = mk('div', { className: 'um' }, btn, pop);
+    btn.onclick = (e) => { e.stopPropagation(); pop.hidden = !pop.hidden; btn.setAttribute('aria-expanded', String(!pop.hidden)); };
+    document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) pop.hidden = true; });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') pop.hidden = true; });
+    fetch('/api/profile').then((r) => (r.ok ? r.json() : null)).then((p) => { if (p) rk.textContent = p.rank; }).catch(() => {});
+    return wrap;
+  };
+
   window.avEl = function (u) {
     const s = document.createElement('span');
     s.className = 'av';
