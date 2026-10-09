@@ -98,9 +98,10 @@ function faq() {
   const q = (s, a) => el('details', {}, el('summary', { textContent: s }), el('p', { textContent: a }));
   return el('section', { className: 'card' }, el('h2', { textContent: 'Common questions' }),
     q('How do I log in?', 'Press Log in with Roblox, enter your username, paste the code into your Roblox bio and press I changed it. You can remove the code from your bio afterwards.'),
-    q('How does buying work?', 'Add funds to your balance, put items in your cart on the Market page and press Buy now. The item moves to your inventory straight away. To get it in game, select it in your inventory and press Withdraw, then accept the trade from our official account.'),
-    q('How do I sell?', 'Deposit your items first by trading them to our official account. Once they show in your inventory, select them, press Sell and set a price. When someone buys, the money is added to your balance.'),
-    q('How do I add funds or cash out?', 'Open a ticket titled Add funds or Cash out request with the amount. The team handles it by hand for now and the change shows in your transactions on your profile.'),
+    q('How does buying work?', 'Add funds to your balance, put items in your cart on the Market page and press Buy now. The item moves to your inventory straight away. To get it in game, select it in your inventory and press Withdraw, and our bot will send you a trade in MM2 with your items.'),
+    q('How do I sell?', 'Press Deposit items in your inventory and pick what you want to sell. Our bot sends you a trade in MM2 to collect them. Once they show in your inventory, select them, press Sell and set a price. When someone buys, the money is added to your balance.'),
+    q('How do I add funds or withdraw money?', 'Open a ticket titled Add funds or Withdrawal request with the amount. The team handles it by hand for now and the change shows in your transactions on your profile.'),
+    q('Where do I get updates?', 'Join our Discord at discord.gg/splitzmarket for announcements, maintenance news and giveaways.'),
     q('Someone scammed me in a trade', 'Open a ticket with their Roblox username, what happened, and any screenshots you have. Never trade outside the site\'s rules.'),
     q('My account is banned', 'You can still open a ticket here. Explain what happened and the team will review it.'));
 }
@@ -117,7 +118,7 @@ function gate() {
 function layout() {
   const subj = el('input', { placeholder: 'What do you need help with?', maxLength: 80, id: 'subj', value: new URLSearchParams(location.search).get('subject') || '' });
   const pre = (subj.value || '').toLowerCase();
-  const body = el('textarea', { maxLength: 1000, rows: 5, id: 'body', placeholder: pre.startsWith('add funds') ? 'How much do you want to add, and how will you pay?' : pre.startsWith('cash out') ? 'How much do you want to cash out, and where should we send it?' : 'Describe the problem. Include Roblox usernames and what happened.' });
+  const body = el('textarea', { maxLength: 1000, rows: 5, id: 'body', placeholder: pre.startsWith('add funds') ? 'How much do you want to add, and how will you pay?' : pre.startsWith('withdrawal') ? 'How much do you want to withdraw, and where should we send it?' : 'Describe the problem. Include Roblox usernames and what happened.' });
   if (subj.value) setTimeout(() => body.focus(), 50);
   const err = el('div', { className: 'err' });
   const send = el('button', { className: 'btn', textContent: 'Open ticket' });
