@@ -68,6 +68,16 @@ dialog form{display:flex;flex-direction:column;gap:10px}
 .err{color:var(--bad);font-size:14px;min-height:18px}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.show{opacity:1}
+.profile{display:inline-flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px 12px 5px 6px;vertical-align:middle}
+.profile span:last-child{display:flex;flex-direction:column;text-align:left;line-height:1.15}
+.profile small{color:var(--gold);font-size:12px;font-weight:500}
+.av{width:32px;height:32px;border-radius:9px;background:var(--violet);display:grid;place-items:center;font-family:Outfit,sans-serif;font-weight:800}
+.pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.pstats div{background:var(--surface);border-radius:10px;padding:10px;text-align:center;font-family:Outfit,sans-serif;font-size:22px;font-weight:700}
+.pstats span{display:block;font-family:Manrope,sans-serif;font-size:12px;color:var(--mute);font-weight:500}
+.rows{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;margin-bottom:12px}
+.rw{display:flex;gap:8px;align-items:center;background:var(--surface);border-radius:10px;padding:8px 10px;font-size:14px}
+.rw .meta{margin-left:auto}
 #chatBtn{position:fixed;right:20px;bottom:20px;z-index:8;background:var(--violet);color:#fff;border:0;border-radius:99px;padding:12px 20px;box-shadow:0 6px 24px #0008}
 #chat{position:fixed;right:20px;bottom:20px;z-index:9;width:min(360px,calc(100vw - 40px));height:min(480px,70vh);background:var(--surface);border:1px solid var(--line);border-radius:16px;display:none;flex-direction:column;box-shadow:0 10px 40px #000a}
 #chat.open{display:flex}
@@ -151,6 +161,19 @@ dialog form{display:flex;flex-direction:column;gap:10px}
   <button class="btn">Post listing</button>
   <button type="button" class="ghost" onclick="postDlg.close()">Cancel</button>
 </form></dialog>
+<dialog id="profileDlg">
+  <div class="top"><div class="av icon" id="pAv" style="width:56px;height:56px;font-size:24px"></div><div><h2 id="pName"></h2><div class="meta" id="pSub"></div></div></div>
+  <div class="pstats"><div id="pOpen">0<span>Open listings</span></div><div id="pDone">0<span>Trades done</span></div><div id="pMsgs">0<span>Chat messages</span></div></div>
+  <h3 style="font-size:16px;margin-bottom:8px">Your listings</h3>
+  <div class="rows" id="pList"></div>
+  <p class="meta" id="pNext"></p>
+  <button class="ghost" id="pOut">Log out</button> <button class="ghost" onclick="profileDlg.close()">Close</button>
+</dialog>
+<dialog id="savedDlg">
+  <h2 style="margin-bottom:12px">Saved offers</h2>
+  <div class="rows" id="sList"></div>
+  <button class="ghost" onclick="savedDlg.close()">Close</button>
+</dialog>
 <button id="chatBtn">Live chat</button>
 <aside id="chat" aria-label="Live chat">
   <header><h3>Live chat</h3><button class="ghost sm" id="chatClose" aria-label="Close chat">Close</button></header>
@@ -177,10 +200,13 @@ function needLogin() { authDlg.showModal(); }
 
 function renderNav() {
   const nav = $('nav'); nav.replaceChildren();
+  nav.append(el('button', { className: 'ghost sm', textContent: 'Saved (' + saved.length + ')', onclick: openSaved }), ' ');
   if (me) {
-    nav.append(el('span', { className: 'meta', textContent: me.username + '  ' }),
-      el('button', { className: 'btn sm', textContent: 'Post listing', onclick: () => postDlg.showModal() }), ' ',
-      el('button', { className: 'ghost sm', textContent: 'Log out', onclick: async () => { await api('/api/logout', 'POST'); me = null; renderNav(); load(); } }));
+    nav.append(el('button', { className: 'btn sm', textContent: 'Post listing', onclick: () => postDlg.showModal() }), ' ',
+      el('button', { className: 'profile', onclick: openProfile },
+        el('span', { className: 'av', textContent: me.username[0].toUpperCase() }),
+        el('span', {}, el('b', { textContent: me.username }), el('small', { id: 'navRank', textContent: myRank }))));
+    api('/api/profile').then((p) => { myRank = p.rank; const r = $('navRank'); if (r) r.textContent = p.rank; }).catch(() => {});
   } else {
     nav.append(el('button', { className: 'ghost sm', textContent: 'Log in', onclick: () => { signup = false; setAuth(); needLogin(); } }), ' ',
       el('button', { className: 'btn sm', textContent: 'Sign up', onclick: () => { signup = true; setAuth(); needLogin(); } }));
@@ -207,7 +233,7 @@ async function load() {
         el('button', { className: 'ghost sm', textContent: 'Mark done', onclick: async () => { await api(`/api/listings/${l.id}/done`, 'PATCH'); load(); } }),
         el('button', { className: 'ghost sm', textContent: 'Delete', onclick: async () => { await api('/api/listings/' + l.id, 'DELETE'); load(); } }));
     } else {
-      foot.append(el('button', { className: 'btn sm', textContent: 'Copy Discord', onclick: () => { navigator.clipboard.writeText(l.discord).then(() => toast('Copied ' + l.discord)); } }));
+      foot.append(el('button', { className: 'ghost sm', textContent: saved.some((s) => s.id === l.id) ? 'Saved' : 'Save', onclick: () => toggleSave(l) }), el('button', { className: 'btn sm', textContent: 'Copy Discord', onclick: () => { navigator.clipboard.writeText(l.discord).then(() => toast('Copied ' + l.discord)); } }));
     }
     list.append(el('article', { className: 'card' },
       el('div', { className: 'top' },
@@ -244,6 +270,40 @@ $('tabs').onclick = (e) => {
 };
 $('q').addEventListener('input', load);
 $('cat').addEventListener('change', load);
+let saved = [], myRank = '';
+try { saved = JSON.parse(localStorage.getItem('saved') || '[]'); } catch {}
+function persist() { try { localStorage.setItem('saved', JSON.stringify(saved)); } catch {} renderNav(); load(); }
+function toggleSave(l) {
+  const i = saved.findIndex((s) => s.id === l.id);
+  if (i >= 0) saved.splice(i, 1);
+  else saved.push({ id: l.id, item: l.item, kind: l.kind, category: l.category, price: l.price, discord: l.discord, username: l.username });
+  persist();
+}
+function openSaved() {
+  const box = $('sList'); box.replaceChildren();
+  if (!saved.length) box.append(el('p', { className: 'meta', textContent: 'Nothing saved yet. Tap Save on any listing to keep it here.' }));
+  saved.forEach((l) => box.append(el('div', { className: 'rw' },
+    el('span', { textContent: (l.kind === 'sell' ? 'Selling ' : 'Buying ') + l.item + ' for ' + l.price }),
+    el('button', { className: 'btn sm', textContent: 'Discord', onclick: () => navigator.clipboard.writeText(l.discord).then(() => toast('Copied ' + l.discord)) }),
+    el('button', { className: 'ghost sm', textContent: 'Remove', onclick: () => { toggleSave(l); openSaved(); } }))));
+  savedDlg.showModal();
+}
+async function openProfile() {
+  const p = await api('/api/profile');
+  myRank = p.rank;
+  $('pAv').textContent = p.username[0].toUpperCase();
+  $('pName').textContent = p.username;
+  $('pSub').textContent = p.rank + ' · joined ' + new Date(p.joined).toLocaleDateString();
+  $('pOpen').firstChild.textContent = p.open; $('pDone').firstChild.textContent = p.done; $('pMsgs').firstChild.textContent = p.messages;
+  const next = p.done >= 15 ? null : p.done >= 5 ? [15, 'Broker'] : p.done >= 1 ? [5, 'Dealer'] : [1, 'Trader'];
+  $('pNext').textContent = next ? 'Mark ' + (next[0] - p.done) + ' more listing(s) as done to reach ' + next[1] + '.' : 'You reached the top rank.';
+  const box = $('pList'); box.replaceChildren();
+  if (!p.listings.length) box.append(el('p', { className: 'meta', textContent: 'You have not posted anything yet.' }));
+  p.listings.forEach((l) => box.append(el('div', { className: 'rw' }, el('span', { textContent: l.item }), el('span', { className: 'meta', textContent: (l.kind === 'sell' ? 'Selling' : 'Buying') + ' · ' + (l.status === 'done' ? 'Done' : 'Open') }))));
+  profileDlg.showModal();
+}
+$('pOut').onclick = async () => { await api('/api/logout', 'POST'); me = null; myRank = ''; profileDlg.close(); renderNav(); load(); };
+
 let lastId = 0, chatTimer = null;
 function addMsgs(rows) {
   const box = $('msgs');
