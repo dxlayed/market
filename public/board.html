@@ -98,7 +98,7 @@ dialog form{display:flex;flex-direction:column;gap:10px}
 <body>
 <nav><div class="wrap">
   <a class="logo" href="/">Splitz<b>Market</b></a>
-  <span class="links"><a href="/">Shop</a><a class="on" href="/board.html">Board &amp; chat</a><a href="/support.html">Support</a></span>
+  <span class="links"><a href="/">Shop</a><a class="on" href="/board.html">Board &amp; chat</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a></span>
   <div id="nav"></div>
 </div></nav>
 
@@ -190,7 +190,7 @@ async function api(url, method = 'GET', body) {
   if (!r.ok) throw new Error(data.error || 'Something went wrong');
   return data;
 }
-function el(tag, props = {}, ...kids) { const e = document.createElement(tag); Object.assign(e, props); kids.forEach((k) => e.append(k)); return e; }
+function el(tag, props = {}, ...kids) { const e = document.createElement(tag); for (const [a, v] of Object.entries(props)) { if (a.includes('-')) e.setAttribute(a, v); else e[a] = v; } kids.forEach((k) => e.append(k)); return e; }
 function toast(t) { const x = $('toast'); x.textContent = t; x.classList.add('show'); setTimeout(() => x.classList.remove('show'), 1800); }
 function ago(d) { const s = (Date.now() - new Date(d)) / 1000; if (s < 3600) return Math.max(1, Math.floor(s / 60)) + 'm ago'; if (s < 86400) return Math.floor(s / 3600) + 'h ago'; return Math.floor(s / 86400) + 'd ago'; }
 function needLogin() { RbxAuth.open((u) => { me = u; renderNav(); load(); }); }
