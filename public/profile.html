@@ -54,6 +54,14 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offse
 .item .acts{display:flex;gap:6px}
 .item .acts + .tag,.item .tag + .acts{margin-left:0}
 .cnt{float:right;font-family:Outfit,sans-serif;font-size:17px}
+.bal{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between}
+.bal .big{font-family:Outfit,sans-serif;font-size:40px;font-weight:800}
+.bal .row{display:flex;gap:8px}
+.tx{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);padding:11px 2px;font-size:14px}
+.tx:last-child{border-bottom:0}
+.tx .w{flex:1;min-width:0}.tx .w b{display:block}.tx .w span{color:var(--mute);font-size:12px;overflow-wrap:anywhere}
+.tx .d{font-family:Outfit,sans-serif;font-weight:800;font-size:16px}.tx .d.up{color:var(--ok)}.tx .d.down{color:var(--text)}
+.item .price{font-family:Outfit,sans-serif;font-weight:800;margin-left:auto}
 .gate{text-align:center;padding:60px 20px}
 .um{position:relative}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s}#toast.show{opacity:1}
@@ -70,9 +78,7 @@ body{background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transpare
 <body>
 <div class="bar">
   <a class="logo" href="/">Splitz<b>Market</b></a>
-  <nav><a href="/">Shop</a><a href="/board.html">Board &amp; chat</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a><a class="on" href="/profile.html">Profile</a></nav>
-  <button class="soon" data-t="Withdrawals are coming soon" aria-disabled="true">Withdraw <i>Soon</i></button>
-  <div class="wallet"><span>$0.00</span><button class="soon" data-t="Deposits are coming soon" aria-disabled="true" aria-label="Add funds (coming soon)">+</button></div>
+  <nav><a href="/">Market</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a><a class="on" href="/profile.html">Profile</a></nav>
   <div id="who"></div>
 </div>
 
@@ -81,10 +87,10 @@ body{background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transpare
   <div class="layout">
     <aside class="side">
       <a class="on" href="/profile.html">Profile</a>
-      <a href="#listings">My listings</a>
+      <a href="#wallet">Balance &amp; transactions</a>
+      <a href="#listings">For sale</a>
       <a id="myshop" href="/">My shop</a>
-      <span>Transactions · Soon</span>
-      <span>Settings · Soon</span>
+      <a href="/inventory.html">Inventory</a>
     </aside>
     <main id="main"><div class="card mute">Loading your profile...</div></main>
   </div>
@@ -102,7 +108,6 @@ async function api(url, method = 'GET', body) {
   if (!r.ok) throw new Error(d.error || 'Something went wrong');
   return d;
 }
-document.querySelectorAll('.soon').forEach((b) => (b.onclick = () => toast(b.dataset.t)));
 const RANKS = [['Newcomer', 0], ['Trader', 1], ['Dealer', 5], ['Broker', 15]];
 
 function gate() {
@@ -112,7 +117,11 @@ function gate() {
   $('who').replaceChildren(el('button', { className: 'btn sm', textContent: 'Log in with Roblox', onclick: () => RbxAuth.open(() => location.reload()) }));
 }
 
-function render(me, p) {
+const usd = (c) => window.money ? window.money(c) : '$' + (c / 100).toFixed(2);
+const when = (d) => new Date(d).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+const REASON = { sale: 'Sale', purchase: 'Purchase', owner_added: 'Funds added', owner_removed: 'Cash out / adjustment' };
+
+function render(me, p, w) {
   $('who').replaceChildren(RbxAuth.menu(me, async () => { await api('/api/logout', 'POST'); location.href = '/'; }));
   const shopUrl = location.origin + '/?seller=' + encodeURIComponent(p.username);
   $('myshop').href = '/?seller=' + encodeURIComponent(p.username);
@@ -120,48 +129,56 @@ function render(me, p) {
   const idx = RANKS.map((r) => r[1]).filter((n) => n <= p.done).length - 1;
   const next = RANKS[idx + 1], prev = RANKS[idx][1];
   const pct = next ? Math.round(((p.done - prev) / (next[1] - prev)) * 100) : 100;
-  const bigAv = avEl(me);
 
-  const sell = p.listings.filter((l) => l.kind === 'sell').length, buy = p.listings.length - sell;
-  const stats = [['Listings posted', p.listings.length], ['Trades done', p.done], ['Open listings', p.open], ['Selling', sell], ['Buying', buy], ['Chat messages', p.messages]];
-  const checks = [['Log in with Roblox', true], ['Post your first listing', p.listings.length > 0], ['Complete your first trade', p.done > 0], ['Say hi in the chat', p.messages > 0]];
+  const stats = [['Balance', usd(p.balance)], ['Items sold', p.sales], ['Earned', usd(p.earned)], ['Items bought', p.purchases], ['Spent', usd(p.spent)], ['For sale now', p.listings.length]];
+  const checks = [['Log in with Roblox', true], ['Deposit your first item', p.deposits > 0], ['List an item for sale', p.listings.length > 0 || p.sales > 0],
+    ['Make your first sale', p.sales > 0], ['Buy your first item', p.purchases > 0], ['Say hi in the chat', p.messages > 0]];
   const doneCount = checks.filter((c) => c[1]).length;
 
   const head = el('section', { className: 'card' },
-    el('div', { className: 'head' }, bigAv,
+    el('div', { className: 'head' }, avEl(me),
       el('div', { className: 'prog' }, el('h2', { textContent: p.username }),
-        el('div', { className: 'prow' }, el('span', { textContent: 'TRADES DONE' }), el('span', { textContent: next ? p.done + ' / ' + next[1] : p.done + ' (max)' })),
+        el('div', { className: 'prow' }, el('span', { textContent: 'SALES + PURCHASES' }), el('span', { textContent: next ? p.done + ' / ' + next[1] : p.done + ' (max)' })),
         el('div', { className: 'track' }, Object.assign(el('div'), { style: 'width:' + pct + '%' })),
         el('div', { className: 'prow' }, el('span', { className: 'rk', textContent: p.rank }), el('span', { textContent: next ? 'Next: ' + next[0] : 'Top rank reached' })))),
     el('div', { className: 'stats' }, ...stats.map(([k, v]) => el('div', {}, el('span', { textContent: k }), String(v)))));
 
+  const bigBal = el('div', { className: 'big', textContent: usd(w.balance) });
+  const wallet = el('section', { className: 'card', id: 'wallet' },
+    el('div', { className: 'bal' }, el('div', {}, el('h2', { textContent: 'Balance' }), bigBal),
+      el('div', { className: 'row' }, el('button', { className: 'ghost', textContent: 'Cash out', onclick: () => openFunds('out') }), el('button', { className: 'btn', textContent: 'Add funds', onclick: () => openFunds('add') }))),
+    el('h2', { textContent: 'Transactions', style: 'margin-top:18px' }));
+  if (!w.history.length) wallet.append(el('p', { className: 'mute', textContent: 'No transactions yet. Sales, purchases and added funds will show up here.' }));
+  w.history.forEach((t) => wallet.append(el('div', { className: 'tx' },
+    el('div', { className: 'w' }, el('b', { textContent: REASON[t.reason] || t.reason }), el('span', { textContent: when(t.created_at) + (t.note ? ' · ' + t.note : '') })),
+    el('div', { className: 'd ' + (t.delta_cents > 0 ? 'up' : 'down'), textContent: (t.delta_cents > 0 ? '+' : '−') + usd(Math.abs(t.delta_cents)) }))));
+
   const shop = el('section', { className: 'card' }, el('h2', { textContent: 'Your shop' }),
-    el('p', { className: 'mute', textContent: 'Your own page with all your open listings. Share this link with other players.' }),
+    el('p', { className: 'mute', textContent: 'A page with everything you have for sale. Share it with other players.' }),
     el('div', { className: 'link' }, el('a', { href: shopUrl, textContent: shopUrl }),
       el('button', { className: 'ghost sm', textContent: 'Copy', onclick: () => navigator.clipboard.writeText(shopUrl).then(() => toast('Link copied')) })));
 
-  const list = el('section', { className: 'card', id: 'listings' }, el('h2', { textContent: 'Your listings' }));
-  if (!p.listings.length) list.append(el('p', { className: 'mute', textContent: 'Posting listings is coming soon.' }));
+  const list = el('section', { className: 'card', id: 'listings' }, el('h2', { textContent: 'For sale now' }));
+  if (!p.listings.length) list.append(el('p', { className: 'mute' }, 'Nothing listed. Pick items in your ', el('a', { href: '/inventory.html', textContent: 'inventory', style: 'color:var(--gold)' }), ' and press Sell.'));
   p.listings.forEach((l) => {
-    const row = el('div', { className: 'item' }, el('span', { textContent: (l.kind === 'sell' ? 'Selling ' : 'Buying ') + l.item }));
-    if (l.status === 'open') {
-      row.append(el('span', { className: 'acts' },
-        soonBtn('Mark done'), soonBtn('Delete')));
-    }
-    row.append(el('span', { className: 'tag' + (l.status === 'done' ? ' ok' : ''), textContent: l.status === 'done' ? 'Done' : 'Open' }));
-    list.append(row);
+    const down = el('button', { className: 'ghost sm', textContent: 'Take down', onclick: async () => {
+      down.disabled = true;
+      try { await api('/api/market/' + l.id + '/cancel', 'POST'); toast('Listing taken down'); init(); } catch (e) { toast(e.message); init(); }
+    } });
+    list.append(el('div', { className: 'item' }, el('span', { textContent: l.name }), el('span', { className: 'mute', textContent: l.rarity }), el('span', { className: 'price', textContent: usd(l.price_cents) }), down));
   });
 
   const check = el('section', { className: 'card' }, el('h2', {}, 'Starter checklist', el('span', { className: 'cnt', textContent: doneCount + '/' + checks.length })));
   checks.forEach(([label, ok]) => check.append(el('div', { className: 'item' }, el('span', { textContent: label }), el('span', { className: 'tag' + (ok ? ' ok' : ''), textContent: ok ? 'Done' : 'Pending' }))));
 
-  $('main').replaceChildren(head, shop, check, list);
+  $('main').replaceChildren(head, wallet, list, shop, check);
+  if (location.hash) { const t = document.querySelector(location.hash); if (t) t.scrollIntoView(); }
 }
 
 async function init() {
   const me = await api('/api/me').catch(() => null);
   if (!me) return gate();
-  try { render(me, await api('/api/profile')); } catch (e) { $('main').replaceChildren(el('div', { className: 'card mute', textContent: e.message })); }
+  try { const [p, w] = await Promise.all([api('/api/profile'), api('/api/wallet')]); render(me, p, w); } catch (e) { $('main').replaceChildren(el('div', { className: 'card mute', textContent: e.message })); }
 }
 init();
 </script>
