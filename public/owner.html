@@ -36,7 +36,7 @@ a{color:var(--gold)}
 h1{font-size:28px;margin-bottom:16px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px}
 .card h2{font-size:18px;margin-bottom:12px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
 .stats div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;font-family:Outfit,sans-serif;font-size:30px;font-weight:700}
 .stats span{display:block;font-family:Manrope,sans-serif;font-size:12px;font-weight:700;color:var(--mute);margin-bottom:6px}
 .stats em{display:block;font-style:normal;font-family:Manrope,sans-serif;font-size:12px;color:var(--mute);font-weight:500;margin-top:4px}
@@ -71,6 +71,16 @@ h1{font-size:28px;margin-bottom:16px}
 .denied{grid-column:1/-1;text-align:center;padding:90px 20px}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s}#toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
+.form{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 2fr auto;gap:8px;align-items:center}
+.form input,.form select{min-width:0;width:100%}
+.thumb{width:36px;height:36px;border-radius:8px;background:var(--raise);display:grid;place-items:center;overflow:hidden;flex:none}
+.thumb img{max-width:100%;max-height:100%}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;background:var(--c)}
+.code{font-family:Outfit,sans-serif;letter-spacing:2px;color:var(--gold);font-size:17px}
+.tag{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--mute);overflow-wrap:anywhere}
+details.raw summary{cursor:pointer;color:var(--mute);font-size:12px}
+details.raw pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;color:var(--mute);margin:6px 0 0}
+@media (max-width:980px){.form{grid-template-columns:1fr 1fr}}
 @media (max-width:980px){.wrap{grid-template-columns:1fr}.side{position:static;grid-auto-flow:column;overflow-x:auto}.stats{grid-template-columns:repeat(2,1fr)}.split{grid-template-columns:1fr}}
 </style>
 </head>
@@ -86,7 +96,7 @@ h1{font-size:28px;margin-bottom:16px}
 <script src="/auth.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
-const el = (t, p = {}, ...k) => { const e = document.createElement(t); Object.assign(e, p); k.forEach((x) => x != null && e.append(x)); return e; };
+const el = (t, p = {}, ...k) => { const e = document.createElement(t); for (const [a, v] of Object.entries(p)) { if (a.includes('-')) e.setAttribute(a, v); else e[a] = v; } k.forEach((x) => x != null && e.append(x)); return e; };
 const toast = (t, bad) => { const x = $('toast'); x.textContent = t; x.style.background = bad ? 'var(--bad)' : ''; x.classList.add('show'); setTimeout(() => x.classList.remove('show'), 2200); };
 const when = (d) => new Date(d).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 async function api(url, method = 'GET', body) {
@@ -109,7 +119,7 @@ function armed(label, armedLabel, run, cls = 'ghost sm danger') {
 const userCell = (name, avatar) => el('span', { className: 'who' }, avEl({ username: name || '?', avatar }), name || 'deleted');
 
 let me = null, tab = 'overview', stats = null, poll = null;
-const TABS = [['overview', 'Overview'], ['users', 'Users'], ['support', 'Support chats'], ['chat', 'Live chat'], ['listings', 'Listings']];
+const TABS = [['overview', 'Overview'], ['trades', 'Trades'], ['users', 'Users'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['listings', 'Listings'], ['logs', 'Logs']];
 
 function shell() {
   const side = el('aside', { className: 'side', id: 'side' });
@@ -118,11 +128,11 @@ function shell() {
 }
 function drawSide() {
   $('side').replaceChildren(...TABS.map(([k, label]) => el('button', { className: tab === k ? 'on' : '', onclick: () => go(k) },
-    label, k === 'support' && stats && stats.waiting ? el('i', { textContent: stats.waiting }) : null)));
+    label, k === 'support' && stats && stats.waiting ? el('i', { textContent: stats.waiting }) : k === 'trades' && stats && stats.activeTrades ? el('i', { textContent: stats.activeTrades }) : null)));
 }
 async function go(k) {
   tab = k; clearInterval(poll); drawSide();
-  try { await ({ overview, users, support, chat, listings })[k](); }
+  try { await ({ overview, users, support, chat, listings, items, trades, logs })[k](); }
   catch (e) { $('main').replaceChildren(el('div', { className: 'card', textContent: e.message })); }
 }
 async function refreshStats() { stats = await api('/api/admin/stats'); drawSide(); }
@@ -142,16 +152,17 @@ async function overview() {
       tile('Users', s.users, s.newUsers + ' joined in the last 24h'),
       tile('Waiting on reply', s.waiting, s.openTickets + ' open tickets', s.waiting > 0),
       tile('Chat messages', s.messages, s.messagesToday + ' in the last 24h'),
+      tile('Active trades', s.activeTrades, s.itemsHeld + ' items held on site', s.activeTrades > 0),
       tile('Banned users', s.banned, s.listings + ' open listings')),
     el('section', { className: 'card' }, el('h2', { textContent: 'Tickets waiting on you' }), list),
-    el('p', { className: 'mute', textContent: 'Owners: ' + s.owners.join(', ') + '. Change this with the OWNERS variable in Railway.' }));
+    el('p', { className: 'mute', textContent: 'Owners: ' + s.owners.join(', ') + '. Change this with the OWNERS variable in Railway. Trading API: ' + (s.apiEnabled ? 'on' : 'off (set BOT_API_KEY in Railway)') + '.' }));
 }
 
 async function users() {
   const q = el('input', { placeholder: 'Search by Roblox username' });
   const body = el('tbody');
   const table = el('div', { className: 'card scroll' }, el('table', { className: 'tbl' },
-    el('thead', {}, el('tr', {}, ...['User', 'Roblox ID', 'Joined', 'Listings', 'Chat', 'Tickets', 'Status', ''].map((h) => el('th', { textContent: h })))), body));
+    el('thead', {}, el('tr', {}, ...['User', 'Roblox ID', 'Joined', 'Items', 'Chat', 'Tickets', 'Status', ''].map((h) => el('th', { textContent: h })))), body));
   async function load() {
     const rows = await api('/api/admin/users?q=' + encodeURIComponent(q.value));
     body.replaceChildren();
@@ -165,7 +176,7 @@ async function users() {
         el('td', {}, userCell(u.username, u.avatar_url)),
         el('td', {}, u.roblox_id ? el('a', { href: 'https://www.roblox.com/users/' + u.roblox_id + '/profile', target: '_blank', rel: 'noopener', textContent: u.roblox_id }) : el('span', { className: 'mute', textContent: 'Not verified' })),
         el('td', { className: 'mute', textContent: when(u.created_at) }),
-        el('td', { textContent: u.listings }), el('td', { textContent: u.messages }), el('td', { textContent: u.tickets }),
+        el('td', { textContent: u.items }), el('td', { textContent: u.messages }), el('td', { textContent: u.tickets }),
         el('td', {}, status), el('td', {}, act)));
     });
   }
@@ -256,6 +267,126 @@ async function listings() {
     el('td', {}, armed('Delete', 'Confirm', async () => { await api('/api/admin/listings/' + l.id, 'DELETE'); toast('Listing deleted'); listings(); })))));
   $('main').replaceChildren(el('h1', { textContent: 'Listings' }),
     el('div', { className: 'card scroll' }, el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['Item', 'Type', 'By', 'Price', 'Status', ''].map((h) => el('th', { textContent: h })))), body)));
+}
+
+const RC = { Chroma: '#b78bff', Ancient: '#7c5cff', Godly: '#d94fd0', Unique: '#e6b422', Vintage: '#d9b98a', Legendary: '#ff4d4d', Rare: '#2fb36a', Uncommon: '#4d7cff', Common: '#8a8fa3' };
+const TYPES = ['Knife', 'Gun', 'Pet', 'Misc'], RARITIES = Object.keys(RC);
+const sel = (list, v) => { const s = el('select', {}, ...list.map((x) => el('option', { value: x, textContent: x }))); if (v) s.value = v; return s; };
+
+async function items() {
+  const name = el('input', { placeholder: 'Item name', maxLength: 60 }), type = sel(TYPES), rarity = sel(RARITIES, 'Godly');
+  const value = el('input', { type: 'number', min: 0, placeholder: 'Value' }), img = el('input', { placeholder: 'Image link (https://, optional)' });
+  let editing = null;
+  const save = el('button', { className: 'btn', textContent: 'Add item' });
+  const cancel = el('button', { className: 'ghost sm', textContent: 'Cancel edit', hidden: true });
+  const reset = () => { editing = null; name.value = value.value = img.value = ''; type.value = 'Knife'; rarity.value = 'Godly'; save.textContent = 'Add item'; cancel.hidden = true; };
+  cancel.onclick = reset;
+  save.onclick = async () => {
+    const body = { name: name.value, type: type.value, rarity: rarity.value, value: value.value, image_url: img.value };
+    try {
+      if (editing) await api('/api/admin/items/' + editing, 'PATCH', body); else await api('/api/admin/items', 'POST', body);
+      toast(editing ? 'Item saved' : 'Item added'); reset(); load();
+    } catch (e) { toast(e.message, true); }
+  };
+  const csv = el('textarea', { rows: 6, placeholder: 'name, type, rarity, value, image link (optional)\nHarvester, Knife, Ancient, 1800\nIcepiercer, Knife, Godly, 900' });
+  const result = el('div', { className: 'mute' });
+  const imp = el('button', { className: 'btn', textContent: 'Import' });
+  imp.onclick = async () => {
+    imp.disabled = true;
+    try { const r = await api('/api/admin/items/import', 'POST', { text: csv.value }); result.replaceChildren('Added ' + r.added + ', updated ' + r.updated + '.', ...r.errors.map((e) => el('div', { textContent: e, style: 'color:var(--bad)' }))); if (!r.errors.length) csv.value = ''; load(); }
+    catch (e) { toast(e.message, true); }
+    imp.disabled = false;
+  };
+  const search = el('input', { placeholder: 'Search items' });
+  const body = el('tbody');
+  let all = [];
+  function draw() {
+    const q = search.value.toLowerCase();
+    body.replaceChildren();
+    const rows = all.filter((i) => i.name.toLowerCase().includes(q));
+    if (!rows.length) body.append(el('tr', {}, el('td', { colSpan: 6, className: 'empty', textContent: all.length ? 'No matches.' : 'No items yet. Add one above or import a list.' })));
+    rows.forEach((i) => {
+      const th = el('span', { className: 'thumb' });
+      if (i.image_url) th.append(el('img', { src: i.image_url, alt: '', loading: 'lazy' }));
+      const dot = el('span', { className: 'dot' }); dot.style.setProperty('--c', RC[i.rarity] || RC.Common);
+      body.append(el('tr', { style: i.active ? '' : 'opacity:.5' },
+        el('td', {}, el('span', { className: 'who' }, th, i.name)),
+        el('td', { textContent: i.type }), el('td', {}, dot, i.rarity), el('td', { textContent: i.value.toLocaleString() }),
+        el('td', { textContent: i.held }),
+        el('td', { style: 'white-space:nowrap' },
+          el('button', { className: 'ghost sm', textContent: 'Edit', onclick: () => { editing = i.id; name.value = i.name; type.value = i.type; rarity.value = i.rarity; value.value = i.value; img.value = i.image_url || ''; save.textContent = 'Save item'; cancel.hidden = false; name.focus(); window.scrollTo({ top: 0 }); } }), ' ',
+          el('button', { className: 'ghost sm', textContent: i.active ? 'Hide' : 'Show', onclick: async () => { await api('/api/admin/items/' + i.id, 'PATCH', { active: !i.active }); load(); } }))));
+    });
+  }
+  async function load() { all = await api('/api/admin/items'); draw(); }
+  search.oninput = draw;
+  $('main').replaceChildren(el('h1', { textContent: 'Items' }),
+    el('section', { className: 'card' }, el('h2', { textContent: 'Add or edit an item' }), el('div', { className: 'form' }, name, type, rarity, value, img, save), el('div', { style: 'margin-top:8px' }, cancel)),
+    el('section', { className: 'card' }, el('h2', { textContent: 'Import a list' }),
+      el('p', { className: 'mute', textContent: 'One item per line. Paste from a spreadsheet saved as CSV. Items with a name that already exists get updated.' }),
+      csv, el('div', { className: 'row', style: 'margin-top:10px' }, imp, result)),
+    el('div', { className: 'tools' }, search),
+    el('div', { className: 'card scroll' }, el('table', { className: 'tbl' },
+      el('thead', {}, el('tr', {}, ...['Item', 'Type', 'Rarity', 'Value', 'Held on site', ''].map((h) => el('th', { textContent: h })))), body)));
+  await load();
+}
+
+async function trades() {
+  const filter = sel(['active', 'completed', 'failed', 'cancelled', 'all']);
+  const body = el('div');
+  const label = { pending: 'Waiting', in_progress: 'In progress', completed: 'Completed', failed: 'Failed', cancelled: 'Cancelled' };
+  const cls = { pending: 'gold', in_progress: 'gold', completed: 'ok', failed: 'bad', cancelled: '' };
+  async function load() {
+    const rows = await api('/api/admin/trades?status=' + filter.value);
+    body.replaceChildren();
+    if (!rows.length) body.append(el('div', { className: 'card empty', textContent: 'No trades here.' }));
+    rows.forEach((t) => {
+      const active = t.status === 'pending' || t.status === 'in_progress';
+      const names = t.items.map((x) => (x.qty > 1 ? x.qty + '× ' : '') + x.name).join(', ');
+      const acts = el('div', { className: 'row' });
+      if (t.status === 'pending') acts.append(el('button', { className: 'ghost sm', textContent: 'Claim', onclick: async () => { try { await api(`/api/admin/trades/${t.id}/claim`, 'POST', {}); load(); } catch (e) { toast(e.message, true); } } }));
+      if (active) acts.append(
+        armed('Mark completed', 'Confirm completed', async () => { await api(`/api/admin/trades/${t.id}/complete`, 'POST', {}); toast('Trade completed'); load(); refreshStats(); }, 'btn sm'),
+        armed('Mark failed', 'Confirm failed', async () => { await api(`/api/admin/trades/${t.id}/fail`, 'POST', { reason: 'Marked failed by ' + me.username }); toast('Trade marked failed'); load(); refreshStats(); }));
+      body.append(el('section', { className: 'card' },
+        el('div', { className: 'thead', style: 'border:0;padding:0' },
+          el('div', {}, el('h2', { style: 'margin:0', textContent: (t.kind === 'deposit' ? 'Deposit' : 'Withdraw') + ' #' + t.id }),
+            el('div', { className: 'mute' }, 'Roblox user ', t.roblox_id ? el('a', { href: 'https://www.roblox.com/users/' + t.roblox_id + '/profile', target: '_blank', rel: 'noopener', textContent: t.roblox_username }) : (t.roblox_username || 'deleted'),
+              ' · ' + when(t.created_at) + (t.handled_by ? ' · handled by ' + t.handled_by : ''))),
+          el('div', { className: 'row' }, el('span', { className: 'code', textContent: t.code }), el('span', { className: 'pill ' + (cls[t.status] || ''), textContent: label[t.status] || t.status }))),
+        el('p', { style: 'margin:12px 0', textContent: names }),
+        acts));
+    });
+  }
+  filter.onchange = load;
+  $('main').replaceChildren(el('h1', { textContent: 'Trades' }),
+    el('p', { className: 'mute', textContent: 'Check the Roblox username and code before every trade. Completing a deposit adds the listed items to the user\'s inventory. Failing a withdrawal gives their items back.' }),
+    el('div', { className: 'tools' }, filter), body);
+  await load();
+  poll = setInterval(() => { load().catch(() => {}); refreshStats().catch(() => {}); }, 8000);
+}
+
+async function logs() {
+  const q = el('input', { placeholder: 'Search by username, trade:12, item name...' });
+  const type = el('select', {}, ...[['', 'Everything'], ['trade', 'Trades'], ['user', 'Users and logins'], ['item', 'Items'], ['ticket', 'Tickets'], ['chat', 'Chat'], ['listing', 'Listings']].map(([v, t]) => el('option', { value: v, textContent: t })));
+  const body = el('tbody');
+  const nice = (a) => a.replace('.', ' ').replace(/_/g, ' ');
+  async function load() {
+    const rows = await api('/api/admin/logs?q=' + encodeURIComponent(q.value) + '&type=' + type.value);
+    body.replaceChildren();
+    if (!rows.length) body.append(el('tr', {}, el('td', { colSpan: 4, className: 'empty', textContent: 'Nothing logged yet.' })));
+    rows.forEach((l) => body.append(el('tr', {},
+      el('td', { className: 'mute', style: 'white-space:nowrap', textContent: when(l.created_at) }),
+      el('td', {}, el('b', { textContent: l.actor })),
+      el('td', {}, nice(l.action), l.target ? el('div', { className: 'tag', textContent: l.target }) : null),
+      el('td', {}, l.detail ? el('details', { className: 'raw' }, el('summary', { textContent: 'Details' }), el('pre', { textContent: JSON.stringify(l.detail, null, 2) })) : ''))));
+  }
+  let t; q.oninput = () => { clearTimeout(t); t = setTimeout(load, 250); }; type.onchange = load;
+  $('main').replaceChildren(el('h1', { textContent: 'Logs' }),
+    el('p', { className: 'mute', textContent: 'Every login, trade, ban, item change and deletion, newest first. Use this to settle disputes or work out who to compensate.' }),
+    el('div', { className: 'tools' }, q, type),
+    el('div', { className: 'card scroll' }, el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['When', 'Who', 'What', ''].map((h) => el('th', { textContent: h })))), body)));
+  await load();
 }
 
 function denied() {
