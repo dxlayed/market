@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support | SplitzMarket</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#12101f;--surface:#1d1a30;--raise:#26223e;--line:#37325a;--text:#f1eefc;--mute:#a29fc0;--gold:#ffb938;--violet:#8b6cff;--ok:#4ade80;--bad:#ff6b6b}
+*{box-sizing:border-box}
+body{margin:0;font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+h1,h2,h3,.logo{font-family:Outfit,system-ui,sans-serif;margin:0}
+button,input,textarea{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+textarea{resize:vertical}
+button{cursor:pointer;font-weight:700}
+button:focus-visible,input:focus,textarea:focus,a:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+button:disabled{opacity:.6;cursor:wait}
+.btn{background:var(--gold);color:#241a00;border:0}.ghost{background:transparent}.sm{padding:6px 12px;font-size:13px;border-radius:8px}
+.mute{color:var(--mute);font-size:13px}
+.bar{display:flex;align-items:center;gap:14px;padding:12px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font-size:22px;font-weight:800;text-decoration:none;color:var(--text)}.logo b{color:var(--gold)}
+.bar nav{display:flex;gap:6px;margin-right:auto;flex-wrap:wrap}
+.bar nav a{padding:8px 14px;border-radius:10px;color:var(--mute);text-decoration:none;font-weight:700}.bar nav a.on{background:var(--surface);color:var(--text)}
+.av{width:32px;height:32px;border-radius:9px;background:var(--violet);display:grid;place-items:center;font-weight:800;font-family:Outfit,sans-serif;flex:none}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 24px 60px}
+.title{padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+.title h1{font-size:30px}.title p{margin:6px 0 0;color:var(--mute)}
+.layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px}
+.card h2{font-size:18px;margin-bottom:12px}
+.col{display:flex;flex-direction:column;gap:10px}
+.err{color:var(--bad);font-size:14px;min-height:18px}
+.tk{display:block;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;color:var(--text)}
+.tk.on{border-color:var(--gold)}
+.tk b{display:block;font-size:15px;margin-bottom:4px;overflow-wrap:anywhere}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{font-size:11px;font-weight:800;border-radius:99px;padding:2px 9px;background:var(--raise);color:var(--mute)}
+.pill.open{background:#4ade8022;color:var(--ok)}.pill.new{background:#ffb93826;color:var(--gold)}
+.thread{display:flex;flex-direction:column;min-height:520px}
+.thead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.thead h2{margin:0;overflow-wrap:anywhere}
+.msgs{flex:1;display:flex;flex-direction:column;gap:10px;padding:16px 0;overflow-y:auto;max-height:60vh}
+.msg{max-width:80%;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 14px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.45}
+.msg.me{align-self:flex-end;background:#8b6cff26;border-color:#8b6cff66}
+.msg.staff{border-color:#ffb93866}
+.msg small{display:block;font-size:12px;color:var(--mute);margin-bottom:4px;font-weight:700}
+.msg.staff small{color:var(--gold)}
+.reply{display:flex;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.reply textarea{flex:1;min-width:0}
+.empty{margin:auto;text-align:center;color:var(--mute);padding:40px 16px}
+details{border-top:1px solid var(--line);padding:10px 0}details:first-of-type{border-top:0}
+summary{cursor:pointer;font-weight:700}
+details p{color:var(--mute);margin:8px 0 0;font-size:14px;line-height:1.5}
+.gate{text-align:center;padding:50px 20px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s}#toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+@media (max-width:860px){.layout{grid-template-columns:1fr}.msg{max-width:92%}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <a class="logo" href="/">Splitz<b>Market</b></a>
+  <nav><a href="/">Shop</a><a href="/board.html">Board &amp; chat</a><a class="on" href="/support.html">Support</a></nav>
+  <div id="who"></div>
+</div>
+
+<div class="wrap">
+  <div class="title"><h1>Support</h1><p>Open a ticket and the SplitzMarket team will reply here.</p></div>
+  <div id="main"><div class="card mute">Loading...</div></div>
+</div>
+<div id="toast" role="status"></div>
+
+<script src="/auth.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const el = (t, p = {}, ...k) => { const e = document.createElement(t); Object.assign(e, p); k.forEach((x) => x != null && e.append(x)); return e; };
+const toast = (t) => { const x = $('toast'); x.textContent = t; x.classList.add('show'); setTimeout(() => x.classList.remove('show'), 2000); };
+const when = (d) => new Date(d).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+async function api(url, method = 'GET', body) {
+  const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || 'Something went wrong');
+  return d;
+}
+
+let me = null, current = null, poll = null, lastCount = 0;
+
+function faq() {
+  const q = (s, a) => el('details', {}, el('summary', { textContent: s }), el('p', { textContent: a }));
+  return el('section', { className: 'card' }, el('h2', { textContent: 'Common questions' }),
+    q('How do I log in?', 'Press Log in with Roblox, enter your username, paste the code into your Roblox bio and press I changed it. You can remove the code from your bio afterwards.'),
+    q('When can I buy or post listings?', 'Buying, posting, deposits and withdrawals are coming soon. We\'ll announce it on the site when they open.'),
+    q('Someone scammed me in a trade', 'Open a ticket with their Roblox username, what happened, and any screenshots you have. Never trade outside the site\'s rules.'),
+    q('My account is banned', 'You can still open a ticket here. Explain what happened and the team will review it.'));
+}
+
+function gate() {
+  $('who').replaceChildren(el('button', { className: 'btn sm', textContent: 'Log in with Roblox', onclick: () => RbxAuth.open(() => location.reload()) }));
+  $('main').replaceChildren(
+    el('section', { className: 'card gate' }, el('h2', { textContent: 'Log in to contact support' }),
+      el('p', { className: 'mute', textContent: 'Tickets are tied to your Roblox account so we know who we\'re talking to.' }),
+      el('button', { className: 'btn', textContent: 'Log in with Roblox', onclick: () => RbxAuth.open(() => location.reload()) })),
+    faq());
+}
+
+function layout() {
+  const subj = el('input', { placeholder: 'What do you need help with?', maxLength: 80, id: 'subj' });
+  const body = el('textarea', { placeholder: 'Describe the problem. Include Roblox usernames and what happened.', maxLength: 1000, rows: 5, id: 'body' });
+  const err = el('div', { className: 'err' });
+  const send = el('button', { className: 'btn', textContent: 'Open ticket' });
+  send.onclick = async () => {
+    err.textContent = ''; send.disabled = true;
+    try {
+      const t = await api('/api/tickets', 'POST', { subject: subj.value, body: body.value });
+      subj.value = body.value = ''; toast('Ticket opened');
+      await loadList(); openTicket(t.id);
+    } catch (e) { err.textContent = e.message; }
+    send.disabled = false;
+  };
+  const left = el('div', {},
+    el('section', { className: 'card' }, el('h2', { textContent: 'New ticket' }), el('div', { className: 'col' }, subj, body, err, send)),
+    el('section', { className: 'card' }, el('h2', { textContent: 'Your tickets' }), el('div', { id: 'list' })),
+    faq());
+  const right = el('section', { className: 'card thread', id: 'thread' }, el('div', { className: 'empty', textContent: 'Pick a ticket on the left, or open a new one.' }));
+  $('main').replaceChildren(el('div', { className: 'layout' }, left, right));
+}
+
+async function loadList() {
+  const rows = await api('/api/tickets');
+  const box = $('list'); box.replaceChildren();
+  if (!rows.length) box.append(el('p', { className: 'mute', textContent: 'No tickets yet.' }));
+  rows.forEach((t) => box.append(el('button', { className: 'tk' + (current === t.id ? ' on' : ''), onclick: () => openTicket(t.id) },
+    el('b', { textContent: t.subject }),
+    el('span', { className: 'row' },
+      el('span', { className: 'pill' + (t.status === 'open' ? ' open' : ''), textContent: t.status === 'open' ? 'Open' : 'Closed' }),
+      t.last_staff && t.status === 'open' ? el('span', { className: 'pill new', textContent: 'Staff replied' }) : null,
+      el('span', { className: 'mute', textContent: when(t.updated_at) })))));
+}
+
+async function openTicket(id) {
+  current = id; lastCount = 0;
+  clearInterval(poll);
+  await drawThread(true);
+  loadList().catch(() => {});
+  poll = setInterval(() => drawThread(false).catch(() => {}), 5000);
+}
+
+async function drawThread(fresh) {
+  const d = await api('/api/tickets/' + current);
+  if (!fresh && d.messages.length === lastCount) return;
+  lastCount = d.messages.length;
+  const box = el('div', { className: 'msgs' });
+  d.messages.forEach((m) => box.append(el('div', { className: 'msg' + (m.staff ? ' staff' : ' me') },
+    el('small', { textContent: (m.staff ? 'SplitzMarket staff' : 'You') + ' · ' + when(m.created_at) }), m.body)));
+  const input = el('textarea', { rows: 2, maxLength: 1000, placeholder: d.ticket.status === 'closed' ? 'Reply to reopen this ticket' : 'Write a reply' });
+  const send = el('button', { className: 'btn', textContent: 'Send' });
+  const go = async () => {
+    if (!input.value.trim()) return;
+    send.disabled = true;
+    try { await api('/api/tickets/' + current + '/messages', 'POST', { body: input.value }); input.value = ''; await drawThread(true); loadList().catch(() => {}); }
+    catch (e) { toast(e.message); }
+    send.disabled = false;
+  };
+  send.onclick = go;
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } });
+  const keep = fresh ? '' : (document.querySelector('#thread textarea') || {}).value || '';
+  input.value = keep;
+  $('thread').replaceChildren(
+    el('div', { className: 'thead' }, el('div', {}, el('h2', { textContent: d.ticket.subject }), el('div', { className: 'mute', textContent: 'Ticket #' + d.ticket.id + ' · opened ' + when(d.ticket.created_at) })),
+      el('span', { className: 'pill' + (d.ticket.status === 'open' ? ' open' : ''), textContent: d.ticket.status === 'open' ? 'Open' : 'Closed' })),
+    box, el('div', { className: 'reply' }, input, send));
+  box.scrollTop = box.scrollHeight;
+}
+
+async function init() {
+  me = await api('/api/me').catch(() => null);
+  if (!me) return gate();
+  $('who').replaceChildren(RbxAuth.menu(me, async () => { await api('/api/logout', 'POST'); location.reload(); }));
+  layout();
+  await loadList();
+  const first = document.querySelector('#list .tk');
+  if (first) first.click();
+}
+init();
+</script>
+</body>
+</html>
