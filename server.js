@@ -10,7 +10,6 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Buying and selling stay owner-only until LISTINGS_OPEN=true is set in Railway Variables.
 const LISTINGS_OPEN = process.env.LISTINGS_OPEN === 'true';
@@ -135,7 +134,9 @@ async function init() {
       created_at TIMESTAMPTZ DEFAULT now()
     );
     CREATE INDEX IF NOT EXISTS balance_log_user ON balance_log (user_id, id DESC);
+    CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value JSONB NOT NULL);
   `);
+  for (const r of (await pool.query('SELECT key, value FROM settings')).rows) settings[r.key] = r.value;
 }
 
 const clean = (v, max) => String(v || '').trim().slice(0, max);
@@ -166,6 +167,23 @@ const authAny = wrap(async (req, res, next) => {
   req.user = u;
   next();
 });
+
+// ---------- Maintenance mode ----------
+// Owners flip this in the owner panel. Owners keep seeing the normal site; everyone else gets
+// public/maintenance.html, and the API refuses requests except login and the bot API.
+const settings = { maintenance: false };
+const OPEN_DURING_MAINTENANCE = /^\/api\/(auth\/|logout$|me$|status$|bot\/)/;
+app.use(wrap(async (req, res, next) => {
+  if (!settings.maintenance) return next();
+  const p = req.path;
+  const isPage = p === '/' || /^\/[\w-]+\.html$/.test(p);
+  if (p === '/maintenance.html' || (!isPage && !p.startsWith('/api/')) || OPEN_DURING_MAINTENANCE.test(p)) return next();
+  if (isOwner(await currentUser(req))) return next();
+  res.status(503).set('Retry-After', '600');
+  if (p.startsWith('/api/')) return res.json({ error: "SplitzMarket is down for maintenance. We'll be back soon.", maintenance: true });
+  res.set('Cache-Control', 'no-store').sendFile(path.join(__dirname, 'public', 'maintenance.html'));
+}));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const owner = wrap(async (req, res, next) => {
   const u = await currentUser(req);
@@ -276,7 +294,11 @@ app.post('/api/logout', (req, res) => { res.clearCookie('token'); res.json({ ok:
 app.get('/api/me', wrap(async (req, res) => {
   const u = await currentUser(req);
   if (!u) return res.json(null);
-  res.json({ id: u.id, username: u.username, avatar: u.avatar_url || null, owner: isOwner(u), banned: !!u.banned, balance: u.balance_cents });
+  res.json({ id: u.id, username: u.username, avatar: u.avatar_url || null, owner: isOwner(u), banned: !!u.banned, balance: u.balance_cents, maintenance: isOwner(u) ? settings.maintenance : undefined });
+}));
+
+app.get('/api/status', wrap(async (req, res) => {
+  res.json({ maintenance: settings.maintenance });
 }));
 
 // ---------- Marketplace ----------
@@ -375,7 +397,7 @@ app.post('/api/market/buy', auth, wrap(async (req, res) => {
       await db.query("UPDATE inventory SET user_id=$1, status='held' WHERE id=$2 AND status='listed'", [req.user.id, l.inventory_id]);
       await log(db, req.user.username, 'market.sold', 'listing:' + l.id, { item: l.name, price: usd(l.price_cents), seller_id: l.seller_id, buyer_id: req.user.id });
     }
-    return { ok: true, bought: ls.length, total_cents: total, balance };
+    return { ok: true, bought: ls.length, total_cents: total, balance, inventory_ids: ls.map((l) => l.inventory_id) };
   });
   res.json(out);
 }));
@@ -543,6 +565,15 @@ app.delete('/api/admin/chat/:id', owner, wrap(async (req, res) => {
   const gone = (await pool.query('DELETE FROM messages WHERE id=$1 RETURNING body, user_id', [parseInt(req.params.id, 10)])).rows[0];
   await log(null, req.user.username, 'chat.deleted', 'message:' + req.params.id, gone);
   res.json({ ok: true });
+}));
+
+app.get('/api/admin/settings', owner, (req, res) => res.json(settings));
+app.post('/api/admin/settings', owner, wrap(async (req, res) => {
+  if (typeof req.body.maintenance !== 'boolean') throw new Fail(400, 'Nothing to change.');
+  await pool.query("INSERT INTO settings (key, value) VALUES ('maintenance', $1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value", [JSON.stringify(req.body.maintenance)]);
+  settings.maintenance = req.body.maintenance;
+  await log(null, req.user.username, req.body.maintenance ? 'site.maintenance_on' : 'site.maintenance_off', null);
+  res.json(settings);
 }));
 
 app.get('/api/admin/market', owner, wrap(async (req, res) => {
