@@ -51,7 +51,10 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .empty{text-align:center;color:var(--mute);padding:40px 16px}
 .tr{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
 .tr .row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.code{font-family:Outfit,sans-serif;font-size:24px;letter-spacing:3px;color:var(--gold);user-select:all}
+.botnote{display:flex;align-items:center;gap:9px;margin-top:10px;font-weight:700;font-size:14px}
+.botnote .live{width:8px;height:8px;border-radius:50%;background:var(--gold);flex:none;animation:beat 2s infinite}
+@keyframes beat{0%{box-shadow:0 0 0 0 #e8202a88}70%{box-shadow:0 0 0 8px #e8202a00}100%{box-shadow:0 0 0 0 #e8202a00}}
+@media (prefers-reduced-motion:reduce){.botnote .live{animation:none}}
 .pill{font-size:11px;font-weight:800;border-radius:99px;padding:2px 9px;background:var(--raise);color:var(--mute)}
 .pill.pending,.pill.in_progress{background:#e8202a26;color:var(--gold)}.pill.completed{background:#4ade8022;color:var(--ok)}.pill.failed{background:#ff7a4526;color:var(--bad)}
 .steps{margin:10px 0 0;padding-left:18px;color:var(--mute);font-size:13px;line-height:1.55}
@@ -86,12 +89,12 @@ body{background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transpare
 
 <dialog id="depDlg">
   <h2>Deposit items</h2>
-  <p class="mute" style="margin:6px 0 0">Pick what you'll trade in. You'll get a code to use in the trade.</p>
+  <p class="mute" style="margin:6px 0 0">Pick the items you want to put on SplitzMarket. Our bot will send you a trade in MM2 to collect them.</p>
   <input id="depSearch" placeholder="Search items" style="width:100%;margin-top:12px">
   <div class="pick" id="pick"></div>
   <div class="row" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
     <span class="mute" id="depCount">0 items selected</span>
-    <span><button class="ghost" onclick="depDlg.close()">Cancel</button> <button class="btn" id="depGo">Get trade code</button></span>
+    <span><button class="ghost" onclick="depDlg.close()">Cancel</button> <button class="btn" id="depGo">Request deposit</button></span>
   </div>
   <div class="err" id="depErr"></div>
 </dialog>
@@ -148,7 +151,7 @@ function gate() {
 
 function shell() {
   const depBtn = canTrade() ? el('button', { className: 'btn', textContent: 'Deposit items', onclick: openDeposit }) : soonBtn('Deposit items', 'btn');
-  const wdBtn = canTrade() ? el('button', { className: 'ghost', id: 'wdBtn', textContent: 'Withdraw selected', disabled: true, onclick: withdraw }) : soonBtn('Withdraw', 'ghost');
+  const wdBtn = canTrade() ? el('button', { className: 'ghost', id: 'wdBtn', textContent: 'Withdraw items', disabled: true, onclick: withdraw }) : soonBtn('Withdraw', 'ghost');
   const sellBtn = canSell() ? el('button', { className: 'btn', id: 'sellBtn', textContent: 'Sell selected', disabled: true, onclick: openSell }) : soonBtn('Sell', 'btn');
   depBtn.className = depBtn.className.replace(/\bbtn\b/, 'ghost');
   const notice = [];
@@ -194,7 +197,7 @@ function drawInv() {
     g.append(card);
   });
   for (const id of [...selected]) if (!held.some((i) => i.id === id)) selected.delete(id);
-  const w = $('wdBtn'); if (w) { w.disabled = !selected.size; w.textContent = selected.size ? 'Withdraw ' + selected.size : 'Withdraw selected'; }
+  const w = $('wdBtn'); if (w) { w.disabled = !selected.size; w.textContent = selected.size ? 'Withdraw ' + selected.size + ' item' + (selected.size === 1 ? '' : 's') : 'Withdraw items'; }
   const sb = $('sellBtn'); if (sb) { sb.disabled = !selected.size; sb.textContent = selected.size ? 'Sell ' + selected.size : 'Sell selected'; }
 }
 
@@ -209,11 +212,12 @@ function drawTrades(rows) {
       el('div', { className: 'row' }, el('b', { textContent: (t.kind === 'deposit' ? 'Deposit' : 'Withdraw') + ' #' + t.id }), el('span', { className: 'pill ' + t.status, textContent: label[t.status] || t.status })),
       el('div', { className: 'mute', style: 'margin-top:4px;overflow-wrap:anywhere', textContent: names }));
     if (active) {
-      card.append(el('div', { style: 'margin-top:10px' }, el('span', { className: 'mute', textContent: 'Your code' }), el('div', { className: 'code', textContent: t.code })),
+      const bot = info.accounts.length ? info.accounts.join(' or ') : 'our official bot';
+      card.append(el('div', { className: 'botnote' }, el('span', { className: 'live' }), t.status === 'in_progress' ? 'Our bot is on it. Watch for a trade request in MM2.' : 'Waiting for our bot. This usually takes a few minutes.'),
         el('ol', { className: 'steps' },
-          el('li', {}, 'Join MM2 and wait for a trade from ', el('b', { textContent: info.accounts.length ? info.accounts.join(' or ') : 'our official account' }), '.'),
-          el('li', {}, t.kind === 'deposit' ? 'Put in exactly the items listed above.' : 'Accept the trade with the items listed above.'),
-          el('li', {}, 'Never trade with an account that is not listed, even if it uses this code.')));
+          el('li', {}, 'Be online in Murder Mystery 2.'),
+          el('li', {}, 'Accept the trade from ', el('b', { textContent: bot }), t.kind === 'deposit' ? ' and put in exactly the items above.' : '. It will contain the items above.'),
+          el('li', {}, 'Only trade with ', el('b', { textContent: bot }), '. Anyone else messaging you about this is not SplitzMarket.')));
       if (t.status === 'pending') card.append(el('button', { className: 'ghost sm', style: 'margin-top:8px', textContent: 'Cancel request', onclick: async () => {
         try { await api('/api/trades/' + t.id + '/cancel', 'POST'); toast('Request cancelled'); refresh(); } catch (e) { toast(e.message, true); }
       } }));
@@ -252,7 +256,7 @@ $('depSearch').oninput = drawPick;
 $('depGo').onclick = async () => {
   const items = [...qty.entries()].map(([item_id, q]) => ({ item_id, qty: q }));
   $('depErr').textContent = ''; $('depGo').disabled = true;
-  try { await api('/api/trades/deposit', 'POST', { items }); depDlg.close(); toast('Deposit request created'); refresh(); }
+  try { await api('/api/trades/deposit', 'POST', { items }); depDlg.close(); toast('Deposit requested. Our bot will send you a trade.'); refresh(); }
   catch (e) { $('depErr').textContent = e.message; }
   $('depGo').disabled = false;
 };
@@ -277,7 +281,7 @@ $('sellGo').onclick = async () => {
   $('sellGo').disabled = false;
 };
 async function withdraw() {
-  try { await api('/api/trades/withdraw', 'POST', { inventory_ids: [...selected] }); selected.clear(); toast('Withdraw request created'); refresh(); }
+  try { await api('/api/trades/withdraw', 'POST', { inventory_ids: [...selected] }); selected.clear(); toast('Withdrawal requested. Our bot will send you a trade.'); refresh(); }
   catch (e) { toast(e.message, true); }
 }
 
