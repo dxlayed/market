@@ -4,8 +4,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -43,6 +45,9 @@ async function init() {
       body TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT now()
     );
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS roblox_id BIGINT UNIQUE;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+    ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
   `);
 }
 
@@ -58,31 +63,77 @@ function auth(req, res, next) {
 }
 
 function setToken(res, user) {
-  const token = jwt.sign({ id: user.id, username: user.username }, SECRET, { expiresIn: '14d' });
+  const token = jwt.sign({ id: user.id, username: user.username, avatar: user.avatar || null }, SECRET, { expiresIn: '14d' });
   res.cookie('token', token, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 14 * 864e5 });
 }
 
-app.post('/api/register', async (req, res) => {
-  const username = clean(req.body.username, 20);
-  const password = String(req.body.password || '');
-  if (!/^[A-Za-z0-9_]{3,20}$/.test(username)) return res.status(400).json({ error: 'Username: 3-20 letters, numbers, underscores.' });
-  if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+const prod = process.env.NODE_ENV === 'production';
+const hits = new Map();
+setInterval(() => hits.clear(), 36e5);
+function limit(key, ms) { const now = Date.now(); if (now - (hits.get(key) || 0) < ms) return false; hits.set(key, now); return true; }
+
+const WORDS = 'amber apple arrow beach berry breeze cactus candle canyon cedar cherry cloud clover coral cotton crystal daisy dawn dune eagle ember falcon fern field forest frost garden glacier harbor hazel honey island ivory jade jungle koala lake lantern lemon lilac lotus maple meadow mint moon mossy ocean olive orchid otter panda peach pebble pine planet plum pond puffin quartz rabbit river robin sage sand silver sky sparrow spruce star sunrise tiger tulip velvet violet walnut willow winter zebra'.split(' ');
+const makeCode = () => Array.from({ length: 8 }, () => WORDS[crypto.randomInt(WORDS.length)]).join(' ');
+
+async function rbx(url, body) {
+  const r = await fetch(url, {
+    method: body ? 'POST' : 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!r.ok) throw new Error('roblox ' + r.status);
+  return r.json();
+}
+
+app.post('/api/auth/start', async (req, res) => {
+  if (!limit('s' + req.ip, 2000)) return res.status(429).json({ error: 'Slow down a little.' });
+  const name = clean(req.body.username, 20);
+  if (!/^[A-Za-z0-9_]{3,20}$/.test(name)) return res.status(400).json({ error: 'Enter your Roblox username.' });
   try {
-    const hash = await bcrypt.hash(password, 10);
-    const { rows } = await pool.query('INSERT INTO users (username, password_hash) VALUES ($1,$2) RETURNING id, username', [username, hash]);
-    setToken(res, rows[0]);
-    res.json(rows[0]);
-  } catch (e) {
-    res.status(e.code === '23505' ? 409 : 500).json({ error: e.code === '23505' ? 'Username taken.' : 'Server error.' });
+    const found = await rbx('https://users.roblox.com/v1/usernames/users', { usernames: [name], excludeBannedUsers: true });
+    const u = found.data && found.data[0];
+    if (!u) return res.status(404).json({ error: 'No Roblox user with that name.' });
+    const code = makeCode();
+    const token = jwt.sign({ rid: u.id, name: u.name, code }, SECRET, { expiresIn: '10m' });
+    res.cookie('challenge', token, { httpOnly: true, sameSite: 'lax', secure: prod, maxAge: 600000 });
+    res.json({ code, name: u.name });
+  } catch {
+    res.status(502).json({ error: "Couldn't reach Roblox. Try again in a moment." });
   }
 });
 
-app.post('/api/login', async (req, res) => {
-  const { rows } = await pool.query('SELECT * FROM users WHERE lower(username)=lower($1)', [clean(req.body.username, 20)]);
-  const u = rows[0];
-  if (!u || !(await bcrypt.compare(String(req.body.password || ''), u.password_hash))) return res.status(401).json({ error: 'Wrong username or password.' });
-  setToken(res, u);
-  res.json({ id: u.id, username: u.username });
+app.post('/api/auth/verify', async (req, res) => {
+  if (!limit('v' + req.ip, 3000)) return res.status(429).json({ error: 'Slow down a little.' });
+  let ch;
+  try { ch = jwt.verify(req.cookies.challenge, SECRET); } catch { return res.status(400).json({ error: 'Your code expired. Go back and get a new one.' }); }
+  try {
+    const prof = await rbx('https://users.roblox.com/v1/users/' + ch.rid);
+    const bio = String(prof.description || '').toLowerCase().replace(/\s+/g, ' ');
+    if (!bio.includes(ch.code)) return res.status(401).json({ error: "We can't see the code in your bio yet. Save it on Roblox, then try again." });
+    let avatar = null;
+    try {
+      const t = await rbx('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=' + ch.rid + '&size=150x150&format=Png&isCircular=false');
+      const url = (t.data && t.data[0] && t.data[0].imageUrl) || '';
+      if (/^https:\/\/[\w.-]+\.rbxcdn\.com\//.test(url)) avatar = url;
+    } catch {}
+    const name = prof.name || ch.name;
+    let user = (await pool.query('SELECT id, username FROM users WHERE roblox_id=$1', [ch.rid])).rows[0];
+    if (user) {
+      await pool.query('UPDATE users SET avatar_url=$1 WHERE id=$2', [avatar, user.id]);
+      if (name !== user.username) { try { await pool.query('UPDATE users SET username=$1 WHERE id=$2', [name, user.id]); user.username = name; } catch {} }
+    } else {
+      const claim = await pool.query('UPDATE users SET roblox_id=$1, avatar_url=$2 WHERE lower(username)=lower($3) AND roblox_id IS NULL RETURNING id, username', [ch.rid, avatar, name]);
+      user = claim.rows[0] || (await pool.query('INSERT INTO users (username, roblox_id, avatar_url) VALUES ($1,$2,$3) RETURNING id, username', [name, ch.rid, avatar])).rows[0];
+    }
+    const out = { id: user.id, username: user.username, avatar };
+    setToken(res, out);
+    res.clearCookie('challenge');
+    res.json(out);
+  } catch (e) {
+    console.error(e);
+    res.status(502).json({ error: "Couldn't check your Roblox profile. Try again in a moment." });
+  }
 });
 
 app.post('/api/logout', (req, res) => { res.clearCookie('token'); res.json({ ok: true }); });
