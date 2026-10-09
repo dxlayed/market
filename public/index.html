@@ -3,73 +3,147 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MM2 Market</title>
+<title>SplitzMarket | Trade MM2 items with real players</title>
+<meta name="description" content="Post and find Murder Mystery 2 trades. Browse godlies, ancients, chromas and more.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1117;--card:#1a1d27;--line:#2a2e3d;--text:#e8eaf0;--mute:#8b90a3;--red:#e5484d;--green:#30a46c;--blue:#5865f2}
+:root{--bg:#12101f;--surface:#1d1a30;--raise:#26223e;--line:#37325a;--text:#f1eefc;--mute:#a29fc0;--gold:#ffb938;--violet:#8b6cff;--ok:#4ade80;--bad:#ff6b6b}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--text)}
-header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:10px}
-h1{margin:0;font-size:22px}h1 span{color:var(--red)}
-button,input,select,textarea{font:inherit;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text);padding:9px 12px}
-button{cursor:pointer;background:var(--red);border:0;color:#fff;font-weight:600}
-button.alt{background:var(--card);border:1px solid var(--line)}
-button.sm{padding:5px 10px;font-size:13px}
-main{max-width:1000px;margin:0 auto;padding:20px}
-.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}.filters input{flex:1;min-width:160px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
-.tag{font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px}
-.sell{background:#30a46c33;color:var(--green)}.buy{background:#5865f233;color:#8e98ff}
-.card h3{margin:10px 0 4px}.mute{color:var(--mute);font-size:14px}.price{font-weight:700;margin:6px 0}
-.row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px}
-dialog{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;width:min(400px,92vw)}
-dialog::backdrop{background:#000a}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+h1,h2,h3,.logo{font-family:Outfit,system-ui,sans-serif;margin:0}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+button{cursor:pointer;font-weight:700}
+.btn{background:var(--gold);color:#241a00;border:0;padding:11px 20px}
+.btn:hover{filter:brightness(1.08)}
+.ghost{background:transparent}
+.ghost:hover{background:var(--surface)}
+.sm{padding:6px 12px;font-size:13px;border-radius:8px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+nav{border-bottom:1px solid var(--line);background:#12101fee;position:sticky;top:0;z-index:5;backdrop-filter:blur(8px)}
+nav .wrap{display:flex;justify-content:space-between;align-items:center;height:64px}
+.logo{font-size:23px;font-weight:800;text-decoration:none;letter-spacing:-.5px}
+.logo b{color:var(--gold)}
+.hero{padding:64px 0 40px}
+.hero h1{font-size:clamp(34px,6vw,60px);font-weight:800;line-height:1.05;letter-spacing:-1.5px;max-width:720px}
+.hero p{color:var(--mute);font-size:18px;max-width:540px;margin:18px 0 26px}
+.hero .acts{display:flex;gap:12px;flex-wrap:wrap}
+.stats{display:flex;gap:36px;margin-top:38px;flex-wrap:wrap}
+.stats div{font-family:Outfit,sans-serif;font-size:30px;font-weight:700}
+.stats span{display:block;font-family:Manrope,sans-serif;font-size:14px;font-weight:500;color:var(--mute)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 22px}
+.bar input{flex:1;min-width:200px}
+.tabs{display:flex;gap:6px}
+.tabs button{background:var(--surface)}
+.tabs button.on{background:var(--violet);border-color:var(--violet);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.top{display:flex;gap:12px;align-items:center}
+.icon{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-family:Outfit,sans-serif;font-weight:800;font-size:22px;color:#12101f;flex:none}
+.c-Godly{background:#ff7ad9}.c-Ancient{background:#4fe3d0}.c-Vintage{background:#d9b98a}.c-Pet{background:#7ee787}.c-Set{background:#7cb8ff}.c-Other{background:#b9b6d4}
+.c-Chroma{background:linear-gradient(135deg,#ff6b6b,#ffd166,#4fe3d0,#8b6cff)}
+.card h3{font-size:18px;line-height:1.2}
+.meta{color:var(--mute);font-size:13px}
+.badge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;margin-left:auto;white-space:nowrap}
+.sell{background:#4ade8022;color:var(--ok)}.buy{background:#8b6cff30;color:#b7a4ff}
+.price{background:var(--raise);border-radius:10px;padding:10px 12px;font-weight:700}
+.price small{display:block;color:var(--mute);font-weight:500;font-size:12px}
+.desc{color:var(--mute);font-size:14px;margin:0}
+.foot{display:flex;gap:8px;align-items:center;margin-top:auto;flex-wrap:wrap}
+.foot .meta{margin-right:auto}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;background:var(--surface);border:1px dashed var(--line);border-radius:14px;color:var(--mute)}
+section.info{margin-top:72px;padding-top:40px;border-top:1px solid var(--line)}
+section.info h2{font-size:28px;margin-bottom:20px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.steps div{background:var(--surface);border-radius:14px;padding:18px;border:1px solid var(--line)}
+.steps h3{font-size:17px;margin-bottom:6px}.steps p{margin:0;color:var(--mute);font-size:15px}
+footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 40px;color:var(--mute);font-size:13px}
+dialog{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:16px;width:min(420px,92vw);padding:24px}
+dialog::backdrop{background:#000b}
 dialog form{display:flex;flex-direction:column;gap:10px}
-#err{color:var(--red);font-size:14px;min-height:18px}
-.note{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--mute);margin-bottom:16px}
+.err{color:var(--bad);font-size:14px;min-height:18px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}#toast{transition:none}}
 </style>
 </head>
 <body>
-<header>
-  <h1>MM2 <span>Market</span></h1>
+<nav><div class="wrap">
+  <a class="logo" href="/">Splitz<b>Market</b></a>
   <div id="nav"></div>
-</header>
-<main>
-  <div class="note">Trade safely: use middleman services for big trades and never share your password. This site only lists offers and doesn't handle trades or payments.</div>
-  <div class="filters">
-    <input id="q" placeholder="Search items (e.g. Harvester)">
-    <select id="kind"><option value="">Buy &amp; Sell</option><option value="sell">Selling</option><option value="buy">Buying</option></select>
-    <select id="cat"><option value="">All categories</option><option>Godly</option><option>Ancient</option><option>Chroma</option><option>Vintage</option><option>Pet</option><option>Set</option><option>Other</option></select>
-  </div>
-  <div id="list" class="grid"></div>
-</main>
+</div></nav>
+
+<div class="wrap">
+  <header class="hero">
+    <h1>Find your next Murder Mystery 2 trade.</h1>
+    <p>Browse offers from other players, post your own, and message them directly on Discord. No payments handled here.</p>
+    <div class="acts">
+      <button class="btn" id="heroPost">Post a listing</button>
+      <button class="ghost" onclick="document.getElementById('browse').scrollIntoView()">Browse listings</button>
+    </div>
+    <div class="stats">
+      <div id="sSell">0<span>Items for sale</span></div>
+      <div id="sBuy">0<span>Players looking to buy</span></div>
+      <div id="sUsers">Free<span>No fees to post</span></div>
+    </div>
+  </header>
+
+  <main id="browse">
+    <div class="bar">
+      <input id="q" placeholder="Search an item, like Harvester" aria-label="Search items">
+      <select id="cat" aria-label="Category"><option value="">All categories</option><option>Godly</option><option>Ancient</option><option>Chroma</option><option>Vintage</option><option>Pet</option><option>Set</option><option>Other</option></select>
+      <div class="tabs" id="tabs">
+        <button data-k="" class="on">All</button><button data-k="sell">Selling</button><button data-k="buy">Buying</button>
+      </div>
+    </div>
+    <div id="list" class="grid"></div>
+  </main>
+
+  <section class="info">
+    <h2>How trading works here</h2>
+    <div class="steps">
+      <div><h3>1. Find or post an offer</h3><p>Search for the item you want, or post what you have and what you want for it.</p></div>
+      <div><h3>2. Message on Discord</h3><p>Each listing shows the poster's Discord name. Reach out and agree on the trade.</p></div>
+      <div><h3>3. Trade in game</h3><p>Do the trade inside Murder Mystery 2. Use a trusted middleman for big trades, and mark your listing done afterward.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    SplitzMarket is a community listing board. We don't handle trades or payments, and we'll never ask for your password. Not affiliated with, endorsed by, or sponsored by Roblox Corporation or the creators of Murder Mystery 2.
+  </footer>
+</div>
 
 <dialog id="authDlg"><form id="authForm">
-  <h2 id="authTitle" style="margin:0">Log in</h2>
-  <input name="username" placeholder="Username" required>
-  <input name="password" type="password" placeholder="Password" required>
-  <div id="err"></div>
-  <button>Continue</button>
-  <button type="button" class="alt" id="switch">Need an account? Sign up</button>
-  <button type="button" class="alt" onclick="authDlg.close()">Cancel</button>
+  <h2 id="authTitle">Log in</h2>
+  <input name="username" placeholder="Username" autocomplete="username" required>
+  <input name="password" type="password" placeholder="Password" autocomplete="current-password" required>
+  <div class="err" id="err"></div>
+  <button class="btn">Continue</button>
+  <button type="button" class="ghost" id="switch">Need an account? Sign up</button>
+  <button type="button" class="ghost" onclick="authDlg.close()">Cancel</button>
 </form></dialog>
 
 <dialog id="postDlg"><form id="postForm">
-  <h2 style="margin:0">New listing</h2>
+  <h2>New listing</h2>
   <select name="kind"><option value="sell">I'm selling</option><option value="buy">I'm buying</option></select>
   <input name="item" placeholder="Item name" maxlength="60" required>
   <select name="category"><option>Godly</option><option>Ancient</option><option>Chroma</option><option>Vintage</option><option>Pet</option><option>Set</option><option>Other</option></select>
-  <input name="price" placeholder="Price / what you want (e.g. 2 Harvesters)" maxlength="40" required>
+  <input name="price" placeholder="Asking for (e.g. 2 Harvesters)" maxlength="40" required>
   <input name="discord" placeholder="Your Discord username" maxlength="40" required>
-  <textarea name="description" placeholder="Details (optional)" maxlength="300"></textarea>
-  <div id="err2" style="color:var(--red);font-size:14px"></div>
-  <button>Post</button>
-  <button type="button" class="alt" onclick="postDlg.close()">Cancel</button>
+  <textarea name="description" placeholder="Details (optional)" maxlength="300" rows="3"></textarea>
+  <div class="err" id="err2"></div>
+  <button class="btn">Post listing</button>
+  <button type="button" class="ghost" onclick="postDlg.close()">Cancel</button>
 </form></dialog>
+<div id="toast" role="status"></div>
 
 <script>
 const $ = (id) => document.getElementById(id);
-let me = null, signup = false;
+let me = null, signup = false, kind = '';
 
 async function api(url, method = 'GET', body) {
   const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
@@ -77,53 +151,58 @@ async function api(url, method = 'GET', body) {
   if (!r.ok) throw new Error(data.error || 'Something went wrong');
   return data;
 }
-
-function el(tag, props = {}, ...kids) {
-  const e = document.createElement(tag);
-  Object.assign(e, props);
-  kids.forEach((k) => e.append(k));
-  return e;
-}
+function el(tag, props = {}, ...kids) { const e = document.createElement(tag); Object.assign(e, props); kids.forEach((k) => e.append(k)); return e; }
+function toast(t) { const x = $('toast'); x.textContent = t; x.classList.add('show'); setTimeout(() => x.classList.remove('show'), 1800); }
+function ago(d) { const s = (Date.now() - new Date(d)) / 1000; if (s < 3600) return Math.max(1, Math.floor(s / 60)) + 'm ago'; if (s < 86400) return Math.floor(s / 3600) + 'h ago'; return Math.floor(s / 86400) + 'd ago'; }
+function needLogin() { authDlg.showModal(); }
 
 function renderNav() {
   const nav = $('nav'); nav.replaceChildren();
   if (me) {
-    nav.append(el('span', { className: 'mute', textContent: me.username + '  ' }),
-      el('button', { textContent: '+ Post', onclick: () => postDlg.showModal() }), ' ',
-      el('button', { className: 'alt', textContent: 'Log out', onclick: async () => { await api('/api/logout', 'POST'); me = null; renderNav(); load(); } }));
+    nav.append(el('span', { className: 'meta', textContent: me.username + '  ' }),
+      el('button', { className: 'btn sm', textContent: 'Post listing', onclick: () => postDlg.showModal() }), ' ',
+      el('button', { className: 'ghost sm', textContent: 'Log out', onclick: async () => { await api('/api/logout', 'POST'); me = null; renderNav(); load(); } }));
   } else {
-    nav.append(el('button', { textContent: 'Log in / Sign up', onclick: () => authDlg.showModal() }));
+    nav.append(el('button', { className: 'ghost sm', textContent: 'Log in', onclick: () => { signup = false; setAuth(); needLogin(); } }), ' ',
+      el('button', { className: 'btn sm', textContent: 'Sign up', onclick: () => { signup = true; setAuth(); needLogin(); } }));
   }
+}
+function setAuth() {
+  $('authTitle').textContent = signup ? 'Create your account' : 'Log in';
+  $('switch').textContent = signup ? 'Have an account? Log in' : 'Need an account? Sign up';
 }
 
 async function load() {
-  const p = new URLSearchParams({ q: $('q').value, kind: $('kind').value, category: $('cat').value });
+  const p = new URLSearchParams({ q: $('q').value, kind, category: $('cat').value });
   const rows = await api('/api/listings?' + p);
+  if (!$('q').value && !kind && !$('cat').value) {
+    $('sSell').firstChild.textContent = rows.filter((r) => r.kind === 'sell').length;
+    $('sBuy').firstChild.textContent = rows.filter((r) => r.kind === 'buy').length;
+  }
   const list = $('list'); list.replaceChildren();
-  if (!rows.length) list.append(el('p', { className: 'mute', textContent: 'No listings yet. Be the first to post!' }));
+  if (!rows.length) list.append(el('div', { className: 'empty', textContent: 'No listings match yet. Post the first one and other players will see it here.' }));
   rows.forEach((l) => {
-    const actions = el('div', { className: 'row' }, el('span', { className: 'mute', textContent: 'Discord: ' + l.discord }));
+    const foot = el('div', { className: 'foot' }, el('span', { className: 'meta', textContent: 'by ' + l.username + ' · ' + ago(l.created_at) }));
     if (me && me.id === l.user_id) {
-      actions.append(
-        el('button', { className: 'sm', textContent: 'Done', onclick: async () => { await api(`/api/listings/${l.id}/done`, 'PATCH'); load(); } }),
-        el('button', { className: 'sm alt', textContent: 'Delete', onclick: async () => { await api('/api/listings/' + l.id, 'DELETE'); load(); } }));
+      foot.append(
+        el('button', { className: 'ghost sm', textContent: 'Mark done', onclick: async () => { await api(`/api/listings/${l.id}/done`, 'PATCH'); load(); } }),
+        el('button', { className: 'ghost sm', textContent: 'Delete', onclick: async () => { await api('/api/listings/' + l.id, 'DELETE'); load(); } }));
+    } else {
+      foot.append(el('button', { className: 'btn sm', textContent: 'Copy Discord', onclick: () => { navigator.clipboard.writeText(l.discord).then(() => toast('Copied ' + l.discord)); } }));
     }
-    list.append(el('div', { className: 'card' },
-      el('span', { className: 'tag ' + l.kind, textContent: l.kind === 'sell' ? 'SELLING' : 'BUYING' }),
-      el('h3', { textContent: l.item }),
-      el('div', { className: 'mute', textContent: l.category + ' · by ' + l.username }),
-      el('div', { className: 'price', textContent: l.price }),
-      el('div', { className: 'mute', textContent: l.description }),
-      actions));
+    list.append(el('article', { className: 'card' },
+      el('div', { className: 'top' },
+        el('div', { className: 'icon c-' + l.category, textContent: l.item.charAt(0).toUpperCase() }),
+        el('div', {}, el('h3', { textContent: l.item }), el('div', { className: 'meta', textContent: l.category })),
+        el('span', { className: 'badge ' + l.kind, textContent: l.kind === 'sell' ? 'Selling' : 'Buying' })),
+      el('div', { className: 'price' }, el('small', { textContent: l.kind === 'sell' ? 'Wants' : 'Offering' }), l.price),
+      l.description ? el('p', { className: 'desc', textContent: l.description }) : '',
+      foot));
   });
 }
 
-$('switch').onclick = () => {
-  signup = !signup;
-  $('authTitle').textContent = signup ? 'Sign up' : 'Log in';
-  $('switch').textContent = signup ? 'Have an account? Log in' : 'Need an account? Sign up';
-};
-
+$('switch').onclick = () => { signup = !signup; setAuth(); };
+$('heroPost').onclick = () => (me ? postDlg.showModal() : (signup = true, setAuth(), needLogin()));
 $('authForm').onsubmit = async (e) => {
   e.preventDefault();
   try {
@@ -131,16 +210,21 @@ $('authForm').onsubmit = async (e) => {
     authDlg.close(); e.target.reset(); $('err').textContent = ''; renderNav(); load();
   } catch (x) { $('err').textContent = x.message; }
 };
-
 $('postForm').onsubmit = async (e) => {
   e.preventDefault();
   try {
     await api('/api/listings', 'POST', Object.fromEntries(new FormData(e.target)));
-    postDlg.close(); e.target.reset(); $('err2').textContent = ''; load();
+    postDlg.close(); e.target.reset(); $('err2').textContent = ''; toast('Listing posted'); load();
   } catch (x) { $('err2').textContent = x.message; }
 };
-
-['q', 'kind', 'cat'].forEach((id) => $(id).addEventListener(id === 'q' ? 'input' : 'change', load));
+$('tabs').onclick = (e) => {
+  if (!e.target.dataset) return;
+  kind = e.target.dataset.k ?? kind;
+  [...$('tabs').children].forEach((b) => b.classList.toggle('on', b === e.target));
+  load();
+};
+$('q').addEventListener('input', load);
+$('cat').addEventListener('change', load);
 api('/api/me').then((u) => { me = u; renderNav(); load(); });
 </script>
 </body>
