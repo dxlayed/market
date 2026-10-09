@@ -88,7 +88,7 @@ dialog::backdrop{background:#000b}dialog form{display:flex;flex-direction:column
 <body>
 <div class="bar">
   <a class="logo" href="/">Splitz<b>Market</b></a>
-  <nav><a class="on" href="/">Shop</a><a href="/board.html">Board &amp; chat</a><a href="/support.html">Support</a></nav>
+  <nav><a class="on" href="/">Shop</a><a href="/board.html">Board &amp; chat</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a></nav>
   <button class="soon" data-t="Withdrawals are coming soon" aria-disabled="true">Withdraw <i>Soon</i></button>
   <div class="wallet"><span>$0.00</span><button class="soon" data-t="Deposits are coming soon" aria-disabled="true" aria-label="Add funds (coming soon)">+</button></div>
   <div id="who"></div>
@@ -150,7 +150,7 @@ dialog::backdrop{background:#000b}dialog form{display:flex;flex-direction:column
 const $ = (id) => document.getElementById(id);
 if (typeof avEl === 'undefined') window.avEl = (u) => { const s = document.createElement('span'); s.className = 'av'; s.textContent = u.username[0].toUpperCase(); return s; };
 if (typeof RbxAuth === 'undefined') window.RbxAuth = { open() { toast('Login script missing. Add public/auth.js on GitHub, then refresh.'); } };
-const el = (t, p = {}, ...k) => { const e = document.createElement(t); Object.assign(e, p); k.forEach((x) => e.append(x)); return e; };
+const el = (t, p = {}, ...k) => { const e = document.createElement(t); for (const [a, v] of Object.entries(p)) { if (a.includes('-')) e.setAttribute(a, v); else e[a] = v; } k.forEach((x) => e.append(x)); return e; };
 const toast = (t) => { const x = $('toast'); x.textContent = t; x.classList.add('show'); setTimeout(() => x.classList.remove('show'), 1800); };
 const ago = (d) => { const s = (Date.now() - new Date(d)) / 1000; return s < 3600 ? Math.max(1, Math.floor(s / 60)) + 'm ago' : s < 86400 ? Math.floor(s / 3600) + 'h ago' : Math.floor(s / 86400) + 'd ago'; };
 async function api(url, method = 'GET', body) {
