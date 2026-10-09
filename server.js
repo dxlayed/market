@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const crypto = require('crypto');
+const cx = require('./crypto.js');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -135,6 +136,51 @@ async function init() {
     );
     CREATE INDEX IF NOT EXISTS balance_log_user ON balance_log (user_id, id DESC);
     CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value JSONB NOT NULL);
+    -- Crypto. locked_cents = deposited money that has to be spent on items before it can be withdrawn.
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_cents INT NOT NULL DEFAULT 0;
+    CREATE TABLE IF NOT EXISTS crypto_addresses (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      coin TEXT NOT NULL,
+      key_id TEXT NOT NULL,
+      idx INT NOT NULL,
+      address TEXT NOT NULL,
+      last_viewed TIMESTAMPTZ DEFAULT now(),
+      last_checked TIMESTAMPTZ,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      UNIQUE (coin, key_id, idx),
+      UNIQUE (coin, address)
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS crypto_addr_user ON crypto_addresses (user_id, coin, key_id);
+    CREATE TABLE IF NOT EXISTS crypto_deposits (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE SET NULL,
+      coin TEXT NOT NULL,
+      address TEXT NOT NULL,
+      txid TEXT NOT NULL,
+      amount_sats BIGINT NOT NULL,
+      usd_cents INT NOT NULL,
+      confirmations INT NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'pending',
+      created_at TIMESTAMPTZ DEFAULT now(),
+      credited_at TIMESTAMPTZ,
+      UNIQUE (coin, txid, address)
+    );
+    CREATE TABLE IF NOT EXISTS crypto_withdrawals (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE SET NULL,
+      coin TEXT NOT NULL,
+      address TEXT NOT NULL,
+      usd_cents INT NOT NULL,
+      fee_cents INT NOT NULL,
+      coin_amount TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      txid TEXT,
+      note TEXT,
+      handled_by TEXT,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      updated_at TIMESTAMPTZ DEFAULT now()
+    );
   `);
   for (const r of (await pool.query('SELECT key, value FROM settings')).rows) settings[r.key] = r.value;
 }
@@ -315,8 +361,12 @@ function toCents(v) {
 }
 const usd = (c) => '$' + (c / 100).toFixed(2);
 // Changes a user's balance and records why. Callers must already hold the user's row lock.
-async function moveMoney(db, userId, delta, reason, note) {
-  const r = (await db.query('UPDATE users SET balance_cents = balance_cents + $1 WHERE id=$2 AND balance_cents + $1 >= 0 RETURNING balance_cents', [delta, userId])).rows[0];
+// lockDelta changes the non-withdrawable part: deposits add to it, purchases spend it first.
+async function moveMoney(db, userId, delta, reason, note, lockDelta = 0) {
+  const r = (await db.query(
+    `UPDATE users SET balance_cents = balance_cents + $1,
+       locked_cents = LEAST(GREATEST(locked_cents + $3, 0), balance_cents + $1)
+     WHERE id=$2 AND balance_cents + $1 >= 0 RETURNING balance_cents`, [delta, userId, lockDelta])).rows[0];
   if (!r) throw new Fail(400, 'Not enough balance.');
   await db.query('INSERT INTO balance_log (user_id, delta_cents, balance_after, reason, note) VALUES ($1,$2,$3,$4,$5)', [userId, delta, r.balance_cents, reason, note || null]);
   return r.balance_cents;
@@ -390,7 +440,7 @@ app.post('/api/market/buy', auth, wrap(async (req, res) => {
     const wallets = (await db.query('SELECT id, balance_cents FROM users WHERE id = ANY($1) ORDER BY id FOR UPDATE', [who])).rows;
     const mine = wallets.find((w) => w.id === req.user.id);
     if (mine.balance_cents < total) throw new Fail(402, `You need ${usd(total)} but have ${usd(mine.balance_cents)}. Add funds first.`);
-    const balance = await moveMoney(db, req.user.id, -total, 'purchase', ls.length + ' item' + (ls.length === 1 ? '' : 's') + ': ' + ls.map((l) => l.name).join(', ').slice(0, 200));
+    const balance = await moveMoney(db, req.user.id, -total, 'purchase', ls.length + ' item' + (ls.length === 1 ? '' : 's') + ': ' + ls.map((l) => l.name).join(', ').slice(0, 200), -total);
     for (const l of ls) {
       await moveMoney(db, l.seller_id, l.price_cents, 'sale', 'Sold ' + l.name + ' to ' + req.user.username);
       await db.query("UPDATE market_listings SET status='sold', buyer_id=$1, sold_at=now() WHERE id=$2", [req.user.id, l.id]);
@@ -404,7 +454,8 @@ app.post('/api/market/buy', auth, wrap(async (req, res) => {
 
 app.get('/api/wallet', authAny, wrap(async (req, res) => {
   const { rows } = await pool.query('SELECT id, delta_cents, balance_after, reason, note, created_at FROM balance_log WHERE user_id=$1 ORDER BY id DESC LIMIT 50', [req.user.id]);
-  res.json({ balance: req.user.balance_cents, history: rows });
+  const lk = (await pool.query('SELECT locked_cents FROM users WHERE id=$1', [req.user.id])).rows[0].locked_cents;
+  res.json({ balance: req.user.balance_cents, withdrawable: Math.max(0, req.user.balance_cents - lk), history: rows });
 }));
 
 app.get('/api/profile', auth, wrap(async (req, res) => {
@@ -503,6 +554,7 @@ app.get('/api/admin/stats', owner, wrap(async (req, res) => {
     sales24: await q("SELECT count(*)::int AS n FROM market_listings WHERE status='sold' AND sold_at > now() - interval '24 hours'"),
     volume24: await q("SELECT COALESCE(sum(price_cents),0)::int AS n FROM market_listings WHERE status='sold' AND sold_at > now() - interval '24 hours'"),
     balances: await q('SELECT COALESCE(sum(balance_cents),0)::int AS n FROM users'),
+    withdrawalsPending: await q("SELECT count(*)::int AS n FROM crypto_withdrawals WHERE status='pending'"),
     messages: await q('SELECT count(*)::int AS n FROM messages'),
     messagesToday: await q("SELECT count(*)::int AS n FROM messages WHERE created_at > now() - interval '24 hours'"),
     openTickets: await q("SELECT count(*)::int AS n FROM tickets WHERE status='open'"),
@@ -855,6 +907,222 @@ app.get('/api/admin/logs', owner, wrap(async (req, res) => {
      ORDER BY id DESC LIMIT 300`, [q, type]);
   res.json(rows);
 }));
+
+// ---------- Crypto deposits & withdrawals ----------
+// Set BTC_XPUB and/or LTC_XPUB in Railway (Electrum > Wallet > Information > Master Public Key).
+// Each player gets their own address from that key. A watcher checks the blockchain and credits
+// deposits after enough confirmations. Withdrawals go into a queue that owners pay from their wallet.
+const CRYPTO = {};
+for (const coin of Object.values(cx.COINS)) {
+  const raw = process.env[coin.symbol + '_XPUB'];
+  if (!raw) continue;
+  try {
+    const parsed = cx.parseXpub(raw);
+    CRYPTO[coin.id] = { ...coin, parsed, keyId: crypto.createHash('sha256').update(raw.trim()).digest('hex').slice(0, 12) };
+    console.log('Crypto: ' + coin.name + ' deposits on (' + parsed.type + ')');
+  } catch (e) { console.error('Crypto: ' + coin.symbol + '_XPUB is not valid: ' + e.message); }
+}
+const MIN_DEPOSIT = Math.round((parseFloat(process.env.MIN_DEPOSIT_USD) || 1) * 100);
+const MIN_WITHDRAW = Math.round((parseFloat(process.env.MIN_WITHDRAW_USD) || 5) * 100);
+const PRICE_API = process.env.PRICE_API || 'https://api.coingecko.com/api/v3';
+const prices = {}; let pricesAt = 0;
+const watch = { lastRun: null, lastError: null, checks: 0 };
+
+async function getJson(url) {
+  const r = await fetch(url, { headers: { accept: 'application/json', 'user-agent': 'SplitzMarket/1.0' }, signal: AbortSignal.timeout(10000) });
+  if (!r.ok) throw new Error(url.replace(/\?.*/, '') + ' -> ' + r.status);
+  return r.json();
+}
+async function refreshPrices(force) {
+  const ids = Object.values(CRYPTO).map((c) => c.gecko);
+  if (!ids.length || (!force && Date.now() - pricesAt < 60000)) return prices;
+  try {
+    const j = await getJson(PRICE_API + '/simple/price?ids=' + ids.join(',') + '&vs_currencies=usd');
+    for (const c of Object.values(CRYPTO)) if (j[c.gecko] && j[c.gecko].usd > 0) prices[c.id] = j[c.gecko].usd;
+    pricesAt = Date.now();
+  } catch (e) { watch.lastError = 'prices: ' + e.message; }
+  return prices;
+}
+const feeCents = (c) => Math.round(parseFloat(c.fee) * 100) || 0;
+const coinAmount = (c, cents) => (prices[c.id] ? (cents / 100 / prices[c.id]).toFixed(8) : null);
+
+function coinOf(id) { const c = CRYPTO[String(id || '').toLowerCase()]; if (!c) throw new Fail(400, 'That coin is not available.'); return c; }
+
+app.get('/api/crypto', wrap(async (req, res) => {
+  await refreshPrices();
+  const u = await currentUser(req);
+  let withdrawable = null;
+  if (u) withdrawable = Math.max(0, u.balance_cents - (await pool.query('SELECT locked_cents FROM users WHERE id=$1', [u.id])).rows[0].locked_cents);
+  res.json({
+    coins: Object.values(CRYPTO).map((c) => ({ id: c.id, name: c.name, symbol: c.symbol, price: prices[c.id] || null, confirmations: c.confirmations, fee_cents: feeCents(c) })),
+    min_deposit: MIN_DEPOSIT, min_withdraw: MIN_WITHDRAW,
+    balance: u ? u.balance_cents : null, withdrawable,
+    open: LISTINGS_OPEN || isOwner(u),
+  });
+}));
+
+app.post('/api/crypto/address', auth, wrap(async (req, res) => {
+  marketGate(req.user);
+  if (!req.user.roblox_id) throw new Fail(400, 'Log in with Roblox first.');
+  const c = coinOf(req.body.coin);
+  const row = await tx(async (db) => {
+    const have = (await db.query('UPDATE crypto_addresses SET last_viewed=now() WHERE user_id=$1 AND coin=$2 AND key_id=$3 RETURNING address', [req.user.id, c.id, c.keyId])).rows[0];
+    if (have) return have;
+    await db.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['addr:' + c.id + ':' + c.keyId]);
+    const idx = (await db.query('SELECT COALESCE(max(idx)+1, 0) AS n FROM crypto_addresses WHERE coin=$1 AND key_id=$2', [c.id, c.keyId])).rows[0].n;
+    const address = cx.addressFor(c, c.parsed, idx);
+    await db.query('INSERT INTO crypto_addresses (user_id, coin, key_id, idx, address) VALUES ($1,$2,$3,$4,$5)', [req.user.id, c.id, c.keyId, idx, address]);
+    await log(db, req.user.username, 'crypto.address_created', c.id + ':' + address, { idx });
+    return { address };
+  });
+  const uri = (c.id === 'btc' ? 'bitcoin:' : 'litecoin:') + row.address;
+  res.json({ coin: c.id, address: row.address, qr: await cx.qrSvg(uri), uri, confirmations: c.confirmations });
+}));
+
+app.get('/api/crypto/history', auth, wrap(async (req, res) => {
+  const deposits = (await pool.query('SELECT id, coin, txid, amount_sats, usd_cents, confirmations, status, created_at FROM crypto_deposits WHERE user_id=$1 ORDER BY id DESC LIMIT 20', [req.user.id])).rows;
+  const withdrawals = (await pool.query('SELECT id, coin, address, usd_cents, fee_cents, coin_amount, status, txid, note, created_at FROM crypto_withdrawals WHERE user_id=$1 ORDER BY id DESC LIMIT 20', [req.user.id])).rows;
+  res.json({ deposits: deposits.map((d) => ({ ...d, amount_sats: Number(d.amount_sats), needed: (CRYPTO[d.coin] || cx.COINS[d.coin] || {}).confirmations })), withdrawals });
+}));
+
+app.post('/api/crypto/withdraw', auth, wrap(async (req, res) => {
+  marketGate(req.user);
+  if (!limit('cw' + req.user.id, 3000)) throw new Fail(429, 'Slow down a little.');
+  const c = coinOf(req.body.coin);
+  const address = String(req.body.address || '').trim();
+  if (!cx.validAddress(c, address)) throw new Fail(400, 'That is not a valid ' + c.name + ' address.');
+  const amount = toCents(req.body.amount);
+  const fee = feeCents(c);
+  if (amount < MIN_WITHDRAW) throw new Fail(400, 'The minimum withdrawal is ' + usd(MIN_WITHDRAW) + '.');
+  if (amount <= fee) throw new Fail(400, 'The amount has to be more than the ' + usd(fee) + ' fee.');
+  await refreshPrices();
+  const out = await tx(async (db) => {
+    const u = (await db.query('SELECT balance_cents, locked_cents FROM users WHERE id=$1 FOR UPDATE', [req.user.id])).rows[0];
+    const open = (await db.query("SELECT count(*)::int AS n FROM crypto_withdrawals WHERE user_id=$1 AND status='pending'", [req.user.id])).rows[0].n;
+    if (open) throw new Fail(400, 'You already have a withdrawal waiting. Wait for it to be sent first.');
+    const free = u.balance_cents - u.locked_cents;
+    if (amount > free) throw new Fail(400, `You can withdraw up to ${usd(Math.max(0, free))}. Deposited money has to be spent on items before it can be withdrawn.`);
+    const w = (await db.query('INSERT INTO crypto_withdrawals (user_id, coin, address, usd_cents, fee_cents, coin_amount) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+      [req.user.id, c.id, address, amount, fee, coinAmount(c, amount - fee)])).rows[0];
+    const balance = await moveMoney(db, req.user.id, -amount, 'crypto_withdrawal', c.name + ' to ' + address.slice(0, 10) + '…');
+    await log(db, req.user.username, 'crypto.withdraw_requested', 'withdrawal:' + w.id, { coin: c.id, address, amount: usd(amount), fee: usd(fee) });
+    return { ok: true, id: w.id, balance };
+  });
+  res.json(out);
+}));
+
+// Owner: withdrawal queue and recent deposits.
+app.get('/api/admin/crypto', owner, wrap(async (req, res) => {
+  await refreshPrices();
+  const withdrawals = (await pool.query(
+    `SELECT w.*, u.username FROM crypto_withdrawals w LEFT JOIN users u ON u.id=w.user_id
+     ORDER BY (w.status='pending') DESC, w.id DESC LIMIT 200`)).rows;
+  const deposits = (await pool.query(
+    `SELECT d.*, u.username FROM crypto_deposits d LEFT JOIN users u ON u.id=d.user_id ORDER BY d.id DESC LIMIT 100`)).rows;
+  res.json({
+    coins: Object.values(CRYPTO).map((c) => ({ id: c.id, name: c.name, price: prices[c.id] || null, explorer: c.explorer })),
+    withdrawals: withdrawals.map((w) => ({ ...w, send_now: coinAmount(CRYPTO[w.coin] || cx.COINS[w.coin], w.usd_cents - w.fee_cents) })),
+    deposits: deposits.map((d) => ({ ...d, amount_sats: Number(d.amount_sats) })), watch,
+  });
+}));
+app.post('/api/admin/crypto/withdrawals/:id/:action', owner, wrap(async (req, res) => {
+  const id = parseInt(req.params.id, 10), a = req.params.action;
+  const out = await tx(async (db) => {
+    const w = (await db.query("SELECT * FROM crypto_withdrawals WHERE id=$1 FOR UPDATE", [id])).rows[0];
+    if (!w) throw new Fail(404, 'Withdrawal not found.');
+    if (w.status !== 'pending') throw new Fail(409, 'This withdrawal is already ' + w.status + '.');
+    if (a === 'paid') {
+      const txid = clean(req.body.txid, 100);
+      if (!/^[0-9a-fA-F]{64}$/.test(txid)) throw new Fail(400, 'Paste the 64-character transaction ID from your wallet.');
+      await db.query("UPDATE crypto_withdrawals SET status='paid', txid=$1, handled_by=$2, updated_at=now() WHERE id=$3", [txid, req.user.username, id]);
+      await log(db, req.user.username, 'crypto.withdraw_paid', 'withdrawal:' + id, { txid, amount: usd(w.usd_cents) });
+    } else if (a === 'reject') {
+      const note = clean(req.body.reason, 200) || 'Rejected by staff';
+      await db.query('SELECT id FROM users WHERE id=$1 FOR UPDATE', [w.user_id]);
+      await moveMoney(db, w.user_id, w.usd_cents, 'withdrawal_refund', note);
+      await db.query("UPDATE crypto_withdrawals SET status='rejected', note=$1, handled_by=$2, updated_at=now() WHERE id=$3", [note, req.user.username, id]);
+      await log(db, req.user.username, 'crypto.withdraw_rejected', 'withdrawal:' + id, { note, refunded: usd(w.usd_cents) });
+    } else throw new Fail(404, 'Unknown action.');
+    return { ok: true };
+  });
+  res.json(out);
+}));
+
+// ---------- Blockchain watcher ----------
+const tips = {};
+async function tipHeight(c) {
+  const t = tips[c.id];
+  if (t && Date.now() - t.at < 15000) return t.h;
+  const h = parseInt(await (await fetch(c.api + '/blocks/tip/height', { signal: AbortSignal.timeout(10000) })).text(), 10);
+  if (!(h > 0)) throw new Error(c.id + ' tip height unavailable');
+  tips[c.id] = { h, at: Date.now() };
+  return h;
+}
+async function checkAddress(row) {
+  const c = CRYPTO[row.coin];
+  if (!c) return;
+  const txs = await getJson(c.api + '/address/' + row.address + '/txs');
+  const tip = await tipHeight(c);
+  watch.checks++;
+  for (const t of Array.isArray(txs) ? txs : []) {
+    const sats = (t.vout || []).filter((o) => o.scriptpubkey_address === row.address).reduce((a, o) => a + Number(o.value || 0), 0);
+    if (!sats) continue;
+    const confs = t.status && t.status.confirmed && t.status.block_height ? Math.max(0, tip - t.status.block_height + 1) : 0;
+    let dep = (await pool.query('SELECT * FROM crypto_deposits WHERE coin=$1 AND txid=$2 AND address=$3', [c.id, t.txid, row.address])).rows[0];
+    if (!dep) {
+      if (!prices[c.id]) continue; // wait until we have a price to lock in
+      const cents = Math.round((sats / 1e8) * prices[c.id] * 100);
+      dep = (await pool.query(
+        `INSERT INTO crypto_deposits (user_id, coin, address, txid, amount_sats, usd_cents, confirmations) VALUES ($1,$2,$3,$4,$5,$6,$7)
+         ON CONFLICT (coin, txid, address) DO NOTHING RETURNING *`, [row.user_id, c.id, row.address, t.txid, sats, cents, confs])).rows[0];
+      if (!dep) continue;
+      await log(null, 'watcher', 'crypto.deposit_seen', c.id + ':' + t.txid, { user_id: row.user_id, sats, usd: usd(cents) });
+    } else if (dep.status === 'pending' && dep.confirmations !== confs) {
+      await pool.query('UPDATE crypto_deposits SET confirmations=$1 WHERE id=$2', [confs, dep.id]);
+    }
+    if (dep.status === 'pending' && confs >= c.confirmations) {
+      await tx(async (db) => {
+        const d = (await db.query("SELECT * FROM crypto_deposits WHERE id=$1 AND status='pending' FOR UPDATE", [dep.id])).rows[0];
+        if (!d) return;
+        if (d.usd_cents < MIN_DEPOSIT) {
+          await db.query("UPDATE crypto_deposits SET status='below_min', confirmations=$1 WHERE id=$2", [confs, d.id]);
+          await log(db, 'watcher', 'crypto.deposit_below_min', c.id + ':' + d.txid, { usd: usd(d.usd_cents) });
+          return;
+        }
+        await db.query('SELECT id FROM users WHERE id=$1 FOR UPDATE', [d.user_id]);
+        await moveMoney(db, d.user_id, d.usd_cents, 'crypto_deposit', (Number(d.amount_sats) / 1e8).toFixed(8).replace(/0+$/, '').replace(/\.$/, '') + ' ' + c.symbol, d.usd_cents);
+        await db.query("UPDATE crypto_deposits SET status='credited', confirmations=$1, credited_at=now() WHERE id=$2", [confs, d.id]);
+        await log(db, 'watcher', 'crypto.deposit_credited', c.id + ':' + d.txid, { user_id: d.user_id, usd: usd(d.usd_cents) });
+      });
+    }
+  }
+  await pool.query('UPDATE crypto_addresses SET last_checked=now() WHERE id=$1', [row.id]);
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let busy = false;
+async function sweep(all) {
+  if (busy || !Object.keys(CRYPTO).length) return;
+  busy = true;
+  try {
+    await refreshPrices();
+    const keys = Object.values(CRYPTO).map((c) => c.id + ':' + c.keyId);
+    const rows = (await pool.query(
+      `SELECT a.* FROM crypto_addresses a WHERE (a.coin || ':' || a.key_id) = ANY($1) AND ($2 OR a.last_viewed > now() - interval '24 hours'
+         OR EXISTS (SELECT 1 FROM crypto_deposits d WHERE d.address=a.address AND d.status='pending'))
+       ORDER BY a.last_checked ASC NULLS FIRST LIMIT 500`, [keys, all])).rows;
+    for (const r of rows) {
+      try { await checkAddress(r); } catch (e) { watch.lastError = new Date().toISOString() + ' ' + e.message; }
+      await sleep(all ? 1000 : 350);
+    }
+    watch.lastRun = new Date().toISOString();
+  } catch (e) { watch.lastError = e.message; }
+  busy = false;
+}
+const POLL = Math.max(5, parseInt(process.env.CRYPTO_POLL_SECONDS, 10) || 20) * 1000;
+setInterval(() => sweep(false), POLL);
+setInterval(() => sweep(true), 15 * 60 * 1000);
+setTimeout(() => sweep(true), 5000);
+
 
 app.use((err, req, res, next) => {
   if (err instanceof Fail) return res.status(err.status).json({ error: err.message });
