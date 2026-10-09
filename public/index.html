@@ -68,6 +68,18 @@ dialog form{display:flex;flex-direction:column;gap:10px}
 .err{color:var(--bad);font-size:14px;min-height:18px}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.show{opacity:1}
+#chatBtn{position:fixed;right:20px;bottom:20px;z-index:8;background:var(--violet);color:#fff;border:0;border-radius:99px;padding:12px 20px;box-shadow:0 6px 24px #0008}
+#chat{position:fixed;right:20px;bottom:20px;z-index:9;width:min(360px,calc(100vw - 40px));height:min(480px,70vh);background:var(--surface);border:1px solid var(--line);border-radius:16px;display:none;flex-direction:column;box-shadow:0 10px 40px #000a}
+#chat.open{display:flex}
+#chat header{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+#chat header h3{font-size:16px}
+#msgs{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.m{font-size:14px;word-break:break-word}
+.m b{color:var(--gold);margin-right:6px}.m.me b{color:#b7a4ff}
+.m time{color:var(--mute);font-size:11px;margin-left:6px}
+#chatForm{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+#chatForm input{flex:1;min-width:0}
+.chatnote{padding:12px;text-align:center;color:var(--mute);font-size:14px;border-top:1px solid var(--line)}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}#toast{transition:none}}
 </style>
 </head>
@@ -139,6 +151,13 @@ dialog form{display:flex;flex-direction:column;gap:10px}
   <button class="btn">Post listing</button>
   <button type="button" class="ghost" onclick="postDlg.close()">Cancel</button>
 </form></dialog>
+<button id="chatBtn">Live chat</button>
+<aside id="chat" aria-label="Live chat">
+  <header><h3>Live chat</h3><button class="ghost sm" id="chatClose" aria-label="Close chat">Close</button></header>
+  <div id="msgs"></div>
+  <form id="chatForm"><input id="chatIn" maxlength="200" placeholder="Say something..." autocomplete="off"><button class="btn sm">Send</button></form>
+  <div class="chatnote" id="chatNote" hidden>Log in to join the chat.</div>
+</aside>
 <div id="toast" role="status"></div>
 
 <script>
@@ -225,6 +244,38 @@ $('tabs').onclick = (e) => {
 };
 $('q').addEventListener('input', load);
 $('cat').addEventListener('change', load);
+let lastId = 0, chatTimer = null;
+function addMsgs(rows) {
+  const box = $('msgs');
+  const stick = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+  rows.forEach((m) => {
+    lastId = Math.max(lastId, m.id);
+    const t = new Date(m.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    box.append(el('div', { className: 'm' + (me && me.id === m.user_id ? ' me' : '') },
+      el('b', { textContent: m.username }), document.createTextNode(m.body), el('time', { textContent: t })));
+  });
+  if (stick || lastId === (rows[rows.length - 1] || {}).id) box.scrollTop = box.scrollHeight;
+}
+async function pollChat() {
+  try { addMsgs(await api('/api/chat' + (lastId ? '?after=' + lastId : ''))); } catch {}
+}
+function chatUI() { $('chatForm').hidden = !me; $('chatNote').hidden = !!me; }
+$('chatBtn').onclick = () => {
+  $('chat').classList.add('open'); $('chatBtn').hidden = true; chatUI();
+  pollChat(); chatTimer = setInterval(pollChat, 3000);
+};
+$('chatClose').onclick = () => {
+  $('chat').classList.remove('open'); $('chatBtn').hidden = false; clearInterval(chatTimer);
+};
+$('chatForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const body = $('chatIn').value.trim();
+  if (!body) return;
+  try { await api('/api/chat', 'POST', { body }); $('chatIn').value = ''; pollChat(); }
+  catch (x) { toast(x.message); }
+};
+const _renderNav = renderNav;
+renderNav = function () { _renderNav(); chatUI(); };
 api('/api/me').then((u) => { me = u; renderNav(); load(); });
 </script>
 </body>
