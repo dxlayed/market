@@ -52,19 +52,61 @@ async function init() {
     ALTER TABLE users ADD COLUMN IF NOT EXISTS roblox_id BIGINT UNIQUE;
     ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
     ALTER TABLE users ALTER COLUMN password_hash DROP NOT NULL;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS banned BOOLEAN DEFAULT false;
+    CREATE TABLE IF NOT EXISTS tickets (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      subject TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'open',
+      created_at TIMESTAMPTZ DEFAULT now(),
+      updated_at TIMESTAMPTZ DEFAULT now()
+    );
+    CREATE TABLE IF NOT EXISTS ticket_messages (
+      id SERIAL PRIMARY KEY,
+      ticket_id INT REFERENCES tickets(id) ON DELETE CASCADE,
+      user_id INT REFERENCES users(id) ON DELETE SET NULL,
+      body TEXT NOT NULL,
+      staff BOOLEAN DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
   `);
 }
 
 const clean = (v, max) => String(v || '').trim().slice(0, max);
 
-function auth(req, res, next) {
-  try {
-    req.user = jwt.verify(req.cookies.token, SECRET);
-    next();
-  } catch {
-    res.status(401).json({ error: 'Please log in first.' });
-  }
+// Owners are Roblox-verified accounts with these usernames. Change with the OWNERS variable in Railway.
+const OWNERS = (process.env.OWNERS || 'yukogives,Kriminalitys').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+const isOwner = (u) => !!u && u.roblox_id != null && OWNERS.includes(String(u.username).toLowerCase());
+const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
+async function currentUser(req) {
+  let t;
+  try { t = jwt.verify(req.cookies.token, SECRET); } catch { return null; }
+  return (await pool.query('SELECT id, username, avatar_url, roblox_id, banned FROM users WHERE id=$1', [t.id])).rows[0] || null;
 }
+
+const auth = wrap(async (req, res, next) => {
+  const u = await currentUser(req);
+  if (!u) return res.status(401).json({ error: 'Please log in first.' });
+  if (u.banned) return res.status(403).json({ error: 'Your account is banned. Open a support ticket if you think this is a mistake.' });
+  req.user = u;
+  next();
+});
+
+// Like auth, but lets banned users through so they can still reach support.
+const authAny = wrap(async (req, res, next) => {
+  const u = await currentUser(req);
+  if (!u) return res.status(401).json({ error: 'Please log in first.' });
+  req.user = u;
+  next();
+});
+
+const owner = wrap(async (req, res, next) => {
+  const u = await currentUser(req);
+  if (!isOwner(u)) return res.status(404).json({ error: 'Not found.' });
+  req.user = u;
+  next();
+});
 
 function setToken(res, user) {
   const token = jwt.sign({ id: user.id, username: user.username, avatar: user.avatar || null }, SECRET, { expiresIn: '14d' });
@@ -122,7 +164,8 @@ app.post('/api/auth/verify', async (req, res) => {
       if (/^https:\/\/[\w.-]+\.rbxcdn\.com\//.test(url)) avatar = url;
     } catch {}
     const name = prof.name || ch.name;
-    let user = (await pool.query('SELECT id, username FROM users WHERE roblox_id=$1', [ch.rid])).rows[0];
+    let user = (await pool.query('SELECT id, username, banned FROM users WHERE roblox_id=$1', [ch.rid])).rows[0];
+    if (user && user.banned) return res.status(403).json({ error: 'This account is banned from SplitzMarket.' });
     if (user) {
       await pool.query('UPDATE users SET avatar_url=$1 WHERE id=$2', [avatar, user.id]);
       if (name !== user.username) { try { await pool.query('UPDATE users SET username=$1 WHERE id=$2', [name, user.id]); user.username = name; } catch {} }
@@ -142,11 +185,13 @@ app.post('/api/auth/verify', async (req, res) => {
 
 app.post('/api/logout', (req, res) => { res.clearCookie('token'); res.json({ ok: true }); });
 
-app.get('/api/me', (req, res) => {
-  try { res.json(jwt.verify(req.cookies.token, SECRET)); } catch { res.json(null); }
-});
+app.get('/api/me', wrap(async (req, res) => {
+  const u = await currentUser(req);
+  if (!u) return res.json(null);
+  res.json({ id: u.id, username: u.username, avatar: u.avatar_url || null, owner: isOwner(u), banned: !!u.banned });
+}));
 
-app.get('/api/listings', async (req, res) => {
+app.get('/api/listings', wrap(async (req, res) => {
   const where = ["l.status='open'"];
   const args = [];
   if (req.query.q) { args.push('%' + clean(req.query.q, 50) + '%'); where.push(`l.item ILIKE $${args.length}`); }
@@ -155,7 +200,7 @@ app.get('/api/listings', async (req, res) => {
   const { rows } = await pool.query(
     `SELECT l.*, u.username FROM listings l JOIN users u ON u.id=l.user_id WHERE ${where.join(' AND ')} ORDER BY l.created_at DESC LIMIT 100`, args);
   res.json(rows);
-});
+}));
 
 app.post('/api/listings', auth, async (req, res) => {
   const b = req.body;
@@ -179,7 +224,7 @@ app.delete('/api/listings/:id', auth, async (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/profile', auth, async (req, res) => {
+app.get('/api/profile', auth, wrap(async (req, res) => {
   const id = req.user.id;
   const u = (await pool.query('SELECT username, created_at FROM users WHERE id=$1', [id])).rows[0];
   const c = (await pool.query("SELECT status, count(*)::int AS n FROM listings WHERE user_id=$1 GROUP BY status", [id])).rows;
@@ -189,20 +234,20 @@ app.get('/api/profile', auth, async (req, res) => {
   const done = n('done');
   const rank = done >= 15 ? 'Broker' : done >= 5 ? 'Dealer' : done >= 1 ? 'Trader' : 'Newcomer';
   res.json({ username: u.username, joined: u.created_at, open: n('open'), done, messages: msgs, rank, listings: mine });
-});
+}));
 
 const lastMsg = new Map();
 
-app.get('/api/chat', async (req, res) => {
+app.get('/api/chat', wrap(async (req, res) => {
   const after = parseInt(req.query.after, 10);
   const q = after
     ? ['SELECT m.id, m.body, m.created_at, m.user_id, u.username FROM messages m JOIN users u ON u.id=m.user_id WHERE m.id>$1 ORDER BY m.id ASC LIMIT 100', [after]]
     : ['SELECT * FROM (SELECT m.id, m.body, m.created_at, m.user_id, u.username FROM messages m JOIN users u ON u.id=m.user_id ORDER BY m.id DESC LIMIT 50) t ORDER BY id ASC', []];
   const { rows } = await pool.query(q[0], q[1]);
   res.json(rows);
-});
+}));
 
-app.post('/api/chat', auth, async (req, res) => {
+app.post('/api/chat', auth, wrap(async (req, res) => {
   const body = clean(req.body.body, 200);
   if (!body) return res.status(400).json({ error: 'Type a message first.' });
   const now = Date.now();
@@ -210,7 +255,138 @@ app.post('/api/chat', auth, async (req, res) => {
   lastMsg.set(req.user.id, now);
   await pool.query('INSERT INTO messages (user_id, body) VALUES ($1,$2)', [req.user.id, body]);
   res.json({ ok: true });
+}));
+
+// ---------- Support tickets ----------
+app.get('/api/tickets', authAny, wrap(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT t.id, t.subject, t.status, t.created_at, t.updated_at,
+       (SELECT staff FROM ticket_messages m WHERE m.ticket_id=t.id ORDER BY m.id DESC LIMIT 1) AS last_staff
+     FROM tickets t WHERE t.user_id=$1 ORDER BY t.updated_at DESC LIMIT 50`, [req.user.id]);
+  res.json(rows);
+}));
+
+app.post('/api/tickets', authAny, wrap(async (req, res) => {
+  const subject = clean(req.body.subject, 80), body = clean(req.body.body, 1000);
+  if (!subject || !body) return res.status(400).json({ error: 'Add a subject and a message.' });
+  if (!limit('t' + req.user.id, 30000)) return res.status(429).json({ error: 'Wait a few seconds before opening another ticket.' });
+  const open = (await pool.query("SELECT count(*)::int AS n FROM tickets WHERE user_id=$1 AND status='open'", [req.user.id])).rows[0].n;
+  if (open >= 3) return res.status(400).json({ error: 'You already have 3 open tickets. Reply in one of those instead.' });
+  const t = (await pool.query('INSERT INTO tickets (user_id, subject) VALUES ($1,$2) RETURNING id', [req.user.id, subject])).rows[0];
+  await pool.query('INSERT INTO ticket_messages (ticket_id, user_id, body, staff) VALUES ($1,$2,$3,false)', [t.id, req.user.id, body]);
+  res.json(t);
+}));
+
+async function ticketFor(req, res) {
+  const id = parseInt(req.params.id, 10);
+  const t = (await pool.query('SELECT t.*, u.username FROM tickets t JOIN users u ON u.id=t.user_id WHERE t.id=$1', [id])).rows[0];
+  const u = await currentUser(req);
+  if (!t || !u || (t.user_id !== u.id && !isOwner(u))) { res.status(404).json({ error: 'Ticket not found.' }); return null; }
+  return { t, u };
+}
+
+app.get('/api/tickets/:id', wrap(async (req, res) => {
+  const r = await ticketFor(req, res); if (!r) return;
+  const msgs = (await pool.query(
+    `SELECT m.id, m.body, m.staff, m.created_at, u.username FROM ticket_messages m LEFT JOIN users u ON u.id=m.user_id
+     WHERE m.ticket_id=$1 ORDER BY m.id ASC`, [r.t.id])).rows;
+  res.json({ ticket: { id: r.t.id, subject: r.t.subject, status: r.t.status, username: r.t.username, created_at: r.t.created_at }, messages: msgs, staff: isOwner(r.u) });
+}));
+
+app.post('/api/tickets/:id/messages', wrap(async (req, res) => {
+  const r = await ticketFor(req, res); if (!r) return;
+  const body = clean(req.body.body, 1000);
+  if (!body) return res.status(400).json({ error: 'Type a message first.' });
+  if (!limit('tm' + r.u.id, 1500)) return res.status(429).json({ error: 'Slow down a little.' });
+  const staff = isOwner(r.u);
+  if (r.t.status === 'closed' && !staff) await pool.query("UPDATE tickets SET status='open' WHERE id=$1", [r.t.id]);
+  await pool.query('INSERT INTO ticket_messages (ticket_id, user_id, body, staff) VALUES ($1,$2,$3,$4)', [r.t.id, r.u.id, body, staff]);
+  await pool.query('UPDATE tickets SET updated_at=now() WHERE id=$1', [r.t.id]);
+  res.json({ ok: true });
+}));
+
+// ---------- Owner panel ----------
+app.get('/api/admin/stats', owner, wrap(async (req, res) => {
+  const q = async (sql) => (await pool.query(sql)).rows[0].n;
+  res.json({
+    users: await q('SELECT count(*)::int AS n FROM users'),
+    newUsers: await q("SELECT count(*)::int AS n FROM users WHERE created_at > now() - interval '24 hours'"),
+    banned: await q('SELECT count(*)::int AS n FROM users WHERE banned'),
+    listings: await q("SELECT count(*)::int AS n FROM listings WHERE status='open'"),
+    messages: await q('SELECT count(*)::int AS n FROM messages'),
+    messagesToday: await q("SELECT count(*)::int AS n FROM messages WHERE created_at > now() - interval '24 hours'"),
+    openTickets: await q("SELECT count(*)::int AS n FROM tickets WHERE status='open'"),
+    waiting: await q(`SELECT count(*)::int AS n FROM tickets t WHERE t.status='open' AND
+      NOT COALESCE((SELECT staff FROM ticket_messages m WHERE m.ticket_id=t.id ORDER BY m.id DESC LIMIT 1), false)`),
+    owners: OWNERS,
+  });
+}));
+
+app.get('/api/admin/users', owner, wrap(async (req, res) => {
+  const q = clean(req.query.q, 30);
+  const { rows } = await pool.query(
+    `SELECT u.id, u.username, u.roblox_id, u.avatar_url, u.banned, u.created_at,
+       (SELECT count(*)::int FROM listings l WHERE l.user_id=u.id) AS listings,
+       (SELECT count(*)::int FROM messages m WHERE m.user_id=u.id) AS messages,
+       (SELECT count(*)::int FROM tickets t WHERE t.user_id=u.id) AS tickets
+     FROM users u WHERE ($1 = '' OR u.username ILIKE '%' || $1 || '%')
+     ORDER BY u.created_at DESC LIMIT 200`, [q]);
+  res.json(rows.map((u) => ({ ...u, roblox_id: u.roblox_id ? String(u.roblox_id) : null, owner: isOwner(u) })));
+}));
+
+app.post('/api/admin/users/:id/ban', owner, wrap(async (req, res) => {
+  const target = (await pool.query('SELECT id, username, roblox_id FROM users WHERE id=$1', [parseInt(req.params.id, 10)])).rows[0];
+  if (!target) return res.status(404).json({ error: 'User not found.' });
+  if (isOwner(target)) return res.status(400).json({ error: "Owners can't be banned." });
+  await pool.query('UPDATE users SET banned=$1 WHERE id=$2', [!!req.body.banned, target.id]);
+  res.json({ ok: true });
+}));
+
+app.get('/api/admin/tickets', owner, wrap(async (req, res) => {
+  const status = req.query.status === 'closed' ? 'closed' : req.query.status === 'all' ? null : 'open';
+  const { rows } = await pool.query(
+    `SELECT t.id, t.subject, t.status, t.created_at, t.updated_at, u.username,
+       (SELECT staff FROM ticket_messages m WHERE m.ticket_id=t.id ORDER BY m.id DESC LIMIT 1) AS last_staff,
+       (SELECT count(*)::int FROM ticket_messages m WHERE m.ticket_id=t.id) AS replies
+     FROM tickets t JOIN users u ON u.id=t.user_id
+     WHERE ($1::text IS NULL OR t.status=$1) ORDER BY t.updated_at DESC LIMIT 200`, [status]);
+  res.json(rows);
+}));
+
+app.post('/api/admin/tickets/:id/status', owner, wrap(async (req, res) => {
+  const status = req.body.status === 'closed' ? 'closed' : 'open';
+  await pool.query('UPDATE tickets SET status=$1, updated_at=now() WHERE id=$2', [status, parseInt(req.params.id, 10)]);
+  res.json({ ok: true });
+}));
+
+app.get('/api/admin/chat', owner, wrap(async (req, res) => {
+  const { rows } = await pool.query(
+    'SELECT m.id, m.body, m.created_at, u.username, u.id AS user_id FROM messages m JOIN users u ON u.id=m.user_id ORDER BY m.id DESC LIMIT 200');
+  res.json(rows);
+}));
+
+app.delete('/api/admin/chat/:id', owner, wrap(async (req, res) => {
+  await pool.query('DELETE FROM messages WHERE id=$1', [parseInt(req.params.id, 10)]);
+  res.json({ ok: true });
+}));
+
+app.get('/api/admin/listings', owner, wrap(async (req, res) => {
+  const { rows } = await pool.query(
+    'SELECT l.id, l.kind, l.item, l.category, l.price, l.status, l.created_at, u.username FROM listings l JOIN users u ON u.id=l.user_id ORDER BY l.created_at DESC LIMIT 200');
+  res.json(rows);
+}));
+
+app.delete('/api/admin/listings/:id', owner, wrap(async (req, res) => {
+  await pool.query('DELETE FROM listings WHERE id=$1', [parseInt(req.params.id, 10)]);
+  res.json({ ok: true });
+}));
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  if (res.headersSent) return next(err);
+  res.status(500).json({ error: 'Something went wrong on our side. Try again.' });
 });
+process.on('unhandledRejection', (e) => console.error('Unhandled', e));
 
 const port = process.env.PORT || 3000;
 init().then(() => app.listen(port, () => console.log('Running on ' + port))).catch((e) => { console.error(e); process.exit(1); });
