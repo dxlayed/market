@@ -139,15 +139,6 @@ dialog form{display:flex;flex-direction:column;gap:10px}
   </footer>
 </div>
 
-<dialog id="authDlg"><form id="authForm">
-  <h2 id="authTitle">Log in</h2>
-  <input name="username" placeholder="Username" autocomplete="username" required>
-  <input name="password" type="password" placeholder="Password" autocomplete="current-password" required>
-  <div class="err" id="err"></div>
-  <button class="btn">Continue</button>
-  <button type="button" class="ghost" id="switch">Need an account? Sign up</button>
-  <button type="button" class="ghost" onclick="authDlg.close()">Cancel</button>
-</form></dialog>
 
 <dialog id="postDlg"><form id="postForm">
   <h2>New listing</h2>
@@ -183,6 +174,7 @@ dialog form{display:flex;flex-direction:column;gap:10px}
 </aside>
 <div id="toast" role="status"></div>
 
+<script src="/auth.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 let me = null, signup = false, kind = '';
@@ -196,7 +188,7 @@ async function api(url, method = 'GET', body) {
 function el(tag, props = {}, ...kids) { const e = document.createElement(tag); Object.assign(e, props); kids.forEach((k) => e.append(k)); return e; }
 function toast(t) { const x = $('toast'); x.textContent = t; x.classList.add('show'); setTimeout(() => x.classList.remove('show'), 1800); }
 function ago(d) { const s = (Date.now() - new Date(d)) / 1000; if (s < 3600) return Math.max(1, Math.floor(s / 60)) + 'm ago'; if (s < 86400) return Math.floor(s / 3600) + 'h ago'; return Math.floor(s / 86400) + 'd ago'; }
-function needLogin() { authDlg.showModal(); }
+function needLogin() { RbxAuth.open((u) => { me = u; renderNav(); load(); }); }
 
 function renderNav() {
   const nav = $('nav'); nav.replaceChildren();
@@ -204,17 +196,12 @@ function renderNav() {
   if (me) {
     nav.append(el('button', { className: 'btn sm', textContent: 'Post listing', onclick: () => postDlg.showModal() }), ' ',
       el('button', { className: 'profile', onclick: openProfile },
-        el('span', { className: 'av', textContent: me.username[0].toUpperCase() }),
+        avEl(me),
         el('span', {}, el('b', { textContent: me.username }), el('small', { id: 'navRank', textContent: myRank }))));
     api('/api/profile').then((p) => { myRank = p.rank; const r = $('navRank'); if (r) r.textContent = p.rank; }).catch(() => {});
   } else {
-    nav.append(el('button', { className: 'ghost sm', textContent: 'Log in', onclick: () => { signup = false; setAuth(); needLogin(); } }), ' ',
-      el('button', { className: 'btn sm', textContent: 'Sign up', onclick: () => { signup = true; setAuth(); needLogin(); } }));
+    nav.append(el('button', { className: 'btn sm', textContent: 'Log in with Roblox', onclick: needLogin }));
   }
-}
-function setAuth() {
-  $('authTitle').textContent = signup ? 'Create your account' : 'Log in';
-  $('switch').textContent = signup ? 'Have an account? Log in' : 'Need an account? Sign up';
 }
 
 async function load() {
@@ -246,15 +233,7 @@ async function load() {
   });
 }
 
-$('switch').onclick = () => { signup = !signup; setAuth(); };
-$('heroPost').onclick = () => (me ? postDlg.showModal() : (signup = true, setAuth(), needLogin()));
-$('authForm').onsubmit = async (e) => {
-  e.preventDefault();
-  try {
-    me = await api(signup ? '/api/register' : '/api/login', 'POST', Object.fromEntries(new FormData(e.target)));
-    authDlg.close(); e.target.reset(); $('err').textContent = ''; renderNav(); load();
-  } catch (x) { $('err').textContent = x.message; }
-};
+$('heroPost').onclick = () => (me ? postDlg.showModal() : needLogin());
 $('postForm').onsubmit = async (e) => {
   e.preventDefault();
   try {
