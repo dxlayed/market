@@ -115,15 +115,15 @@
   window.openFunds = function (mode) {
     const add = mode !== 'out';
     fd.innerHTML = '';
-    const h = document.createElement('h2'); h.textContent = add ? 'Add funds' : 'Cash out';
+    const h = document.createElement('h2'); h.textContent = add ? 'Add funds' : 'Withdraw';
     const big = document.createElement('div'); big.className = 'big'; balEls.add(big);
     const lab = document.createElement('div'); lab.className = 'mute'; lab.textContent = 'Your balance'; lab.style.cssText = 'color:var(--mute);font-size:13px';
     const p = document.createElement('p');
     p.textContent = add
       ? 'Card checkout is coming soon. For now, open a support ticket saying how much you want to add and the team will top up your balance.'
-      : 'Open a support ticket with the amount you want to cash out and how you want to be paid. The team will send it and take it off your balance.';
-    const go = document.createElement('a'); go.className = 'btn'; go.textContent = add ? 'Open a ticket to add funds' : 'Request a cash out';
-    go.href = '/support.html?subject=' + encodeURIComponent(add ? 'Add funds' : 'Cash out request');
+      : 'Open a support ticket with the amount you want to withdraw and where to send it. The team will send it and take it off your balance.';
+    const go = document.createElement('a'); go.className = 'btn'; go.textContent = add ? 'Open a ticket to add funds' : 'Request a withdrawal';
+    go.href = '/support.html?subject=' + encodeURIComponent(add ? 'Add funds' : 'Withdrawal request');
     go.style.cssText = 'text-decoration:none;display:inline-block;padding:10px 16px;border-radius:10px;font-weight:700';
     const x = document.createElement('button'); x.className = 'ghost'; x.textContent = 'Close'; x.onclick = () => fd.close();
     const row = document.createElement('div'); row.className = 'row'; row.append(go, x);
@@ -147,7 +147,8 @@
     pop.append(mk('a', { href: '/profile.html', textContent: 'Profile' }), mk('a', { href: '/?seller=' + encodeURIComponent(u.username), textContent: 'My shop' }),
       mk('a', { href: '/inventory.html', textContent: 'Inventory' }), mk('a', { href: '/profile.html#wallet', textContent: 'Transactions' }), mk('a', { href: '/support.html', textContent: 'Support' }), mk('hr'),
       mk('button', { type: 'button', textContent: 'Add funds', onclick: () => window.openFunds('add') }),
-      mk('button', { type: 'button', textContent: 'Cash out', onclick: () => window.openFunds('out') }), mk('hr'), out);
+      mk('button', { type: 'button', textContent: 'Withdraw funds', onclick: () => window.openFunds('out') }),
+      mk('a', { href: 'https://discord.gg/splitzmarket', target: '_blank', rel: 'noopener', textContent: 'Discord' }), mk('hr'), out);
     const box = mk('div', { className: 'um' }, btn, pop);
     const wrap = mk('div', { className: 'um' }, wallet, box);
     btn.onclick = (e) => { e.stopPropagation(); pop.hidden = !pop.hidden; btn.setAttribute('aria-expanded', String(!pop.hidden)); };
@@ -185,6 +186,98 @@
     }
     return s;
   };
+
+  // ---------- Discord, owner maintenance banner, first-visit welcome ----------
+  const DISCORD = 'https://discord.gg/splitzmarket';
+  window.DISCORD = DISCORD;
+  const DISCORD_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.6 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1a19.9 19.9 0 0 0 6 3l1.3-2.1a12.9 12.9 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.2-.8-9.7-3.6-13.7zM8 15.3c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.5 8 10.5s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>';
+  const wcss = document.createElement('style');
+  wcss.textContent = `.dcLink{display:inline-flex;align-items:center;gap:7px;color:var(--mute);text-decoration:none;font-weight:700;font-size:14px;padding:8px 12px;border-radius:10px}
+.dcLink:hover{color:var(--text);background:var(--surface)}
+.dcLink svg{width:18px;height:18px}
+#mBanner{position:sticky;top:0;z-index:16;background:repeating-linear-gradient(-45deg,#e8202a,#e8202a 14px,#c4111b 14px,#c4111b 28px);color:#fff;font-weight:700;font-size:14px;text-align:center;padding:8px 16px}
+#mBanner a{color:#fff}
+#welcome{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;background:#050303e6;backdrop-filter:blur(6px);opacity:0;transition:opacity .35s}
+#welcome.on{opacity:1}
+#welcome .seam{position:absolute;inset:-20% -10%;background:linear-gradient(103deg,transparent 49.6%,#e8202a 49.85%,#ff5a5f 50%,#e8202a 50.15%,transparent 50.4%);opacity:.45;filter:drop-shadow(0 0 22px #e8202a);pointer-events:none}
+#welcome .card{position:relative;width:min(600px,100%);max-height:calc(100vh - 40px);overflow:auto;background:linear-gradient(180deg,#170c0c,#0c0707);border:1px solid #4a1a1a;border-radius:24px;padding:40px 36px 30px;text-align:center;box-shadow:0 40px 120px #000}
+#welcome .mark{position:relative;display:inline-block;font-family:Outfit,system-ui,sans-serif;font-weight:900;font-size:clamp(60px,13vw,104px);line-height:.9;letter-spacing:-.04em;margin-bottom:26px;user-select:none}
+#welcome .mark span{display:block}
+#welcome .mark .a{clip-path:polygon(0 0,100% 0,100% 44%,0 60%);transform:translate(-.12em,-.06em);transition:transform .8s cubic-bezier(.2,.8,.2,1) .15s}
+#welcome .mark .b{position:absolute;inset:0;color:var(--gold);clip-path:polygon(0 60%,100% 44%,100% 100%,0 100%);transform:translate(.2em,.12em);transition:transform .8s cubic-bezier(.2,.8,.2,1) .15s}
+#welcome.on .mark .a{transform:none}
+#welcome.on .mark .b{transform:translate(.06em,.035em)}
+#welcome h2{font-family:Outfit,system-ui,sans-serif;font-size:clamp(24px,4vw,32px);font-weight:800;letter-spacing:-.02em;margin:0 0 10px}
+#welcome p{color:#d4bfbe;font-size:16px;line-height:1.6;margin:0 auto 24px;max-width:44ch}
+#welcome ol{list-style:none;padding:0;margin:0 0 28px;display:grid;gap:10px;text-align:left}
+#welcome li{display:flex;gap:14px;align-items:baseline;padding:12px 16px;border-left:3px solid var(--gold);background:#ffffff05;border-radius:0 12px 12px 0;font-size:15px;line-height:1.45;color:#e9dcdb}
+#welcome li b{font-family:Outfit,system-ui,sans-serif;color:var(--gold);font-size:18px;min-width:12px}
+#welcome .acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+#welcome .acts>*{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font:inherit;font-weight:700;font-size:15px;padding:13px 20px;border-radius:12px;cursor:pointer}
+#welcome .go{background:var(--gold);color:#fff;border:0;box-shadow:0 8px 30px #e8202a55}
+#welcome .dc{background:transparent;color:var(--text);border:1px solid #4a1a1a}
+#welcome .dc:hover{border-color:var(--gold)}
+#welcome .dc svg{width:20px;height:20px}
+#welcome .x{position:absolute;top:14px;right:14px;background:transparent;border:0;color:var(--mute);font-size:22px;cursor:pointer;padding:4px 10px;border-radius:8px}
+#welcome .x:hover{color:var(--text)}
+@media (prefers-reduced-motion:reduce){#welcome,#welcome .mark span{transition:none}}
+@media (max-width:640px){.dcLink span{display:none}#welcome .card{padding:34px 20px 22px}}`;
+  document.head.append(wcss);
+
+  const bar = document.querySelector('.bar');
+  const who = document.getElementById('who');
+  if (bar && who) {
+    const a = document.createElement('a');
+    a.className = 'dcLink'; a.href = DISCORD; a.target = '_blank'; a.rel = 'noopener';
+    a.innerHTML = DISCORD_SVG + '<span>Discord</span>';
+    bar.insertBefore(a, who);
+  }
+
+  // Owners get a reminder strip while regular players are seeing the maintenance page.
+  if (!document.body.dataset.nowelcome) fetch('/api/me').then((r) => r.json()).then((u) => {
+    if (!u || !u.owner || !u.maintenance) return;
+    const b = document.createElement('div'); b.id = 'mBanner';
+    b.innerHTML = 'Maintenance mode is on. Only owners can see the site right now. <a href="/owner.html#maintenance">Turn it off</a>';
+    document.body.prepend(b);
+  }).catch(() => {});
+
+  window.showWelcome = function () {
+    if (document.getElementById('welcome')) return;
+    const w = document.createElement('div');
+    w.id = 'welcome'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-modal', 'true'); w.setAttribute('aria-labelledby', 'wTitle');
+    w.innerHTML = `<div class="seam" aria-hidden="true"></div>
+<div class="card">
+  <button class="x" type="button" aria-label="Close">×</button>
+  <div class="mark" aria-hidden="true"><span class="a">Splitz</span><span class="b">Splitz</span></div>
+  <h2 id="wTitle">Welcome to SplitzMarket</h2>
+  <p>The place to buy and sell Murder Mystery 2 items. Everything listed is already in our hands, so what you see is what you get.</p>
+  <ol>
+    <li><b>1</b><span>Log in with your Roblox account and add funds to your balance.</span></li>
+    <li><b>2</b><span>Buy any item on the market. It's in your inventory the second you pay.</span></li>
+    <li><b>3</b><span>Withdraw it and our bot sends it to you in game. Selling works the same way in reverse.</span></li>
+  </ol>
+  <div class="acts">
+    <button class="go" type="button">Start shopping</button>
+    <a class="dc" href="${DISCORD}" target="_blank" rel="noopener">${DISCORD_SVG}Join our Discord</a>
+  </div>
+</div>`;
+    const prev = document.activeElement;
+    const close = () => {
+      try { localStorage.setItem('sm_welcomed', '1'); } catch {}
+      w.classList.remove('on'); setTimeout(() => w.remove(), 350);
+      document.removeEventListener('keydown', esc); if (prev && prev.focus) prev.focus();
+    };
+    const esc = (e) => { if (e.key === 'Escape') close(); };
+    w.querySelector('.x').onclick = close; w.querySelector('.go').onclick = close;
+    w.onclick = (e) => { if (e.target === w) close(); };
+    document.addEventListener('keydown', esc);
+    document.body.append(w);
+    requestAnimationFrame(() => requestAnimationFrame(() => w.classList.add('on')));
+    w.querySelector('.go').focus();
+  };
+  let seen = false;
+  try { seen = !!localStorage.getItem('sm_welcomed'); } catch {}
+  if (!seen && !document.body.dataset.nowelcome) window.showWelcome();
 
   // ---------- Live chat drawer, on every page ----------
   if (!document.body.dataset.nochat) {
