@@ -35,6 +35,12 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .it{position:relative;background:var(--bg);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;text-align:left;padding:0;display:flex;flex-direction:column;color:var(--text)}
 .it.sel{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
 .it.busy{opacity:.55;cursor:default}
+.it.listed{cursor:default;border-color:#e8202a66}
+.it .down{margin:0 12px 12px;padding:6px 10px;font-size:13px;border-radius:8px}
+.price{font-family:Outfit,sans-serif;font-weight:800;color:var(--text);display:block;font-size:18px;margin:2px 0}
+.sellrow{display:flex;align-items:center;gap:10px;margin:14px 0 4px}.sellrow input{flex:1;font-size:20px;font-weight:800;font-family:Outfit,sans-serif}
+.sellrow span{font-family:Outfit,sans-serif;font-size:22px;font-weight:800;color:var(--mute)}
+.sumline{display:flex;justify-content:space-between;font-weight:700;margin-top:10px}
 .art{height:100px;display:grid;place-items:center;background:radial-gradient(circle at 50% 55%,color-mix(in srgb,var(--c) 40%,transparent),transparent 70%),var(--raise);color:var(--c)}
 .art img{max-width:80%;max-height:84px}.art svg{width:52px;height:52px}
 .it .info{padding:10px 12px}
@@ -73,7 +79,7 @@ body{background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transpare
 <body>
 <div class="bar">
   <a class="logo" href="/">Splitz<b>Market</b></a>
-  <nav><a href="/">Shop</a><a href="/board.html">Board &amp; chat</a><a class="on" href="/inventory.html">Inventory</a><a href="/support.html">Support</a></nav>
+  <nav><a href="/">Market</a><a class="on" href="/inventory.html">Inventory</a><a href="/support.html">Support</a></nav>
   <div id="who"></div>
 </div>
 <div class="wrap" id="main"><div class="card mute">Loading...</div></div>
@@ -88,6 +94,16 @@ body{background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transpare
     <span><button class="ghost" onclick="depDlg.close()">Cancel</button> <button class="btn" id="depGo">Get trade code</button></span>
   </div>
   <div class="err" id="depErr"></div>
+</dialog>
+<dialog id="sellDlg">
+  <h2>Sell items</h2>
+  <p class="mute" style="margin:6px 0 0">Set a price for each item. When someone buys, the money goes straight to your balance and the item moves to their inventory.</p>
+  <div class="pick" id="sellList"></div>
+  <label class="mute" for="sellPrice">Price per item (USD)</label>
+  <div class="sellrow"><span>$</span><input id="sellPrice" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
+  <div class="sumline"><span class="mute">You get if all sell</span><span id="sellTotal">$0.00</span></div>
+  <div class="err" id="sellErr"></div>
+  <div style="display:flex;justify-content:flex-end;gap:8px"><button class="ghost" onclick="sellDlg.close()">Cancel</button> <button class="btn" id="sellGo">List for sale</button></div>
 </dialog>
 <div id="toast" role="status"></div>
 
@@ -120,6 +136,8 @@ function art(i) {
 
 let me = null, info = { open: false, accounts: [] }, catalog = [], inv = [], selected = new Set(), qty = new Map(), timer = null;
 const canTrade = () => info.open || (me && me.owner);
+const canSell = () => info.market || (me && me.owner);
+const usd = (c) => window.money ? window.money(c) : '$' + (c / 100).toFixed(2);
 
 function gate() {
   $('who').replaceChildren(el('button', { className: 'btn sm', textContent: 'Log in with Roblox', onclick: () => RbxAuth.open(() => location.reload()) }));
@@ -131,14 +149,16 @@ function gate() {
 function shell() {
   const depBtn = canTrade() ? el('button', { className: 'btn', textContent: 'Deposit items', onclick: openDeposit }) : soonBtn('Deposit items', 'btn');
   const wdBtn = canTrade() ? el('button', { className: 'ghost', id: 'wdBtn', textContent: 'Withdraw selected', disabled: true, onclick: withdraw }) : soonBtn('Withdraw', 'ghost');
+  const sellBtn = canSell() ? el('button', { className: 'btn', id: 'sellBtn', textContent: 'Sell selected', disabled: true, onclick: openSell }) : soonBtn('Sell', 'btn');
+  depBtn.className = depBtn.className.replace(/\bbtn\b/, 'ghost');
   const notice = [];
   if (!info.open) notice.push(el('div', { className: 'notice' }, el('b', { textContent: 'Trading is coming soon. ' }),
     me.owner ? 'You can test deposits and withdrawals because you are an owner. Other users see Soon buttons.' : 'Deposits and withdrawals will open here when they are ready.'));
   if (info.accounts.length) notice.push(el('div', { className: 'notice' }, el('b', { textContent: 'Only trade with our official accounts: ' }), info.accounts.join(', '),
     '. Anyone else asking you for items is not SplitzMarket.'));
   $('main').replaceChildren(
-    el('div', { className: 'title' }, el('div', {}, el('h1', { textContent: 'Inventory' }), el('p', { textContent: 'Items you deposited, held safely until you withdraw or sell them.' })),
-      el('div', { style: 'display:flex;gap:8px' }, wdBtn, depBtn)),
+    el('div', { className: 'title' }, el('div', {}, el('h1', { textContent: 'Inventory' }), el('p', { textContent: 'Items you deposited or bought. Select items to sell them on the market or withdraw them in game.' })),
+      el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' }, depBtn, wdBtn, sellBtn)),
     ...notice,
     el('div', { className: 'layout' },
       el('section', { className: 'card' }, el('h2', {}, el('span', { id: 'invTitle', textContent: 'Your items' }), el('span', { className: 'mute', id: 'invValue' })), el('div', { className: 'grid', id: 'grid' })),
@@ -149,20 +169,33 @@ function drawInv() {
   const g = $('grid'); g.replaceChildren();
   const held = inv.filter((i) => i.status === 'held');
   $('invTitle').textContent = 'Your items (' + inv.length + ')';
-  $('invValue').textContent = 'Value ' + inv.reduce((a, i) => a + i.value, 0).toLocaleString();
+  const listed = inv.filter((i) => i.status === 'listed');
+  $('invValue').textContent = (listed.length ? listed.length + ' for sale · ' : '') + 'value ' + inv.reduce((a, i) => a + i.value, 0).toLocaleString();
   if (!inv.length) g.append(el('div', { className: 'empty', style: 'grid-column:1/-1', textContent: 'Nothing here yet. Deposit items to see them here.' }));
-  inv.forEach((i) => {
+  const order = { held: 0, listed: 1, withdrawing: 2 };
+  [...inv].sort((a, b) => order[a.status] - order[b.status]).forEach((i) => {
+    const t = el('div', { className: 'tag', textContent: i.status === 'withdrawing' ? 'WITHDRAWING' : i.status === 'listed' ? 'FOR SALE' : i.rarity.toUpperCase() });
+    t.style.setProperty('--c', i.status === 'listed' ? 'var(--gold)' : RC[i.rarity] || RC.Common);
+    const meta = el('span', { className: 'mute', textContent: i.type + ' · value ' + i.value.toLocaleString() });
+    if (i.status === 'listed') {
+      const down = el('button', { className: 'ghost down', type: 'button', textContent: 'Take down', onclick: async () => {
+        down.disabled = true;
+        try { await api('/api/market/' + i.listing_id + '/cancel', 'POST'); toast('Listing taken down'); refresh(); } catch (e) { toast(e.message, true); refresh(); }
+      } });
+      g.append(el('div', { className: 'it listed' }, art(i), t,
+        el('div', { className: 'info' }, el('b', { textContent: i.name }), el('span', { className: 'price', textContent: usd(i.price_cents) + ' ' }), meta), down));
+      return;
+    }
     const busy = i.status !== 'held';
-    const t = el('div', { className: 'tag', textContent: busy ? 'WITHDRAWING' : i.rarity.toUpperCase() });
-    t.style.setProperty('--c', RC[i.rarity] || RC.Common);
-    const card = el('button', { className: 'it' + (selected.has(i.id) ? ' sel' : '') + (busy ? ' busy' : ''), type: 'button', disabled: busy || !canTrade() },
+    const card = el('button', { className: 'it' + (selected.has(i.id) ? ' sel' : '') + (busy ? ' busy' : ''), type: 'button', disabled: busy || !(canTrade() || canSell()) },
       art(i), t, busy ? null : el('span', { className: 'tick', textContent: selected.has(i.id) ? '✓' : '' }),
-      el('div', { className: 'info' }, el('b', { textContent: i.name }), el('span', { className: 'mute', textContent: i.type + ' · value ' + i.value.toLocaleString() })));
+      el('div', { className: 'info' }, el('b', { textContent: i.name }), meta));
     card.onclick = () => { selected.has(i.id) ? selected.delete(i.id) : selected.add(i.id); drawInv(); };
     g.append(card);
   });
   for (const id of [...selected]) if (!held.some((i) => i.id === id)) selected.delete(id);
-  const w = $('wdBtn'); if (w) { w.disabled = !selected.size; w.textContent = selected.size ? 'Withdraw ' + selected.size + ' selected' : 'Withdraw selected'; }
+  const w = $('wdBtn'); if (w) { w.disabled = !selected.size; w.textContent = selected.size ? 'Withdraw ' + selected.size : 'Withdraw selected'; }
+  const sb = $('sellBtn'); if (sb) { sb.disabled = !selected.size; sb.textContent = selected.size ? 'Sell ' + selected.size : 'Sell selected'; }
 }
 
 function drawTrades(rows) {
@@ -222,6 +255,26 @@ $('depGo').onclick = async () => {
   try { await api('/api/trades/deposit', 'POST', { items }); depDlg.close(); toast('Deposit request created'); refresh(); }
   catch (e) { $('depErr').textContent = e.message; }
   $('depGo').disabled = false;
+};
+function sellTotal() {
+  const v = $('sellPrice').value.trim().replace(/^\$/, '');
+  const c = /^\d+(\.\d{1,2})?$/.test(v) ? Math.round(parseFloat(v) * 100) : 0;
+  $('sellTotal').textContent = usd(c * selected.size);
+}
+function openSell() {
+  const box = $('sellList'); box.replaceChildren();
+  inv.filter((i) => selected.has(i.id)).forEach((i) => box.append(el('div', { className: 'pr' }, el('span', {}, i.name + ' ', el('small', { textContent: i.rarity + ' ' + i.type })), el('small', { textContent: 'value ' + i.value.toLocaleString() }))));
+  $('sellErr').textContent = ''; sellTotal(); sellDlg.showModal(); $('sellPrice').focus();
+}
+$('sellPrice').oninput = sellTotal;
+$('sellPrice').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('sellGo').click(); });
+$('sellGo').onclick = async () => {
+  $('sellErr').textContent = ''; $('sellGo').disabled = true;
+  try {
+    const r = await api('/api/market/list', 'POST', { inventory_ids: [...selected], price: $('sellPrice').value });
+    sellDlg.close(); selected.clear(); toast('Listed ' + r.listed + ' item' + (r.listed === 1 ? '' : 's') + ' on the market'); refresh();
+  } catch (e) { $('sellErr').textContent = e.message; }
+  $('sellGo').disabled = false;
 };
 async function withdraw() {
   try { await api('/api/trades/withdraw', 'POST', { inventory_ids: [...selected] }); selected.clear(); toast('Withdraw request created'); refresh(); }
