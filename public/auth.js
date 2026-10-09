@@ -187,18 +187,19 @@
     return s;
   };
 
-  // ---------- Official logo: browser tab icon, home-screen icon, top bar mark ----------
-  [['icon', '/favicon.ico', null], ['icon', '/favicon-32.png', '32x32'], ['apple-touch-icon', '/apple-touch-icon.png', null]].forEach(([rel, href, sizes]) => {
-    if (document.querySelector('link[rel="' + rel + '"][href="' + href + '"]')) return;
-    const l = document.createElement('link'); l.rel = rel; l.href = href; if (sizes) l.sizes = sizes; document.head.append(l);
-  });
+  // ---------- Official logo (split S), built in so it never depends on uploaded image files ----------
+  const LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="smg" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#3a0b0f"/><stop offset="1" stop-color="#0a0707"/></radialGradient><clipPath id="smt"><path d="M0 0H100V45.7L0 57.2Z"/></clipPath><clipPath id="smb"><path d="M0 57.2L100 45.7V100H0Z"/></clipPath></defs><rect width="100" height="100" rx="22" fill="url(#smg)"/><g clip-path="url(#smt)" fill="#f6efee" transform="translate(-1.5 -1)"><path d="M289 -12Q198 -12 130.5 14.5Q63 41 6 99L131 224Q170 187 213.0 167.5Q256 148 305 148Q346 148 367.0 160.5Q388 173 388 195Q388 217 370.0 231.5Q352 246 322.5 257.5Q293 269 257.5 281.0Q222 293 187.0 310.0Q152 327 122.5 351.5Q93 376 75.0 412.5Q57 449 57 502Q57 571 90.0 621.0Q123 671 183.0 697.5Q243 724 324 724Q404 724 472.5 698.5Q541 673 586 626L460 501Q427 533 394.0 548.5Q361 564 322 564Q291 564 272.5 554.0Q254 544 254 524Q254 503 272.0 489.5Q290 476 319.5 465.0Q349 454 384.5 442.0Q420 430 455.0 413.5Q490 397 519.5 371.5Q549 346 567.0 308.0Q585 270 585 216Q585 107 507.5 47.5Q430 -12 289 -12Z" transform="translate(21.04 84.83) scale(0.09783 -0.09783)"/></g><g clip-path="url(#smb)" transform="translate(2 1.4)"><g fill="#e8202a"><path d="M289 -12Q198 -12 130.5 14.5Q63 41 6 99L131 224Q170 187 213.0 167.5Q256 148 305 148Q346 148 367.0 160.5Q388 173 388 195Q388 217 370.0 231.5Q352 246 322.5 257.5Q293 269 257.5 281.0Q222 293 187.0 310.0Q152 327 122.5 351.5Q93 376 75.0 412.5Q57 449 57 502Q57 571 90.0 621.0Q123 671 183.0 697.5Q243 724 324 724Q404 724 472.5 698.5Q541 673 586 626L460 501Q427 533 394.0 548.5Q361 564 322 564Q291 564 272.5 554.0Q254 544 254 524Q254 503 272.0 489.5Q290 476 319.5 465.0Q349 454 384.5 442.0Q420 430 455.0 413.5Q490 397 519.5 371.5Q549 346 567.0 308.0Q585 270 585 216Q585 107 507.5 47.5Q430 -12 289 -12Z" transform="translate(21.04 84.83) scale(0.09783 -0.09783)"/></g></g></svg>';
+  const LOGO_URL = 'data:image/svg+xml,' + encodeURIComponent(LOGO_SVG);
+  window.LOGO_SVG = LOGO_SVG;
+  document.querySelectorAll('link[rel~="icon"]').forEach((l) => l.remove());
+  const fav = document.createElement('link'); fav.rel = 'icon'; fav.type = 'image/svg+xml'; fav.href = LOGO_URL; document.head.append(fav);
   if (!document.querySelector('meta[name="theme-color"]')) { const m = document.createElement('meta'); m.name = 'theme-color'; m.content = '#0a0707'; document.head.append(m); }
   const lcss = document.createElement('style');
-  lcss.textContent = '.logo{display:inline-flex;align-items:center;gap:10px}.logo .lm{width:32px;height:32px;border-radius:9px;flex:none;box-shadow:0 0 0 1px #3a1717,0 0 18px #e8202a33}';
+  lcss.textContent = '.logo{display:inline-flex;align-items:center;gap:10px}.logo .lm{width:34px;height:34px;flex:none;display:block;filter:drop-shadow(0 0 10px #e8202a40)}.logo .lm svg{width:100%;height:100%;display:block}';
   document.head.append(lcss);
   document.querySelectorAll('a.logo').forEach((a) => {
     if (a.querySelector('.lm')) return;
-    const i = document.createElement('img'); i.className = 'lm'; i.src = '/logo-mark.png'; i.alt = ''; i.width = 32; i.height = 32;
+    const i = document.createElement('span'); i.className = 'lm'; i.setAttribute('aria-hidden', 'true'); i.innerHTML = LOGO_SVG;
     const name = document.createElement('span'); name.append(...a.childNodes);
     a.append(i, name);
   });
