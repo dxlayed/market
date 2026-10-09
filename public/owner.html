@@ -126,7 +126,8 @@ function armed(label, armedLabel, run, cls = 'ghost sm danger') {
 const userCell = (name, avatar) => el('span', { className: 'who' }, avEl({ username: name || '?', avatar }), name || 'deleted');
 
 let me = null, tab = 'overview', stats = null, poll = null;
-const TABS = [['overview', 'Overview'], ['trades', 'Trades'], ['users', 'Users'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['listings', 'Listings'], ['logs', 'Logs']];
+const TABS = [['overview', 'Overview'], ['trades', 'Trades'], ['market', 'Market'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
+const usd = (c) => window.money ? window.money(c) : '$' + (c / 100).toFixed(2);
 
 function shell() {
   const side = el('aside', { className: 'side', id: 'side' });
@@ -139,7 +140,7 @@ function drawSide() {
 }
 async function go(k) {
   tab = k; clearInterval(poll); drawSide();
-  try { await ({ overview, users, support, chat, listings, items, trades, logs })[k](); }
+  try { await ({ overview, users, support, chat, market, items, trades, logs })[k](); }
   catch (e) { $('main').replaceChildren(el('div', { className: 'card', textContent: e.message })); }
 }
 async function refreshStats() { stats = await api('/api/admin/stats'); drawSide(); }
@@ -160,7 +161,10 @@ async function overview() {
       tile('Waiting on reply', s.waiting, s.openTickets + ' open tickets', s.waiting > 0),
       tile('Chat messages', s.messages, s.messagesToday + ' in the last 24h'),
       tile('Active trades', s.activeTrades, s.itemsHeld + ' items held on site', s.activeTrades > 0),
-      tile('Banned users', s.banned, s.listings + ' open listings')),
+      tile('Sales (24h)', usd(s.volume24), s.sales24 + ' items sold'),
+      tile('For sale', s.listings, 'active listings'),
+      tile('Balances owed', usd(s.balances), 'total of everyone\'s balance'),
+      tile('Banned users', s.banned, '')),
     el('section', { className: 'card' }, el('h2', { textContent: 'Tickets waiting on you' }), list),
     el('p', { className: 'mute', textContent: 'Owners: ' + s.owners.join(', ') + '. Change this with the OWNERS variable in Railway. Trading API: ' + (s.apiEnabled ? 'on' : 'off (set BOT_API_KEY in Railway)') + '.' }));
 }
@@ -169,7 +173,7 @@ async function users() {
   const q = el('input', { placeholder: 'Search by Roblox username' });
   const body = el('tbody');
   const table = el('div', { className: 'card scroll' }, el('table', { className: 'tbl' },
-    el('thead', {}, el('tr', {}, ...['User', 'Roblox ID', 'Joined', 'Items', 'Chat', 'Tickets', 'Status', ''].map((h) => el('th', { textContent: h })))), body));
+    el('thead', {}, el('tr', {}, ...['User', 'Roblox ID', 'Joined', 'Balance', 'Items', 'For sale', 'Status', ''].map((h) => el('th', { textContent: h })))), body));
   async function load() {
     const rows = await api('/api/admin/users?q=' + encodeURIComponent(q.value));
     body.replaceChildren();
@@ -183,12 +187,14 @@ async function users() {
         el('td', {}, userCell(u.username, u.avatar_url)),
         el('td', {}, u.roblox_id ? el('a', { href: 'https://www.roblox.com/users/' + u.roblox_id + '/profile', target: '_blank', rel: 'noopener', textContent: u.roblox_id }) : el('span', { className: 'mute', textContent: 'Not verified' })),
         el('td', { className: 'mute', textContent: when(u.created_at) }),
-        el('td', { textContent: u.items }), el('td', { textContent: u.messages }), el('td', { textContent: u.tickets }),
-        el('td', {}, status), el('td', {}, act)));
+        el('td', {}, el('b', { textContent: usd(u.balance_cents) })), el('td', { textContent: u.items }), el('td', { textContent: u.listings }),
+        el('td', {}, status), el('td', { style: 'white-space:nowrap' }, el('button', { className: 'ghost sm', textContent: 'Balance', onclick: () => adjust(u, load) }), ' ', act)));
     });
   }
   let t; q.oninput = () => { clearTimeout(t); t = setTimeout(load, 250); };
-  $('main').replaceChildren(el('h1', { textContent: 'Users' }), el('div', { className: 'tools' }, q), table);
+  $('main').replaceChildren(el('h1', { textContent: 'Users & balances' }),
+    el('p', { className: 'mute', textContent: 'Add funds after someone pays you, and remove funds when you pay out a cash out. Every change is saved in Logs and in the user\'s transactions.' }),
+    el('div', { className: 'tools' }, q), el('div', { id: 'adjust' }), table);
   await load();
 }
 
@@ -263,17 +269,43 @@ async function chat() {
   poll = setInterval(() => load().catch(() => {}), 10000);
 }
 
-async function listings() {
-  const rows = await api('/api/admin/listings');
+function adjust(u, done) {
+  const amt = el('input', { placeholder: 'Amount, e.g. 10 or -10', inputMode: 'decimal' });
+  const note = el('input', { placeholder: 'Note (e.g. PayPal txn id)', maxLength: 120 });
+  const err = el('div', { className: 'mute', style: 'color:var(--bad)' });
+  const save = armed('Apply', 'Confirm', async () => {
+    const r = await api('/api/admin/users/' + u.id + '/balance', 'POST', { amount: amt.value, note: note.value });
+    toast(u.username + ' now has ' + usd(r.balance)); $('adjust').replaceChildren(); done();
+  }, 'btn');
+  $('adjust').replaceChildren(el('section', { className: 'card' }, el('h2', {}, 'Change balance for ' + u.username + ' · ', el('span', { className: 'mute', textContent: 'now ' + usd(u.balance_cents) })),
+    el('p', { className: 'mute', textContent: 'Positive adds funds. Negative removes them, for example after paying a cash out.', style: 'margin:0 0 10px' }),
+    el('div', { className: 'tools', style: 'margin:0' }, amt, note, save, el('button', { className: 'ghost', textContent: 'Cancel', onclick: () => $('adjust').replaceChildren() })), err));
+  amt.focus(); window.scrollTo({ top: 0 });
+}
+
+async function market() {
+  const filter = sel(['active', 'sold', 'cancelled', 'all']);
   const body = el('tbody');
-  if (!rows.length) body.append(el('tr', {}, el('td', { colSpan: 6, className: 'empty', textContent: 'No listings yet. Posting is still coming soon.' })));
-  rows.forEach((l) => body.append(el('tr', {},
-    el('td', {}, el('b', { textContent: l.item })), el('td', { textContent: l.kind === 'sell' ? 'Selling' : 'Buying' }),
-    el('td', { textContent: l.username }), el('td', { textContent: l.price }),
-    el('td', {}, el('span', { className: 'pill' + (l.status === 'open' ? ' ok' : ''), textContent: l.status })),
-    el('td', {}, armed('Delete', 'Confirm', async () => { await api('/api/admin/listings/' + l.id, 'DELETE'); toast('Listing deleted'); listings(); })))));
-  $('main').replaceChildren(el('h1', { textContent: 'Listings' }),
-    el('div', { className: 'card scroll' }, el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['Item', 'Type', 'By', 'Price', 'Status', ''].map((h) => el('th', { textContent: h })))), body)));
+  async function load() {
+    const rows = await api('/api/admin/market' + (filter.value === 'all' ? '' : '?status=' + filter.value));
+    body.replaceChildren();
+    if (!rows.length) body.append(el('tr', {}, el('td', { colSpan: 7, className: 'empty', textContent: 'Nothing here.' })));
+    rows.forEach((l) => {
+      const dot = el('span', { className: 'dot' }); dot.style.setProperty('--c', RC[l.rarity] || RC.Common);
+      body.append(el('tr', {},
+        el('td', {}, dot, el('b', { textContent: l.name })), el('td', {}, el('b', { textContent: usd(l.price_cents) })),
+        el('td', { textContent: l.seller || 'deleted' }), el('td', { textContent: l.buyer || '' }),
+        el('td', {}, el('span', { className: 'pill' + (l.status === 'active' ? ' gold' : l.status === 'sold' ? ' ok' : ''), textContent: l.status })),
+        el('td', { className: 'mute', style: 'white-space:nowrap', textContent: when(l.sold_at || l.created_at) }),
+        el('td', {}, l.status === 'active' ? armed('Take down', 'Confirm', async () => { await api('/api/admin/market/' + l.id, 'DELETE'); toast('Listing taken down, item returned to seller'); load(); }) : '')));
+    });
+  }
+  filter.onchange = load;
+  $('main').replaceChildren(el('h1', { textContent: 'Market' }),
+    el('p', { className: 'mute', textContent: 'Taking a listing down gives the item back to the seller\'s inventory. Sold items have already moved to the buyer.' }),
+    el('div', { className: 'tools' }, filter),
+    el('div', { className: 'card scroll' }, el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['Item', 'Price', 'Seller', 'Buyer', 'Status', 'When', ''].map((h) => el('th', { textContent: h })))), body)));
+  await load();
 }
 
 const RC = { Chroma: '#b78bff', Ancient: '#7c5cff', Godly: '#d94fd0', Unique: '#e6b422', Vintage: '#d9b98a', Legendary: '#ff4d4d', Rare: '#2fb36a', Uncommon: '#4d7cff', Common: '#8a8fa3' };
@@ -375,7 +407,7 @@ async function trades() {
 
 async function logs() {
   const q = el('input', { placeholder: 'Search by username, trade:12, item name...' });
-  const type = el('select', {}, ...[['', 'Everything'], ['trade', 'Trades'], ['user', 'Users and logins'], ['item', 'Items'], ['ticket', 'Tickets'], ['chat', 'Chat'], ['listing', 'Listings']].map(([v, t]) => el('option', { value: v, textContent: t })));
+  const type = el('select', {}, ...[['', 'Everything'], ['trade', 'Trades'], ['user', 'Users and logins'], ['item', 'Items'], ['ticket', 'Tickets'], ['chat', 'Chat'], ['market', 'Market'], ['balance', 'Balances']].map(([v, t]) => el('option', { value: v, textContent: t })));
   const body = el('tbody');
   const nice = (a) => a.replace('.', ' ').replace(/_/g, ' ');
   async function load() {
