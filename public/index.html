@@ -75,6 +75,13 @@ dialog::backdrop{background:#000b}dialog form{display:flex;flex-direction:column
 .soon i{font-style:normal;font-size:10px;font-weight:800;background:var(--raise);color:var(--gold);border-radius:6px;padding:1px 6px;margin-left:6px}
 .wallet{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
 .wallet span{padding:9px 16px;font-weight:800}.wallet button{border:0;border-radius:0;padding:9px 14px;background:var(--raise)}
+.me{cursor:pointer;color:var(--text);text-align:left}
+.pt{display:flex;gap:14px;align-items:center}
+.pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.pstats div{background:var(--surface);border-radius:10px;padding:10px;text-align:center;font-family:Outfit,sans-serif;font-size:22px;font-weight:700}
+.pstats span{display:block;font-family:Manrope,sans-serif;font-size:12px;color:var(--mute);font-weight:500}
+.rows{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;margin:8px 0 12px}
+.rw{display:flex;gap:8px;align-items:center;background:var(--surface);border-radius:10px;padding:8px 10px;font-size:14px}.rw .mute{margin-left:auto}
 @media (max-width:1100px){.layout{grid-template-columns:1fr}.side,.cart{position:static}}
 </style>
 </head>
@@ -128,6 +135,14 @@ dialog::backdrop{background:#000b}dialog form{display:flex;flex-direction:column
   <button class="btn">Post listing</button>
   <button type="button" class="ghost" onclick="postDlg.close()">Cancel</button>
 </form></dialog>
+<dialog id="profileDlg">
+  <div class="pt"><div id="pAv"></div><div><h2 id="pName" style="margin:0"></h2><div class="mute" id="pSub"></div></div></div>
+  <div class="pstats"><div id="pOpen">0<span>Open listings</span></div><div id="pDone">0<span>Trades done</span></div><div id="pMsgs">0<span>Chat messages</span></div></div>
+  <h3 style="font-size:16px">Your listings</h3>
+  <div class="rows" id="pList"></div>
+  <p class="mute" id="pNext" style="margin:0 0 12px"></p>
+  <button class="ghost" id="pOut">Log out</button> <button class="ghost" onclick="profileDlg.close()">Close</button>
+</dialog>
 <div id="toast" role="status"></div>
 
 <script src="/auth.js"></script>
@@ -215,7 +230,7 @@ function drawWho() {
   const w = $('who'); w.replaceChildren();
   if (me) {
     w.append(el('button', { className: 'btn sm', textContent: 'Post listing', onclick: () => postDlg.showModal() }),
-      el('div', { className: 'me' }, avEl(me), el('span', {}, el('b', { textContent: me.username }), el('small', { id: 'rk', textContent: myRank }))),
+      el('button', { className: 'me', onclick: openProfile, 'aria-label': 'Open your profile' }, avEl(me), el('span', {}, el('b', { textContent: me.username }), el('small', { id: 'rk', textContent: myRank }))),
       el('button', { className: 'ghost sm', textContent: 'Log out', onclick: async () => { await api('/api/logout', 'POST'); me = null; myRank = ''; drawWho(); load(); } }));
     api('/api/profile').then((p) => { myRank = p.rank; const r = $('rk'); if (r) r.textContent = p.rank; }).catch(() => {});
   } else {
@@ -229,6 +244,24 @@ $('postForm').onsubmit = async (e) => {
   try { await api('/api/listings', 'POST', Object.fromEntries(new FormData(e.target))); postDlg.close(); e.target.reset(); $('err2').textContent = ''; toast('Listing posted'); load(); }
   catch (x) { $('err2').textContent = x.message; }
 };
+
+async function openProfile() {
+  let p;
+  try { p = await api('/api/profile'); } catch (e) { return toast(e.message); }
+  myRank = p.rank;
+  const av = avEl(me); av.style.width = av.style.height = '56px'; av.style.fontSize = '24px';
+  $('pAv').replaceChildren(av);
+  $('pName').textContent = p.username;
+  $('pSub').textContent = p.rank + ' · joined ' + new Date(p.joined).toLocaleDateString();
+  $('pOpen').firstChild.textContent = p.open; $('pDone').firstChild.textContent = p.done; $('pMsgs').firstChild.textContent = p.messages;
+  const next = p.done >= 15 ? null : p.done >= 5 ? [15, 'Broker'] : p.done >= 1 ? [5, 'Dealer'] : [1, 'Trader'];
+  $('pNext').textContent = next ? 'Mark ' + (next[0] - p.done) + ' more listing(s) as done to reach ' + next[1] + '.' : 'You reached the top rank.';
+  const box = $('pList'); box.replaceChildren();
+  if (!p.listings.length) box.append(el('p', { className: 'mute', textContent: 'You have not posted anything yet.' }));
+  p.listings.forEach((l) => box.append(el('div', { className: 'rw' }, el('span', { textContent: l.item }), el('span', { className: 'mute', textContent: (l.kind === 'sell' ? 'Selling' : 'Buying') + ' · ' + (l.status === 'done' ? 'Done' : 'Open') }))));
+  profileDlg.showModal();
+}
+$('pOut').onclick = async () => { await api('/api/logout', 'POST'); me = null; myRank = ''; profileDlg.close(); drawWho(); load(); };
 
 async function load() { try { rows = await api('/api/listings'); } catch {} draw(); }
 api('/api/me').then((u) => { me = u; drawWho(); load(); });
