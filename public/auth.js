@@ -112,7 +112,7 @@
   const fd = document.createElement('dialog');
   fd.id = 'fundsDlg';
   document.body.append(fd);
-  window.openFunds = function (mode) {
+  function openFundsTicket(mode) {
     const add = mode !== 'out';
     fd.innerHTML = '';
     const h = document.createElement('h2'); h.textContent = add ? 'Add funds' : 'Withdraw';
@@ -130,7 +130,160 @@
     fd.append(h, lab, big, p, row);
     window.refreshBalance();
     fd.showModal();
+  }
+
+  // ---------- Crypto deposit / withdraw (used when the server has BTC_XPUB or LTC_XPUB set) ----------
+  const ccss2 = document.createElement('style');
+  ccss2.textContent = `#cxDlg{background:#0d0808;color:var(--text);border:1px solid #4a1a1a;border-radius:20px;width:min(720px,96vw);max-height:92vh;padding:0;overflow:hidden}
+#cxDlg::backdrop{background:#000c;backdrop-filter:blur(3px)}
+#cxDlg[open]{display:flex;flex-direction:column}
+#cxDlg .hd{display:flex;align-items:center;gap:6px;padding:16px 18px;border-bottom:1px solid var(--line)}
+#cxDlg .tab{background:transparent;border:0;color:var(--mute);font:inherit;font-weight:800;font-size:16px;padding:8px 14px;border-radius:10px;cursor:pointer;font-family:Outfit,system-ui,sans-serif}
+#cxDlg .tab.on{background:var(--gold);color:#fff}
+#cxDlg .x{margin-left:auto;background:transparent;border:0;color:var(--mute);font-size:22px;cursor:pointer;padding:4px 10px}
+#cxDlg .bd{padding:18px;overflow:auto}
+#cxDlg .bals{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+#cxDlg .bals div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+#cxDlg .bals b{display:block;font-family:Outfit,system-ui,sans-serif;font-size:24px}
+#cxDlg .bals span{color:var(--mute);font-size:12px;font-weight:700}
+#cxDlg .coins{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+#cxDlg .coin{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 10px;cursor:pointer;color:var(--text);font:inherit}
+#cxDlg .coin:hover{border-color:#6a2222}
+#cxDlg .coin.on{border-color:var(--gold);background:linear-gradient(180deg,#e8202a1c,var(--surface))}
+#cxDlg .coin svg{width:40px;height:40px}
+#cxDlg .coin b{font-family:Outfit,system-ui,sans-serif;font-size:16px}
+#cxDlg .coin small{color:var(--mute);font-weight:700}
+#cxDlg h3{font-family:Outfit,system-ui,sans-serif;font-size:20px;margin:22px 0 12px}
+#cxDlg .warn{background:#ff7a4514;border:1px solid #ff7a4566;color:#ffc2a8;border-radius:12px;padding:10px 14px;font-size:14px;line-height:1.45}
+#cxDlg .dep{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-top:14px}
+#cxDlg .qr{width:170px;height:170px;background:#fff;border-radius:14px;padding:8px}
+#cxDlg .qr svg{width:100%;height:100%;display:block}
+#cxDlg label{display:block;color:var(--mute);font-size:12px;font-weight:800;margin:0 0 6px}
+#cxDlg .addr{display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 12px}
+#cxDlg .addr code{flex:1;min-width:0;overflow-wrap:anywhere;font-size:14px;font-family:ui-monospace,Menlo,Consolas,monospace}
+#cxDlg .note{color:var(--mute);font-size:13px;line-height:1.5;margin-top:10px}
+#cxDlg input{width:100%}
+#cxDlg .amt{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#cxDlg .sum{display:flex;justify-content:space-between;font-size:14px;padding:6px 2px}
+#cxDlg .sum.big{font-weight:800;font-size:16px;border-top:1px solid var(--line);margin-top:4px;padding-top:10px}
+#cxDlg .go{width:100%;margin-top:12px;padding:13px;font-size:15px}
+#cxDlg .err{color:var(--bad);font-size:13px;min-height:18px;margin-top:8px}
+#cxDlg .hist{display:grid;gap:6px}
+#cxDlg .hr{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px}
+#cxDlg .hr small{display:block;color:var(--mute);font-size:12px}
+#cxDlg .pill{font-size:11px;font-weight:800;border-radius:99px;padding:3px 10px;background:var(--raise);color:var(--mute);white-space:nowrap}
+#cxDlg .pill.ok{background:#4ade8022;color:#4ade80}#cxDlg .pill.wait{background:#e8202a22;color:#ff8a8f}#cxDlg .pill.bad{background:#ff7a4522;color:var(--bad)}
+@media (max-width:560px){#cxDlg .dep{grid-template-columns:1fr;justify-items:center}#cxDlg .amt{grid-template-columns:1fr}}`;
+  document.head.append(ccss2);
+  const COIN_ICON = {
+    btc: '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#f7931a"/><path fill="#fff" d="M27.6 17.6c.4-2.6-1.6-4-4.3-4.9l.9-3.5-2.1-.5-.8 3.4-1.7-.4.9-3.4-2.1-.5-.9 3.5-1.4-.3-2.9-.7-.6 2.3s1.6.4 1.5.4c.9.2 1 .8 1 1.2l-1 3.9.2.1-.2-.1-1.4 5.5c-.1.3-.4.7-1 .5l-1.5-.4-1 2.4 2.8.7 1.5.4-.9 3.6 2.1.5.9-3.5 1.7.4-.9 3.5 2.1.5.9-3.6c3.6.7 6.4.4 7.5-2.9.9-2.6 0-4.1-1.9-5.1 1.4-.3 2.4-1.2 2.7-3.1zm-4.8 6.8c-.6 2.6-5 1.2-6.4.8l1.2-4.6c1.4.4 6 1.1 5.2 3.8zm.7-6.8c-.6 2.4-4.2 1.2-5.4.9l1-4.2c1.2.3 5 .9 4.4 3.3z"/></svg>',
+    ltc: '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#bfbbbb"/><path fill="#fff" d="M14.4 30h13.4l.9-3.3h-9.3l1.5-5.6 2.6-1 .6-2.3-2.6 1 2.1-7.8h-4.7l-2.7 10.1-2.3.9-.6 2.3 2.3-.9z"/></svg>',
   };
+  const cd = document.createElement('dialog'); cd.id = 'cxDlg'; document.body.append(cd);
+  let cxInfo = null, cxTimer = null;
+  const usdC = (c) => money(c);
+  const elx = (t, p = {}, ...k) => { const e = document.createElement(t); for (const [a, v] of Object.entries(p)) { if (a.includes('-')) e.setAttribute(a, v); else e[a] = v; } k.forEach((x) => x != null && e.append(x)); return e; };
+  const jget = (u) => fetch(u).then(async (r) => { const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'Something went wrong'); return j; });
+  const jpost = (u, b) => fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b || {}) }).then(async (r) => { const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || 'Something went wrong'); return j; });
+  const fmtCoin = (sats) => (sats / 1e8).toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
+  const minutes = (c) => (c.id === 'btc' ? c.confirmations * 10 : Math.ceil(c.confirmations * 2.5));
+
+  async function openCrypto(mode, coinId) {
+    try { cxInfo = await jget('/api/crypto'); } catch { cxInfo = null; }
+    if (!cxInfo || !cxInfo.coins.length) return openFundsTicket(mode);
+    let tab = mode === 'out' ? 'out' : 'in', coin = coinId || null;
+    const close = () => { clearInterval(cxTimer); cd.close(); };
+    function draw() {
+      clearInterval(cxTimer);
+      const tabs = [['in', 'Deposit'], ['out', 'Withdraw']].map(([k, l]) => elx('button', { className: 'tab' + (tab === k ? ' on' : ''), type: 'button', textContent: l, onclick: () => { tab = k; draw(); } }));
+      const bd = elx('div', { className: 'bd' });
+      bd.append(elx('div', { className: 'bals' },
+        elx('div', {}, elx('span', { textContent: 'Total balance' }), elx('b', { textContent: usdC(cxInfo.balance || 0) })),
+        elx('div', {}, elx('span', { textContent: 'Withdrawable' }), elx('b', { textContent: usdC(cxInfo.withdrawable || 0) }))));
+      const grid = elx('div', { className: 'coins' });
+      cxInfo.coins.forEach((c) => {
+        const b = elx('button', { className: 'coin' + (coin === c.id ? ' on' : ''), type: 'button', onclick: () => { coin = c.id; draw(); } });
+        b.innerHTML = COIN_ICON[c.id] || '';
+        b.append(elx('b', { textContent: c.name }), elx('small', { textContent: c.price ? '$' + c.price.toLocaleString(undefined, { maximumFractionDigits: 2 }) : 'Price loading' }));
+        grid.append(b);
+      });
+      bd.append(elx('label', { textContent: tab === 'in' ? 'Pick a coin to deposit' : 'Pick a coin to receive' }), grid);
+      const c = cxInfo.coins.find((x) => x.id === coin);
+      if (!cxInfo.open) bd.append(elx('p', { className: 'note', textContent: 'Deposits and withdrawals open soon.' }));
+      else if (c && tab === 'in') depositPane(bd, c);
+      else if (c && tab === 'out') withdrawPane(bd, c);
+      cd.replaceChildren(elx('div', { className: 'hd' }, ...tabs, elx('button', { className: 'x', type: 'button', textContent: '×', 'aria-label': 'Close', onclick: close })), bd);
+    }
+    async function depositPane(bd, c) {
+      const box = elx('div', {}, elx('h3', { textContent: 'Deposit ' + c.name }), elx('p', { className: 'note', textContent: 'Getting your address...' }));
+      bd.append(box);
+      let a;
+      try { a = await jpost('/api/crypto/address', { coin: c.id }); } catch (e) { box.replaceChildren(elx('div', { className: 'err', textContent: e.message })); return; }
+      const qr = elx('div', { className: 'qr' }); qr.innerHTML = a.qr;
+      const copy = elx('button', { className: 'btn sm', type: 'button', textContent: 'Copy', onclick: () => navigator.clipboard.writeText(a.address).then(() => { copy.textContent = 'Copied'; setTimeout(() => (copy.textContent = 'Copy'), 1500); }) });
+      const hist = elx('div', { className: 'hist' });
+      box.replaceChildren(elx('h3', { textContent: 'Deposit ' + c.name }),
+        elx('div', { className: 'warn', textContent: 'Only send ' + c.name + ' (' + c.symbol + ') to this address. Sending any other coin, or using the wrong network, loses it for good.' }),
+        elx('div', { className: 'dep' }, qr, elx('div', {},
+          elx('label', { textContent: 'Your personal ' + c.symbol + ' address' }), elx('div', { className: 'addr' }, elx('code', { textContent: a.address }), copy),
+          elx('p', { className: 'note', textContent: 'Send any amount over ' + usdC(cxInfo.min_deposit) + '. We spot it within seconds and add it to your balance after ' + c.confirmations + ' confirmation' + (c.confirmations === 1 ? '' : 's') + ' (about ' + minutes(c) + ' minutes). This address is yours to reuse anytime.' }))),
+        elx('h3', { textContent: 'Your deposits' }), hist);
+      const load = async () => {
+        let h; try { h = await jget('/api/crypto/history'); } catch { return; }
+        const rows = h.deposits.filter((d) => d.coin === c.id);
+        hist.replaceChildren(...(rows.length ? rows.map((d) => elx('div', { className: 'hr' },
+          elx('div', {}, elx('b', { textContent: fmtCoin(d.amount_sats) + ' ' + c.symbol + ' · ' + usdC(d.usd_cents) }), elx('small', { textContent: new Date(d.created_at).toLocaleString() })),
+          elx('span', { className: 'pill ' + (d.status === 'credited' ? 'ok' : d.status === 'pending' ? 'wait' : 'bad'),
+            textContent: d.status === 'credited' ? 'Added to balance' : d.status === 'pending' ? 'Confirming ' + Math.min(d.confirmations, d.needed) + '/' + d.needed : 'Below minimum' }))) : [elx('p', { className: 'note', textContent: 'Nothing yet. Deposits show up here as soon as they hit the network.' })]));
+        refreshBalance();
+      };
+      load(); cxTimer = setInterval(async () => { await load(); try { const i = await jget('/api/crypto'); cxInfo.balance = i.balance; cxInfo.withdrawable = i.withdrawable; } catch {} }, 8000);
+    }
+    function withdrawPane(bd, c) {
+      const addr = elx('input', { placeholder: 'Paste your ' + c.name + ' address', autocomplete: 'off', spellcheck: false });
+      const amt = elx('input', { placeholder: '0.00', inputMode: 'decimal' });
+      const est = elx('input', { placeholder: '0', disabled: true });
+      const fee = c.fee_cents, recv = elx('span'), err = elx('div', { className: 'err' });
+      const go = elx('button', { className: 'btn go', type: 'button', textContent: 'Withdraw' });
+      const upd = () => {
+        const v = parseFloat(String(amt.value).replace(/^\$/, '')) || 0, cents = Math.round(v * 100), net = Math.max(0, cents - fee);
+        est.value = c.price && net ? (net / 100 / c.price).toFixed(8) + ' ' + c.symbol : '';
+        recv.textContent = usdC(net);
+      };
+      amt.oninput = upd; upd();
+      const max = elx('button', { className: 'ghost sm', type: 'button', textContent: 'Max', onclick: () => { amt.value = ((cxInfo.withdrawable || 0) / 100).toFixed(2); upd(); } });
+      const hist = elx('div', { className: 'hist' });
+      go.onclick = async () => {
+        err.textContent = ''; go.disabled = true;
+        try {
+          const r = await jpost('/api/crypto/withdraw', { coin: c.id, address: addr.value, amount: amt.value });
+          setBalance(r.balance); cxInfo = await jget('/api/crypto'); if (typeof toast === 'function') toast('Withdrawal requested. You will get it as soon as staff send it.'); draw();
+        } catch (e) { err.textContent = e.message; }
+        go.disabled = false;
+      };
+      bd.append(elx('h3', { textContent: 'Withdraw ' + c.name }),
+        elx('label', { textContent: 'Receiving ' + c.name + ' address' }), addr,
+        elx('label', { style: 'margin-top:14px;display:flex;justify-content:space-between;align-items:center' }, elx('span', { textContent: 'Amount (USD)' }), max),
+        elx('div', { className: 'amt' }, amt, est),
+        elx('div', { style: 'margin-top:10px' },
+          elx('div', { className: 'sum' }, elx('span', { className: 'mute', textContent: 'Network fee' }), elx('span', { textContent: usdC(fee) })),
+          elx('div', { className: 'sum big' }, elx('span', { textContent: 'You receive' }), recv)),
+        go, err,
+        elx('p', { className: 'note', textContent: 'Minimum ' + usdC(cxInfo.min_withdraw) + '. Money you deposited has to be spent on items first. Money from sales can be withdrawn anytime. The coin amount is an estimate and may shift slightly with the price.' }),
+        elx('h3', { textContent: 'Your withdrawals' }), hist);
+      jget('/api/crypto/history').then((h) => {
+        const rows = h.withdrawals.filter((w) => w.coin === c.id);
+        hist.replaceChildren(...(rows.length ? rows.map((w) => elx('div', { className: 'hr' },
+          elx('div', {}, elx('b', { textContent: usdC(w.usd_cents) + (w.coin_amount ? ' · ~' + w.coin_amount.replace(/0+$/, '') + ' ' + c.symbol : '') }), elx('small', { textContent: w.address })),
+          w.status === 'paid' && w.txid ? elx('a', { className: 'pill ok', href: (c.id === 'btc' ? 'https://mempool.space/tx/' : 'https://litecoinspace.org/tx/') + w.txid, target: '_blank', rel: 'noopener', textContent: 'Sent' })
+            : elx('span', { className: 'pill ' + (w.status === 'pending' ? 'wait' : 'bad'), textContent: w.status === 'pending' ? 'Waiting to send' : 'Refunded' }))) : [elx('p', { className: 'note', textContent: 'No withdrawals yet.' })]));
+      }).catch(() => {});
+    }
+    draw();
+    cd.onclose = () => clearInterval(cxTimer);
+    if (!cd.open) cd.showModal();
+  }
+  window.openFunds = (mode) => openCrypto(mode);
 
   window.RbxAuth.menu = function (u, onLogout) {
     const mk = (tag, props, ...kids) => { const e = document.createElement(tag); Object.assign(e, props); kids.forEach((k) => e.append(k)); return e; };
