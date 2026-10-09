@@ -187,6 +187,22 @@
     return s;
   };
 
+  // ---------- Official logo: browser tab icon, home-screen icon, top bar mark ----------
+  [['icon', '/favicon.ico', null], ['icon', '/favicon-32.png', '32x32'], ['apple-touch-icon', '/apple-touch-icon.png', null]].forEach(([rel, href, sizes]) => {
+    if (document.querySelector('link[rel="' + rel + '"][href="' + href + '"]')) return;
+    const l = document.createElement('link'); l.rel = rel; l.href = href; if (sizes) l.sizes = sizes; document.head.append(l);
+  });
+  if (!document.querySelector('meta[name="theme-color"]')) { const m = document.createElement('meta'); m.name = 'theme-color'; m.content = '#0a0707'; document.head.append(m); }
+  const lcss = document.createElement('style');
+  lcss.textContent = '.logo{display:inline-flex;align-items:center;gap:10px}.logo .lm{width:32px;height:32px;border-radius:9px;flex:none;box-shadow:0 0 0 1px #3a1717,0 0 18px #e8202a33}';
+  document.head.append(lcss);
+  document.querySelectorAll('a.logo').forEach((a) => {
+    if (a.querySelector('.lm')) return;
+    const i = document.createElement('img'); i.className = 'lm'; i.src = '/logo-mark.png'; i.alt = ''; i.width = 32; i.height = 32;
+    const name = document.createElement('span'); name.append(...a.childNodes);
+    a.append(i, name);
+  });
+
   // ---------- Discord, owner maintenance banner, first-visit welcome ----------
   const DISCORD = 'https://discord.gg/splitzmarket';
   window.DISCORD = DISCORD;
