@@ -177,6 +177,8 @@ dialog form{display:flex;flex-direction:column;gap:10px}
 <script src="/auth.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
+if (typeof avEl === 'undefined') window.avEl = (u) => { const s = document.createElement('span'); s.className = 'av'; s.textContent = u.username[0].toUpperCase(); return s; };
+if (typeof RbxAuth === 'undefined') window.RbxAuth = { open() { toast('Login script missing. Add public/auth.js on GitHub, then refresh.'); } };
 let me = null, signup = false, kind = '';
 
 async function api(url, method = 'GET', body) {
@@ -195,10 +197,7 @@ function renderNav() {
   nav.append(el('button', { className: 'ghost sm', textContent: 'Saved (' + saved.length + ')', onclick: openSaved }), ' ');
   if (me) {
     nav.append(el('button', { className: 'btn sm', textContent: 'Post listing', onclick: () => postDlg.showModal() }), ' ',
-      el('button', { className: 'profile', onclick: openProfile },
-        avEl(me),
-        el('span', {}, el('b', { textContent: me.username }), el('small', { id: 'navRank', textContent: myRank }))));
-    api('/api/profile').then((p) => { myRank = p.rank; const r = $('navRank'); if (r) r.textContent = p.rank; }).catch(() => {});
+      RbxAuth.menu(me, async () => { await api('/api/logout', 'POST'); me = null; renderNav(); load(); }));
   } else {
     nav.append(el('button', { className: 'btn sm', textContent: 'Log in with Roblox', onclick: needLogin }));
   }
@@ -315,7 +314,7 @@ $('chatForm').onsubmit = async (e) => {
 };
 const _renderNav = renderNav;
 renderNav = function () { _renderNav(); chatUI(); };
-api('/api/me').then((u) => { me = u; renderNav(); load(); });
+api('/api/me').then((u) => { me = u; try { renderNav(); } catch (e) { console.error(e); } load(); }).catch(() => { renderNav(); load(); });
 </script>
 </body>
 </html>
