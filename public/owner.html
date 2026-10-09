@@ -69,6 +69,9 @@ h1{font-size:28px;margin-bottom:16px}
 .chat .acts{display:flex;gap:6px;flex:none}
 .empty{text-align:center;color:var(--mute);padding:36px 16px}
 .denied{grid-column:1/-1;text-align:center;padding:90px 20px}
+.maint{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.maint.on{border-color:var(--gold);background:linear-gradient(90deg,#e8202a22,var(--surface) 60%)}
+.maint h2{margin-bottom:4px}.maint p{max-width:60ch}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ok);color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s}#toast.show{opacity:1}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 .form{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 2fr auto;gap:8px;align-items:center}
@@ -155,7 +158,19 @@ async function overview() {
   if (!need.length) list.append(el('p', { className: 'mute', textContent: 'Nobody is waiting on a reply.' }));
   need.slice(0, 8).forEach((t) => list.append(el('button', { className: 'tk', onclick: () => { go('support').then(() => openTicket(t.id)); } },
     el('b', { textContent: t.subject }), el('span', { className: 'mute', textContent: t.username + ' · ' + when(t.updated_at) }))));
-  $('main').replaceChildren(el('h1', { textContent: 'Overview' }),
+  const set = await api('/api/admin/settings');
+  const mBtn = armed(set.maintenance ? 'Turn maintenance off' : 'Turn maintenance on', set.maintenance ? 'Confirm: open the site' : 'Confirm: close the site', async () => {
+    await api('/api/admin/settings', 'POST', { maintenance: !set.maintenance });
+    toast(set.maintenance ? 'Site is open to everyone again' : 'Maintenance mode is on');
+    setTimeout(() => location.reload(), 600);
+  }, set.maintenance ? 'btn' : 'ghost danger');
+  const maint = el('section', { className: 'card maint' + (set.maintenance ? ' on' : ''), id: 'maintenance' },
+    el('div', {}, el('h2', { textContent: set.maintenance ? 'Maintenance mode is on' : 'Site is open' }),
+      el('p', { className: 'mute', style: 'margin:0', textContent: set.maintenance
+        ? 'Regular players see the maintenance page with the Discord link. Owners still see everything, so you can check updates before opening up.'
+        : 'Turn on maintenance to hide the site from regular players while you work on it. Owners keep full access.' })),
+    mBtn);
+  $('main').replaceChildren(el('h1', { textContent: 'Overview' }), maint,
     el('div', { className: 'stats' },
       tile('Users', s.users, s.newUsers + ' joined in the last 24h'),
       tile('Waiting on reply', s.waiting, s.openTickets + ' open tickets', s.waiting > 0),
@@ -407,7 +422,7 @@ async function trades() {
 
 async function logs() {
   const q = el('input', { placeholder: 'Search by username, trade:12, item name...' });
-  const type = el('select', {}, ...[['', 'Everything'], ['trade', 'Trades'], ['user', 'Users and logins'], ['item', 'Items'], ['ticket', 'Tickets'], ['chat', 'Chat'], ['market', 'Market'], ['balance', 'Balances']].map(([v, t]) => el('option', { value: v, textContent: t })));
+  const type = el('select', {}, ...[['', 'Everything'], ['trade', 'Trades'], ['user', 'Users and logins'], ['item', 'Items'], ['ticket', 'Tickets'], ['chat', 'Chat'], ['market', 'Market'], ['balance', 'Balances'], ['site', 'Maintenance']].map(([v, t]) => el('option', { value: v, textContent: t })));
   const body = el('tbody');
   const nice = (a) => a.replace('.', ' ').replace(/_/g, ' ');
   async function load() {
