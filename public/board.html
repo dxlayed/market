@@ -91,11 +91,14 @@ dialog form{display:flex;flex-direction:column;gap:10px}
 #chatForm input{flex:1;min-width:0}
 .chatnote{padding:12px;text-align:center;color:var(--mute);font-size:14px;border-top:1px solid var(--line)}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}#toast{transition:none}}
+.links{display:flex;gap:4px;margin:0 auto 0 18px}.links a{padding:8px 12px;border-radius:10px;color:var(--mute);text-decoration:none;font-weight:700}.links a.on{background:var(--surface);color:var(--text)}
+@media (max-width:640px){.links{display:none}}
 </style>
 </head>
 <body>
 <nav><div class="wrap">
   <a class="logo" href="/">Splitz<b>Market</b></a>
+  <span class="links"><a href="/">Shop</a><a class="on" href="/board.html">Board &amp; chat</a><a href="/support.html">Support</a></span>
   <div id="nav"></div>
 </div></nav>
 
