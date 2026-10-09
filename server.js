@@ -124,6 +124,18 @@ app.delete('/api/listings/:id', auth, async (req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/profile', auth, async (req, res) => {
+  const id = req.user.id;
+  const u = (await pool.query('SELECT username, created_at FROM users WHERE id=$1', [id])).rows[0];
+  const c = (await pool.query("SELECT status, count(*)::int AS n FROM listings WHERE user_id=$1 GROUP BY status", [id])).rows;
+  const n = (s) => (c.find((r) => r.status === s) || { n: 0 }).n;
+  const msgs = (await pool.query('SELECT count(*)::int AS n FROM messages WHERE user_id=$1', [id])).rows[0].n;
+  const mine = (await pool.query("SELECT id, kind, item, category, price, status FROM listings WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50", [id])).rows;
+  const done = n('done');
+  const rank = done >= 15 ? 'Broker' : done >= 5 ? 'Dealer' : done >= 1 ? 'Trader' : 'Newcomer';
+  res.json({ username: u.username, joined: u.created_at, open: n('open'), done, messages: msgs, rank, listings: mine });
+});
+
 const lastMsg = new Map();
 
 app.get('/api/chat', async (req, res) => {
