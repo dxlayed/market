@@ -101,7 +101,7 @@
     const soon = (label) => mk('button', { className: 'soon', type: 'button', textContent: label + '  (Soon)', onclick: () => { if (typeof toast === 'function') toast(label + ' is coming soon'); } });
     const out = mk('button', { type: 'button', textContent: 'Log out', onclick: onLogout }); out.style.color = 'var(--bad)';
     if (u.owner) { const o = mk('a', { href: '/owner.html', textContent: 'Owner panel' }); o.style.color = 'var(--gold)'; pop.append(o, mk('hr')); }
-    pop.append(mk('a', { href: '/profile.html', textContent: 'Profile' }), mk('a', { href: '/?seller=' + encodeURIComponent(u.username), textContent: 'My shop' }), mk('a', { href: '/support.html', textContent: 'Support' }), mk('hr'), soon('Deposit'), soon('Withdraw'), mk('hr'), out);
+    pop.append(mk('a', { href: '/profile.html', textContent: 'Profile' }), mk('a', { href: '/?seller=' + encodeURIComponent(u.username), textContent: 'My shop' }), mk('a', { href: '/inventory.html', textContent: 'Inventory' }), mk('a', { href: '/support.html', textContent: 'Support' }), mk('hr'), soon('Deposit'), soon('Withdraw'), mk('hr'), out);
     const wrap = mk('div', { className: 'um' }, btn, pop);
     btn.onclick = (e) => { e.stopPropagation(); pop.hidden = !pop.hidden; btn.setAttribute('aria-expanded', String(!pop.hidden)); };
     document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) pop.hidden = true; });
