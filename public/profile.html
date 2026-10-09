@@ -134,13 +134,12 @@ function render(me, p) {
       el('button', { className: 'ghost sm', textContent: 'Copy', onclick: () => navigator.clipboard.writeText(shopUrl).then(() => toast('Link copied')) })));
 
   const list = el('section', { className: 'card', id: 'listings' }, el('h2', { textContent: 'Your listings' }));
-  if (!p.listings.length) list.append(el('p', { className: 'mute', textContent: 'Nothing posted yet. Post your first listing from the shop page.' }));
+  if (!p.listings.length) list.append(el('p', { className: 'mute', textContent: 'Posting listings is coming soon.' }));
   p.listings.forEach((l) => {
     const row = el('div', { className: 'item' }, el('span', { textContent: (l.kind === 'sell' ? 'Selling ' : 'Buying ') + l.item }));
     if (l.status === 'open') {
       row.append(el('span', { className: 'acts' },
-        el('button', { className: 'ghost sm', textContent: 'Mark done', onclick: async () => { await api(`/api/listings/${l.id}/done`, 'PATCH'); init(); } }),
-        el('button', { className: 'ghost sm', textContent: 'Delete', onclick: async () => { await api('/api/listings/' + l.id, 'DELETE'); init(); } })));
+        soonBtn('Mark done'), soonBtn('Delete')));
     }
     row.append(el('span', { className: 'tag' + (l.status === 'done' ? ' ok' : ''), textContent: l.status === 'done' ? 'Done' : 'Open' }));
     list.append(row);
