@@ -109,6 +109,23 @@
     return wrap;
   };
 
+
+  const scss = document.createElement('style');
+  scss.textContent = `.soonbtn{opacity:.6;cursor:not-allowed}
+.soonbtn i{font-style:normal;font-size:10px;font-weight:800;background:var(--raise);color:var(--gold);border-radius:6px;padding:1px 6px;margin-left:6px}`;
+  document.head.append(scss);
+  window.soonMsg = (label) => { if (typeof toast === 'function') toast(label + ' is coming soon'); };
+  window.soonBtn = function (label, cls) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = (cls || 'ghost sm') + ' soonbtn';
+    b.setAttribute('aria-disabled', 'true');
+    b.append(label);
+    const i = document.createElement('i'); i.textContent = 'Soon'; b.append(i);
+    b.onclick = () => window.soonMsg(label);
+    return b;
+  };
+
   window.avEl = function (u) {
     const s = document.createElement('span');
     s.className = 'av';
