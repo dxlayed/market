@@ -37,6 +37,12 @@ async function init() {
       status TEXT DEFAULT 'open',
       created_at TIMESTAMPTZ DEFAULT now()
     );
+    CREATE TABLE IF NOT EXISTS messages (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      body TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
   `);
 }
 
@@ -115,6 +121,27 @@ app.patch('/api/listings/:id/done', auth, async (req, res) => {
 
 app.delete('/api/listings/:id', auth, async (req, res) => {
   await pool.query('DELETE FROM listings WHERE id=$1 AND user_id=$2', [req.params.id, req.user.id]);
+  res.json({ ok: true });
+});
+
+const lastMsg = new Map();
+
+app.get('/api/chat', async (req, res) => {
+  const after = parseInt(req.query.after, 10);
+  const q = after
+    ? ['SELECT m.id, m.body, m.created_at, m.user_id, u.username FROM messages m JOIN users u ON u.id=m.user_id WHERE m.id>$1 ORDER BY m.id ASC LIMIT 100', [after]]
+    : ['SELECT * FROM (SELECT m.id, m.body, m.created_at, m.user_id, u.username FROM messages m JOIN users u ON u.id=m.user_id ORDER BY m.id DESC LIMIT 50) t ORDER BY id ASC', []];
+  const { rows } = await pool.query(q[0], q[1]);
+  res.json(rows);
+});
+
+app.post('/api/chat', auth, async (req, res) => {
+  const body = clean(req.body.body, 200);
+  if (!body) return res.status(400).json({ error: 'Type a message first.' });
+  const now = Date.now();
+  if (now - (lastMsg.get(req.user.id) || 0) < 1500) return res.status(429).json({ error: 'Slow down a little.' });
+  lastMsg.set(req.user.id, now);
+  await pool.query('INSERT INTO messages (user_id, body) VALUES ($1,$2)', [req.user.id, body]);
   res.json({ ok: true });
 });
 
