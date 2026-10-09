@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SplitzMarket | Shop preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#12101f;--surface:#1d1a30;--raise:#26223e;--line:#37325a;--text:#f1eefc;--mute:#a29fc0;--gold:#ffb938;--violet:#8b6cff}
+*{box-sizing:border-box}
+body{margin:0;font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+h1,h2,h3,.logo{font-family:Outfit,system-ui,sans-serif;margin:0}
+button,input,select{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+button{cursor:pointer;font-weight:700}
+button:focus-visible,input:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px}
+.btn{background:var(--gold);color:#241a00;border:0}
+.mute{color:var(--mute);font-size:13px}
+/* top bar */
+.bar{display:flex;align-items:center;gap:18px;padding:12px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font-size:22px;font-weight:800;text-decoration:none;color:var(--text)}.logo b{color:var(--gold)}
+.bar nav{display:flex;gap:6px;margin-right:auto}
+.bar nav a{padding:8px 14px;border-radius:10px;color:var(--mute);text-decoration:none;font-weight:700}
+.bar nav a.on{background:var(--surface);color:var(--text)}
+.wallet{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.wallet span{padding:9px 16px;font-weight:800}.wallet button{border:0;border-radius:0;background:var(--gold);color:#241a00;padding:9px 14px}
+.me{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px 12px 5px 6px;text-decoration:none;color:var(--text)}
+.av{width:32px;height:32px;border-radius:9px;background:var(--violet);display:grid;place-items:center;font-weight:800;font-family:Outfit,sans-serif}
+.me small{display:block;color:var(--gold);font-size:12px}
+/* layout */
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr) 300px;gap:20px;padding:20px 24px;max-width:1560px;margin:0 auto;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+aside.filters{position:sticky;top:12px}
+.filters h3{display:flex;justify-content:space-between;align-items:center;font-size:17px;margin-bottom:14px}
+.filters h4{margin:16px 0 8px;font-size:13px;color:var(--mute);font-weight:700}
+.prices{display:flex;gap:8px;align-items:center}.prices input{width:100%;min-width:0}
+.chk{display:flex;align-items:center;gap:10px;padding:5px 2px;cursor:pointer;font-weight:700;font-size:14px}
+.chk input{accent-color:var(--gold);width:16px;height:16px;padding:0}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.types{display:grid;gap:6px}.types button{text-align:left;background:var(--raise)}.types button.on{background:var(--violet);border-color:var(--violet)}
+/* banner */
+.banner{border-radius:16px;padding:36px 32px;background:radial-gradient(circle at 85% 20%,#8b6cff55,transparent 45%),linear-gradient(120deg,#2a1f55,#16122b 70%);border:1px solid var(--line);position:relative;overflow:hidden}
+.banner h1{font-size:clamp(28px,4vw,46px);font-weight:800;letter-spacing:-1px}
+.banner p{color:var(--mute);margin:8px 0 18px;max-width:460px}
+.tag{display:inline-block;font-size:12px;font-weight:700;background:#ffb93822;color:var(--gold);border-radius:99px;padding:3px 10px;margin-bottom:12px}
+/* ticker */
+.ticker{margin:14px 0;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--surface);display:flex;align-items:center}
+.live{background:#4ade8022;color:#4ade80;font-weight:800;font-size:12px;padding:6px 12px;margin:6px;border-radius:99px;flex:none}
+.track{display:flex;gap:28px;white-space:nowrap;animation:slide 40s linear infinite;padding:10px 0;font-size:14px;font-weight:700}
+.track span{color:var(--mute);font-weight:500}.track em{font-style:normal;color:var(--gold)}
+@keyframes slide{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.track{animation:none}}
+/* tools */
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.tools input{flex:1;min-width:180px}
+.sw{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 12px;font-weight:700}
+.sw input{accent-color:var(--gold);width:18px;height:18px;padding:0}
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.art{height:150px;display:grid;place-items:center;position:relative;background:radial-gradient(circle at 50% 55%,color-mix(in srgb,var(--c) 38%,transparent),transparent 70%),var(--raise);color:var(--c)}
+.art svg{width:76px;height:76px}
+.badge{position:absolute;top:10px;left:10px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;background:#0008;border:1px solid var(--c);color:#fff}
+.info{padding:12px 12px 6px}.info .row{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--mute)}
+.info h3{font-size:16px;margin-top:4px}
+.buy{margin:8px 12px 12px;display:flex;justify-content:space-between;align-items:center;background:var(--raise);border-radius:10px;padding:6px 6px 6px 12px;font-family:Outfit,sans-serif;font-weight:700;font-size:18px}
+.buy button{border:0;background:var(--gold);color:#241a00;padding:7px 12px;border-radius:8px;font-size:13px;font-family:Manrope,sans-serif}
+.buy button.in{background:var(--violet);color:#fff}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;border:1px dashed var(--line);border-radius:14px;color:var(--mute)}
+/* cart */
+.cart{position:sticky;top:12px;display:flex;flex-direction:column;min-height:420px}
+.cart h3{font-size:17px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.lines{flex:1;display:flex;flex-direction:column;gap:8px;padding:12px 0;overflow-y:auto;max-height:55vh}
+.lines .none{margin:auto;text-align:center;color:var(--mute);font-size:14px;padding:40px 0}
+.line{display:flex;align-items:center;gap:10px;background:var(--raise);border-radius:10px;padding:8px 10px;font-size:14px;font-weight:700}
+.line span:nth-child(2){margin-left:auto}.line button{padding:2px 8px;background:transparent}
+.total{display:flex;justify-content:space-between;font-family:Outfit,sans-serif;font-size:22px;font-weight:700;border-top:1px solid var(--line);padding:14px 0}
+.cart .btn{width:100%;padding:13px;font-size:16px}
+dialog{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:16px;width:min(400px,92vw);padding:24px}
+dialog::backdrop{background:#000b}
+dialog h2{margin-bottom:8px}dialog p{color:var(--mute);margin:0 0 16px}
+@media (max-width:1100px){.layout{grid-template-columns:1fr}aside.filters,.cart{position:static}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <a class="logo" href="/">Splitz<b>Market</b></a>
+  <nav><a class="on" href="/shop.html">Shop</a><a href="/">Trade board</a></nav>
+  <button onclick="soon()">Withdraw</button>
+  <div class="wallet"><span>$0.00</span><button onclick="soon()" aria-label="Add funds">+</button></div>
+  <div id="who"></div>
+</div>
+
+<div class="layout">
+  <aside class="panel filters">
+    <h3>Filters <button class="mute" id="reset" style="padding:4px 10px">Reset</button></h3>
+    <h4>Price</h4>
+    <div class="prices"><input id="min" type="number" min="0" placeholder="Min $"><span>to</span><input id="max" type="number" min="0" placeholder="Max $"></div>
+    <h4>Rarity</h4><div id="rar"></div>
+    <h4>Type</h4><div class="types" id="types"></div>
+  </aside>
+
+  <main>
+    <section class="banner">
+      <span class="tag">Preview build: sample items and prices</span>
+      <h1>The MM2 shop, rebuilt for Splitz.</h1>
+      <p>Browse by rarity, type and price. Add items to your cart and see your total.</p>
+      <button class="btn" onclick="document.getElementById('q').focus()">Start browsing</button>
+    </section>
+    <div class="ticker"><span class="live">LIVE</span><div class="track" id="track"></div></div>
+    <div class="tools">
+      <input id="q" placeholder="Quick search" aria-label="Quick search">
+      <select id="sort" aria-label="Sort"><option value="hl">Price: High to Low</option><option value="lh">Price: Low to High</option><option value="az">Name: A to Z</option></select>
+      <label class="sw">Values <input type="checkbox" id="vals" checked></label>
+    </div>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <aside class="panel cart">
+    <h3>Your Cart</h3>
+    <div class="lines" id="lines"></div>
+    <div class="total"><span style="font-size:13px;font-family:Manrope">TOTAL</span><span id="total">$0.00</span></div>
+    <button class="btn" onclick="soon()">Buy now</button>
+  </aside>
+</div>
+
+<dialog id="dlg">
+  <h2>Not available yet</h2>
+  <p>Deposits, withdrawals and checkout aren't turned on. This page is a layout preview with sample items.</p>
+  <button class="btn" onclick="dlg.close()">Got it</button>
+</dialog>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const el = (t, p = {}, ...k) => { const e = document.createElement(t); Object.assign(e, p); k.forEach((x) => e.append(x)); return e; };
+const soon = () => $('dlg').showModal();
+
+const RC = { Chroma: '#b78bff', Unique: '#e6b422', Classic: '#f0c030', Ancient: '#7c5cff', Godly: '#d94fd0', Legendary: '#ff4d4d', Rare: '#2fb36a', Uncommon: '#4d7cff', Common: '#8a8fa3' };
+const ICON = {
+  Knife: '<svg viewBox="0 0 64 64"><path d="M14 54 40 10l8 5-24 42z" fill="currentColor"/><rect x="8" y="46" width="16" height="6" rx="2" fill="currentColor" opacity=".55" transform="rotate(-30 16 49)"/></svg>',
+  Gun: '<svg viewBox="0 0 64 64"><path d="M6 22h42v11H31l-4 17H15l3-17H6z" fill="currentColor"/></svg>',
+  Pet: '<svg viewBox="0 0 64 64"><circle cx="32" cy="38" r="16" fill="currentColor"/><circle cx="19" cy="17" r="7" fill="currentColor"/><circle cx="45" cy="17" r="7" fill="currentColor"/></svg>',
+  Misc: '<svg viewBox="0 0 64 64"><path d="m32 6 8 18h19L44 36l5 20-17-11-17 11 5-20L5 24h19z" fill="currentColor"/></svg>'
+};
+const ITEMS = `C. Bauble|Gun|Chroma|32000|550
+Gingerscope|Gun|Ancient|16000|289
+C. Sunrise|Gun|Chroma|10750|210
+C. Snowcannon|Gun|Chroma|7750|154
+Traveler's Axe|Knife|Ancient|8000|143.99
+C. Sunset|Knife|Chroma|7750|129.99
+C. Blizzard|Gun|Chroma|5500|115
+Traveler's Gun|Gun|Godly|5200|99.99
+C. Snowstorm|Knife|Chroma|4250|85
+C. Snow Dagger|Knife|Chroma|2350|76.98
+C. Heart Wand|Knife|Chroma|4100|73
+Evergun|Gun|Godly|3450|66.5
+Constellation|Gun|Godly|2650|54.99
+Evergreen|Knife|Godly|2575|52.99
+Celestial|Knife|Ancient|2250|47
+Harvester|Knife|Ancient|1800|38
+Icepiercer|Knife|Godly|900|4.65
+Pearlshine|Gun|Godly|700|2.09
+Beachy|Knife|Rare|300|2.33
+Corrupt|Knife|Legendary|1500|8.4
+Watergun|Gun|Unique|500|4.5
+Bat|Knife|Classic|400|3.8
+Icecream|Knife|Uncommon|350|3.65
+Latte|Pet|Rare|450|3.88
+Lucky Charm|Misc|Common|120|1.2`.split('\n').map((r, i) => { const [name, type, rarity, value, price] = r.split('|'); return { id: i, name, type, rarity, value: +value, price: +price }; });
+
+const f = { rar: new Set(), type: '' };
+let cart = new Set();
+const money = (n) => '$' + n.toFixed(2);
+
+Object.keys(RC).forEach((r) => {
+  const cb = el('input', { type: 'checkbox', onchange: () => { cb.checked ? f.rar.add(r) : f.rar.delete(r); draw(); } });
+  $('rar').append(el('label', { className: 'chk' }, cb, Object.assign(el('span', { className: 'dot' }), {}), r));
+  $('rar').lastChild.querySelector('.dot').style.setProperty('--c', RC[r]);
+});
+['Knife', 'Gun', 'Pet', 'Misc'].forEach((t) => {
+  const b = el('button', { textContent: t, onclick: () => { f.type = f.type === t ? '' : t; [...$('types').children].forEach((x) => x.classList.toggle('on', x.textContent === f.type)); draw(); } });
+  $('types').append(b);
+});
+$('reset').onclick = () => { f.rar.clear(); f.type = ''; $('min').value = $('max').value = $('q').value = ''; document.querySelectorAll('#rar input').forEach((c) => (c.checked = false)); [...$('types').children].forEach((x) => x.classList.remove('on')); draw(); };
+['min', 'max', 'q'].forEach((id) => $(id).addEventListener('input', draw));
+$('sort').onchange = draw; $('vals').onchange = draw;
+
+function draw() {
+  const q = $('q').value.toLowerCase(), min = parseFloat($('min').value) || 0, max = parseFloat($('max').value) || Infinity;
+  let rows = ITEMS.filter((i) => i.name.toLowerCase().includes(q) && i.price >= min && i.price <= max && (!f.rar.size || f.rar.has(i.rarity)) && (!f.type || i.type === f.type));
+  const s = $('sort').value;
+  rows.sort((a, b) => (s === 'hl' ? b.price - a.price : s === 'lh' ? a.price - b.price : a.name.localeCompare(b.name)));
+  const g = $('grid'); g.replaceChildren();
+  if (!rows.length) g.append(el('div', { className: 'empty', textContent: 'No items match these filters. Try resetting them.' }));
+  rows.forEach((i) => {
+    const art = el('div', { className: 'art' }, el('span', { className: 'badge', textContent: i.rarity.toUpperCase() }));
+    art.insertAdjacentHTML('beforeend', ICON[i.type]);
+    const inCart = cart.has(i.id);
+    const card = el('article', { className: 'card' }, art,
+      el('div', { className: 'info' },
+        el('div', { className: 'row' }, el('span', { textContent: i.type.toUpperCase() }), el('span', { textContent: $('vals').checked ? 'Value ' + i.value.toLocaleString() : '' })),
+        el('h3', { textContent: i.name })),
+      el('div', { className: 'buy' }, el('span', { textContent: money(i.price) }),
+        el('button', { className: inCart ? 'in' : '', textContent: inCart ? 'In cart' : 'Add', onclick: () => { inCart ? cart.delete(i.id) : cart.add(i.id); draw(); drawCart(); } })));
+    card.style.setProperty('--c', RC[i.rarity]);
+    g.append(card);
+  });
+}
+
+function drawCart() {
+  const box = $('lines'); box.replaceChildren();
+  const rows = ITEMS.filter((i) => cart.has(i.id));
+  if (!rows.length) box.append(el('div', { className: 'none' }, el('b', { textContent: 'Select items to buy' }), el('br'), 'Click Add on any item to put it in your cart.'));
+  rows.forEach((i) => box.append(el('div', { className: 'line' }, el('span', { textContent: i.name }), el('span', { textContent: money(i.price) }),
+    el('button', { textContent: '✕', 'aria-label': 'Remove ' + i.name, onclick: () => { cart.delete(i.id); draw(); drawCart(); } }))));
+  $('total').textContent = money(rows.reduce((a, i) => a + i.price, 0));
+}
+
+const t = ITEMS.slice().sort((a, b) => a.price - b.price).map((i) => `<span>${i.name} <em>${money(i.price)}</em></span>`).join('');
+$('track').innerHTML = t + t;
+
+fetch('/api/me').then((r) => r.json()).then(async (u) => {
+  const w = $('who');
+  if (!u) { w.append(el('a', { className: 'me', href: '/', textContent: 'Log in' })); return; }
+  const rank = el('small', { textContent: '' });
+  w.append(el('a', { className: 'me', href: '/' }, el('span', { className: 'av', textContent: u.username[0].toUpperCase() }), el('span', {}, el('b', { textContent: u.username }), rank)));
+  try { rank.textContent = (await (await fetch('/api/profile')).json()).rank; } catch {}
+}).catch(() => {});
+
+draw(); drawCart();
+</script>
+</body>
+</html>
