@@ -12,9 +12,8 @@ app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Listings are read-only until LISTINGS_OPEN=true is set in Railway Variables.
+// Buying and selling stay owner-only until LISTINGS_OPEN=true is set in Railway Variables.
 const LISTINGS_OPEN = process.env.LISTINGS_OPEN === 'true';
-app.use('/api/listings', (req, res, next) => (req.method === 'GET' || LISTINGS_OPEN ? next() : res.status(503).json({ error: 'Listings are coming soon.' })));
 
 const url = process.env.DATABASE_URL;
 const pool = new Pool({
@@ -111,6 +110,31 @@ async function init() {
       staff BOOLEAN DEFAULT false,
       created_at TIMESTAMPTZ DEFAULT now()
     );
+    -- Marketplace: money is stored in whole cents so there are no rounding errors.
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS balance_cents INT NOT NULL DEFAULT 0;
+    CREATE TABLE IF NOT EXISTS market_listings (
+      id SERIAL PRIMARY KEY,
+      seller_id INT REFERENCES users(id) ON DELETE SET NULL,
+      inventory_id INT REFERENCES inventory(id),
+      item_id INT REFERENCES items(id),
+      price_cents INT NOT NULL CHECK (price_cents > 0),
+      status TEXT NOT NULL DEFAULT 'active',
+      buyer_id INT REFERENCES users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      sold_at TIMESTAMPTZ
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS market_active_inv ON market_listings (inventory_id) WHERE status='active';
+    CREATE INDEX IF NOT EXISTS market_status ON market_listings (status, created_at DESC);
+    CREATE TABLE IF NOT EXISTS balance_log (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      delta_cents INT NOT NULL,
+      balance_after INT NOT NULL,
+      reason TEXT NOT NULL,
+      note TEXT,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS balance_log_user ON balance_log (user_id, id DESC);
   `);
 }
 
@@ -124,7 +148,7 @@ const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
 async function currentUser(req) {
   let t;
   try { t = jwt.verify(req.cookies.token, SECRET); } catch { return null; }
-  return (await pool.query('SELECT id, username, avatar_url, roblox_id, banned FROM users WHERE id=$1', [t.id])).rows[0] || null;
+  return (await pool.query('SELECT id, username, avatar_url, roblox_id, banned, balance_cents FROM users WHERE id=$1', [t.id])).rows[0] || null;
 }
 
 const auth = wrap(async (req, res, next) => {
@@ -252,53 +276,130 @@ app.post('/api/logout', (req, res) => { res.clearCookie('token'); res.json({ ok:
 app.get('/api/me', wrap(async (req, res) => {
   const u = await currentUser(req);
   if (!u) return res.json(null);
-  res.json({ id: u.id, username: u.username, avatar: u.avatar_url || null, owner: isOwner(u), banned: !!u.banned });
+  res.json({ id: u.id, username: u.username, avatar: u.avatar_url || null, owner: isOwner(u), banned: !!u.banned, balance: u.balance_cents });
 }));
 
-app.get('/api/listings', wrap(async (req, res) => {
-  const where = ["l.status='open'"];
-  const args = [];
-  if (req.query.q) { args.push('%' + clean(req.query.q, 50) + '%'); where.push(`l.item ILIKE $${args.length}`); }
-  if (['sell', 'buy'].includes(req.query.kind)) { args.push(req.query.kind); where.push(`l.kind=$${args.length}`); }
-  if (req.query.category) { args.push(clean(req.query.category, 30)); where.push(`l.category=$${args.length}`); }
-  const { rows } = await pool.query(
-    `SELECT l.*, u.username FROM listings l JOIN users u ON u.id=l.user_id WHERE ${where.join(' AND ')} ORDER BY l.created_at DESC LIMIT 100`, args);
+// ---------- Marketplace ----------
+// Sellers list items they've already deposited. The site holds the item, so a purchase
+// moves the item and the money in one database transaction and nobody can be scammed.
+const marketGate = (u) => { if (!LISTINGS_OPEN && !isOwner(u)) throw new Fail(503, 'Buying and selling are coming soon.'); };
+const MIN_PRICE = 5, MAX_PRICE = 500000; // $0.05 to $5,000
+function toCents(v) {
+  const s = String(v == null ? '' : v).trim().replace(/^\$/, '');
+  if (!/^\d{1,6}(\.\d{1,2})?$/.test(s)) throw new Fail(400, 'Enter a price like 4.99');
+  const c = Math.round(parseFloat(s) * 100);
+  if (c < MIN_PRICE || c > MAX_PRICE) throw new Fail(400, 'Prices must be between $0.05 and $5,000.');
+  return c;
+}
+const usd = (c) => '$' + (c / 100).toFixed(2);
+// Changes a user's balance and records why. Callers must already hold the user's row lock.
+async function moveMoney(db, userId, delta, reason, note) {
+  const r = (await db.query('UPDATE users SET balance_cents = balance_cents + $1 WHERE id=$2 AND balance_cents + $1 >= 0 RETURNING balance_cents', [delta, userId])).rows[0];
+  if (!r) throw new Fail(400, 'Not enough balance.');
+  await db.query('INSERT INTO balance_log (user_id, delta_cents, balance_after, reason, note) VALUES ($1,$2,$3,$4,$5)', [userId, delta, r.balance_cents, reason, note || null]);
+  return r.balance_cents;
+}
+
+const MARKET_SELECT = `SELECT ml.id, ml.price_cents, ml.created_at, ml.seller_id, u.username AS seller,
+    i.id AS item_id, i.name, i.type, i.rarity, i.value, i.image_url
+  FROM market_listings ml JOIN items i ON i.id=ml.item_id JOIN users u ON u.id=ml.seller_id`;
+
+app.get('/api/market', wrap(async (req, res) => {
+  const where = ["ml.status='active'", 'NOT u.banned'], args = [];
+  const add = (sql, v) => { args.push(v); where.push(sql.replace('?', '$' + args.length)); };
+  if (req.query.q) add('i.name ILIKE ?', '%' + clean(req.query.q, 50) + '%');
+  if (req.query.seller) add('lower(u.username)=lower(?)', clean(req.query.seller, 20));
+  const { rows } = await pool.query(`${MARKET_SELECT} WHERE ${where.join(' AND ')} ORDER BY ml.created_at DESC LIMIT 500`, args);
   res.json(rows);
 }));
 
-app.post('/api/listings', auth, async (req, res) => {
-  const b = req.body;
-  const kind = b.kind === 'buy' ? 'buy' : 'sell';
-  const item = clean(b.item, 60), category = clean(b.category, 30), price = clean(b.price, 40);
-  const discord = clean(b.discord, 40), description = clean(b.description, 300);
-  if (!item || !category || !price || !discord) return res.status(400).json({ error: 'Fill in item, category, price and Discord.' });
+app.get('/api/market/recent', wrap(async (req, res) => {
   const { rows } = await pool.query(
-    'INSERT INTO listings (user_id,kind,item,category,price,discord,description) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',
-    [req.user.id, kind, item, category, price, discord, description]);
-  res.json(rows[0]);
-});
+    `SELECT ml.id, ml.price_cents, ml.sold_at, i.name, i.rarity FROM market_listings ml JOIN items i ON i.id=ml.item_id
+     WHERE ml.status='sold' ORDER BY ml.sold_at DESC LIMIT 15`);
+  res.json(rows);
+}));
 
-app.patch('/api/listings/:id/done', auth, async (req, res) => {
-  await pool.query("UPDATE listings SET status='done' WHERE id=$1 AND user_id=$2", [req.params.id, req.user.id]);
-  res.json({ ok: true });
-});
+app.post('/api/market/list', auth, wrap(async (req, res) => {
+  marketGate(req.user);
+  if (!limit('list' + req.user.id, 2000)) throw new Fail(429, 'Slow down a little.');
+  const price = toCents(req.body.price);
+  const ids = [...new Set((Array.isArray(req.body.inventory_ids) ? req.body.inventory_ids : []).map((x) => parseInt(x, 10)).filter((x) => x > 0))].slice(0, 50);
+  if (!ids.length) throw new Fail(400, 'Pick at least one item to sell.');
+  const out = await tx(async (db) => {
+    const got = (await db.query(
+      "UPDATE inventory SET status='listed' WHERE id = ANY($1) AND user_id=$2 AND status='held' RETURNING id, item_id", [ids, req.user.id])).rows;
+    if (got.length !== ids.length) throw new Fail(400, 'Some of those items are not in your inventory anymore. Refresh and try again.');
+    for (const g of got) await db.query('INSERT INTO market_listings (seller_id, inventory_id, item_id, price_cents) VALUES ($1,$2,$3,$4)', [req.user.id, g.id, g.item_id, price]);
+    await log(db, req.user.username, 'market.listed', null, { inventory_ids: ids, price: usd(price) });
+    return { ok: true, listed: got.length };
+  });
+  res.json(out);
+}));
 
-app.delete('/api/listings/:id', auth, async (req, res) => {
-  await pool.query('DELETE FROM listings WHERE id=$1 AND user_id=$2', [req.params.id, req.user.id]);
-  res.json({ ok: true });
-});
+// Takes a listing down and gives the item back to the seller's inventory.
+async function unlist(db, id, actor, sellerId) {
+  const l = (await db.query("SELECT * FROM market_listings WHERE id=$1 AND status='active' FOR UPDATE", [id])).rows[0];
+  if (!l || (sellerId != null && l.seller_id !== sellerId)) throw new Fail(404, 'That listing is gone. It may have just sold.');
+  await db.query("UPDATE market_listings SET status='cancelled' WHERE id=$1", [id]);
+  await db.query("UPDATE inventory SET status='held' WHERE id=$1 AND status='listed'", [l.inventory_id]);
+  await log(db, actor, 'market.unlisted', 'listing:' + id, { seller_id: l.seller_id, price: usd(l.price_cents) });
+  return { ok: true };
+}
+app.post('/api/market/:id/cancel', auth, wrap(async (req, res) => {
+  res.json(await tx((db) => unlist(db, parseInt(req.params.id, 10), req.user.username, req.user.id)));
+}));
+
+app.post('/api/market/buy', auth, wrap(async (req, res) => {
+  marketGate(req.user);
+  if (!limit('buy' + req.user.id, 1500)) throw new Fail(429, 'Slow down a little.');
+  const ids = [...new Set((Array.isArray(req.body.listing_ids) ? req.body.listing_ids : []).map((x) => parseInt(x, 10)).filter((x) => x > 0))].slice(0, 50);
+  if (!ids.length) throw new Fail(400, 'Your cart is empty.');
+  const out = await tx(async (db) => {
+    const ls = (await db.query(
+      `SELECT ml.*, i.name, u.banned AS seller_banned FROM market_listings ml JOIN items i ON i.id=ml.item_id JOIN users u ON u.id=ml.seller_id
+       WHERE ml.id = ANY($1) ORDER BY ml.id FOR UPDATE OF ml`, [ids])).rows;
+    const gone = ls.filter((l) => l.status !== 'active' || l.seller_banned);
+    if (ls.length !== ids.length || gone.length) throw new Fail(409, 'Some items in your cart were just sold or removed. Your cart has been updated.');
+    if (ls.some((l) => l.seller_id === req.user.id)) throw new Fail(400, "You can't buy your own listing.");
+    const total = ls.reduce((a, l) => a + l.price_cents, 0);
+    // Lock every wallet involved in id order so two checkouts can't deadlock.
+    const who = [...new Set([req.user.id, ...ls.map((l) => l.seller_id)])];
+    const wallets = (await db.query('SELECT id, balance_cents FROM users WHERE id = ANY($1) ORDER BY id FOR UPDATE', [who])).rows;
+    const mine = wallets.find((w) => w.id === req.user.id);
+    if (mine.balance_cents < total) throw new Fail(402, `You need ${usd(total)} but have ${usd(mine.balance_cents)}. Add funds first.`);
+    const balance = await moveMoney(db, req.user.id, -total, 'purchase', ls.length + ' item' + (ls.length === 1 ? '' : 's') + ': ' + ls.map((l) => l.name).join(', ').slice(0, 200));
+    for (const l of ls) {
+      await moveMoney(db, l.seller_id, l.price_cents, 'sale', 'Sold ' + l.name + ' to ' + req.user.username);
+      await db.query("UPDATE market_listings SET status='sold', buyer_id=$1, sold_at=now() WHERE id=$2", [req.user.id, l.id]);
+      await db.query("UPDATE inventory SET user_id=$1, status='held' WHERE id=$2 AND status='listed'", [req.user.id, l.inventory_id]);
+      await log(db, req.user.username, 'market.sold', 'listing:' + l.id, { item: l.name, price: usd(l.price_cents), seller_id: l.seller_id, buyer_id: req.user.id });
+    }
+    return { ok: true, bought: ls.length, total_cents: total, balance };
+  });
+  res.json(out);
+}));
+
+app.get('/api/wallet', authAny, wrap(async (req, res) => {
+  const { rows } = await pool.query('SELECT id, delta_cents, balance_after, reason, note, created_at FROM balance_log WHERE user_id=$1 ORDER BY id DESC LIMIT 50', [req.user.id]);
+  res.json({ balance: req.user.balance_cents, history: rows });
+}));
 
 app.get('/api/profile', auth, wrap(async (req, res) => {
   const id = req.user.id;
-  const u = (await pool.query('SELECT username, created_at FROM users WHERE id=$1', [id])).rows[0];
-  const c = (await pool.query("SELECT status, count(*)::int AS n FROM listings WHERE user_id=$1 GROUP BY status", [id])).rows;
-  const n = (s) => (c.find((r) => r.status === s) || { n: 0 }).n;
-  const msgs = (await pool.query('SELECT count(*)::int AS n FROM messages WHERE user_id=$1', [id])).rows[0].n;
-  const mine = (await pool.query("SELECT id, kind, item, category, price, status FROM listings WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50", [id])).rows;
-  const done = n('done');
+  const u = (await pool.query('SELECT username, created_at, balance_cents FROM users WHERE id=$1', [id])).rows[0];
+  const one = async (sql) => (await pool.query(sql, [id])).rows[0];
+  const sold = await one("SELECT count(*)::int AS n, COALESCE(sum(price_cents),0)::int AS c FROM market_listings WHERE seller_id=$1 AND status='sold'");
+  const bought = await one("SELECT count(*)::int AS n, COALESCE(sum(price_cents),0)::int AS c FROM market_listings WHERE buyer_id=$1 AND status='sold'");
+  const deposits = (await one("SELECT count(*)::int AS n FROM trades WHERE user_id=$1 AND kind='deposit' AND status='completed'")).n;
+  const messages = (await one('SELECT count(*)::int AS n FROM messages WHERE user_id=$1')).n;
+  const listings = (await pool.query(`${MARKET_SELECT} WHERE ml.seller_id=$1 AND ml.status='active' ORDER BY ml.created_at DESC LIMIT 100`, [id])).rows;
+  const done = sold.n + bought.n;
   const rank = done >= 15 ? 'Broker' : done >= 5 ? 'Dealer' : done >= 1 ? 'Trader' : 'Newcomer';
-  res.json({ username: u.username, joined: u.created_at, open: n('open'), done, messages: msgs, rank, listings: mine });
+  res.json({ username: u.username, joined: u.created_at, balance: u.balance_cents, sales: sold.n, earned: sold.c, purchases: bought.n, spent: bought.c,
+    deposits, messages, done, rank, listings });
 }));
+
 
 const lastMsg = new Map();
 
@@ -376,14 +477,17 @@ app.get('/api/admin/stats', owner, wrap(async (req, res) => {
     users: await q('SELECT count(*)::int AS n FROM users'),
     newUsers: await q("SELECT count(*)::int AS n FROM users WHERE created_at > now() - interval '24 hours'"),
     banned: await q('SELECT count(*)::int AS n FROM users WHERE banned'),
-    listings: await q("SELECT count(*)::int AS n FROM listings WHERE status='open'"),
+    listings: await q("SELECT count(*)::int AS n FROM market_listings WHERE status='active'"),
+    sales24: await q("SELECT count(*)::int AS n FROM market_listings WHERE status='sold' AND sold_at > now() - interval '24 hours'"),
+    volume24: await q("SELECT COALESCE(sum(price_cents),0)::int AS n FROM market_listings WHERE status='sold' AND sold_at > now() - interval '24 hours'"),
+    balances: await q('SELECT COALESCE(sum(balance_cents),0)::int AS n FROM users'),
     messages: await q('SELECT count(*)::int AS n FROM messages'),
     messagesToday: await q("SELECT count(*)::int AS n FROM messages WHERE created_at > now() - interval '24 hours'"),
     openTickets: await q("SELECT count(*)::int AS n FROM tickets WHERE status='open'"),
     waiting: await q(`SELECT count(*)::int AS n FROM tickets t WHERE t.status='open' AND
       NOT COALESCE((SELECT staff FROM ticket_messages m WHERE m.ticket_id=t.id ORDER BY m.id DESC LIMIT 1), false)`),
     activeTrades: await q("SELECT count(*)::int AS n FROM trades WHERE status IN ('pending','in_progress')"),
-    itemsHeld: await q("SELECT count(*)::int AS n FROM inventory WHERE status IN ('held','withdrawing')"),
+    itemsHeld: await q("SELECT count(*)::int AS n FROM inventory WHERE status IN ('held','withdrawing','listed')"),
     owners: OWNERS,
     apiEnabled: BOT_KEY.length >= 32,
   });
@@ -393,10 +497,10 @@ app.get('/api/admin/users', owner, wrap(async (req, res) => {
   const q = clean(req.query.q, 30);
   const { rows } = await pool.query(
     `SELECT u.id, u.username, u.roblox_id, u.avatar_url, u.banned, u.created_at,
-       (SELECT count(*)::int FROM listings l WHERE l.user_id=u.id) AS listings,
+       (SELECT count(*)::int FROM market_listings l WHERE l.seller_id=u.id AND l.status='active') AS listings, u.balance_cents,
        (SELECT count(*)::int FROM messages m WHERE m.user_id=u.id) AS messages,
        (SELECT count(*)::int FROM tickets t WHERE t.user_id=u.id) AS tickets,
-       (SELECT count(*)::int FROM inventory v WHERE v.user_id=u.id AND v.status IN ('held','withdrawing')) AS items
+       (SELECT count(*)::int FROM inventory v WHERE v.user_id=u.id AND v.status IN ('held','withdrawing','listed')) AS items
      FROM users u WHERE ($1 = '' OR u.username ILIKE '%' || $1 || '%')
      ORDER BY u.created_at DESC LIMIT 200`, [q]);
   res.json(rows.map((u) => ({ ...u, roblox_id: u.roblox_id ? String(u.roblox_id) : null, owner: isOwner(u) })));
@@ -441,17 +545,37 @@ app.delete('/api/admin/chat/:id', owner, wrap(async (req, res) => {
   res.json({ ok: true });
 }));
 
-app.get('/api/admin/listings', owner, wrap(async (req, res) => {
+app.get('/api/admin/market', owner, wrap(async (req, res) => {
+  const st = ['active', 'sold', 'cancelled'].includes(req.query.status) ? req.query.status : null;
   const { rows } = await pool.query(
-    'SELECT l.id, l.kind, l.item, l.category, l.price, l.status, l.created_at, u.username FROM listings l JOIN users u ON u.id=l.user_id ORDER BY l.created_at DESC LIMIT 200');
+    `SELECT ml.id, ml.price_cents, ml.status, ml.created_at, ml.sold_at, i.name, i.rarity, s.username AS seller, b.username AS buyer
+     FROM market_listings ml JOIN items i ON i.id=ml.item_id LEFT JOIN users s ON s.id=ml.seller_id LEFT JOIN users b ON b.id=ml.buyer_id
+     WHERE ($1::text IS NULL OR ml.status=$1) ORDER BY ml.id DESC LIMIT 300`, [st]);
   res.json(rows);
 }));
 
-app.delete('/api/admin/listings/:id', owner, wrap(async (req, res) => {
-  const gone = (await pool.query('DELETE FROM listings WHERE id=$1 RETURNING item, user_id', [parseInt(req.params.id, 10)])).rows[0];
-  await log(null, req.user.username, 'listing.deleted', 'listing:' + req.params.id, gone);
-  res.json({ ok: true });
+app.delete('/api/admin/market/:id', owner, wrap(async (req, res) => {
+  res.json(await tx((db) => unlist(db, parseInt(req.params.id, 10), req.user.username, null)));
 }));
+
+// Owners add funds or pay people out by hand until a payment provider is connected.
+app.post('/api/admin/users/:id/balance', owner, wrap(async (req, res) => {
+  const raw = String(req.body.amount || '').trim();
+  const neg = raw.startsWith('-');
+  const cents = toCents(raw.replace(/^[-+]/, ''));
+  const note = clean(req.body.note, 120);
+  const out = await tx(async (db) => {
+    const t = (await db.query('SELECT id, username FROM users WHERE id=$1 FOR UPDATE', [parseInt(req.params.id, 10)])).rows[0];
+    if (!t) throw new Fail(404, 'User not found.');
+    const balance = await moveMoney(db, t.id, neg ? -cents : cents, neg ? 'owner_removed' : 'owner_added', note || null).catch((e) => {
+      if (e instanceof Fail) throw new Fail(400, t.username + " doesn't have that much balance."); throw e;
+    });
+    await log(db, req.user.username, 'balance.adjusted', 'user:' + t.username, { amount: (neg ? '-' : '+') + usd(cents), balance: usd(balance), note });
+    return { ok: true, balance };
+  });
+  res.json(out);
+}));
+
 
 // ---------- Items, inventory, trades ----------
 app.get('/api/items', wrap(async (req, res) => {
@@ -459,13 +583,15 @@ app.get('/api/items', wrap(async (req, res) => {
   res.json(rows);
 }));
 
-app.get('/api/trading-info', (req, res) => res.json({ open: TRADING_OPEN, accounts: MM_ACCOUNTS }));
+app.get('/api/trading-info', (req, res) => res.json({ open: TRADING_OPEN, market: LISTINGS_OPEN, accounts: MM_ACCOUNTS }));
 
 app.get('/api/inventory', authAny, wrap(async (req, res) => {
   const { rows } = await pool.query(
-    `SELECT inv.id, inv.status, inv.created_at, i.id AS item_id, i.name, i.type, i.rarity, i.value, i.image_url
+    `SELECT inv.id, inv.status, inv.created_at, i.id AS item_id, i.name, i.type, i.rarity, i.value, i.image_url,
+       ml.id AS listing_id, ml.price_cents
      FROM inventory inv JOIN items i ON i.id=inv.item_id
-     WHERE inv.user_id=$1 AND inv.status IN ('held','withdrawing') ORDER BY i.value DESC, inv.id ASC`, [req.user.id]);
+     LEFT JOIN market_listings ml ON ml.inventory_id=inv.id AND ml.status='active'
+     WHERE inv.user_id=$1 AND inv.status IN ('held','withdrawing','listed') ORDER BY i.value DESC, inv.id ASC`, [req.user.id]);
   res.json(rows);
 }));
 
