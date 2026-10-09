@@ -117,9 +117,9 @@ dialog::backdrop{background:#000b}dialog form{display:flex;flex-direction:column
   </main>
 
   <aside class="panel cart">
-    <h3>Saved offers</h3>
+    <h3>Your cart</h3>
     <div class="lines" id="lines"></div>
-    <div class="foot"><div class="mute" id="count"></div><button class="btn" id="copyAll">Copy all Discord names</button><button class="ghost sm" id="clear">Clear saved</button></div>
+    <div class="foot" id="cartFoot"></div>
   </aside>
 </div>
 
@@ -200,11 +200,9 @@ function draw() {
     art.insertAdjacentHTML('beforeend', ICON[iconFor(l)]);
     const acts = el('div', { className: 'acts' });
     if (me && me.id === l.user_id) {
-      acts.append(el('button', { className: 'ghost sm', textContent: 'Mark done', onclick: async () => { await api(`/api/listings/${l.id}/done`, 'PATCH'); load(); } }),
-        el('button', { className: 'ghost sm', textContent: 'Delete', onclick: async () => { await api('/api/listings/' + l.id, 'DELETE'); load(); } }));
+      acts.append(soonBtn('Mark done'), soonBtn('Delete'));
     } else {
-      acts.append(el('button', { className: 'btn sm', textContent: 'Copy Discord', onclick: () => copy(l.discord) }),
-        el('button', { className: 'ghost sm', textContent: saved.some((x) => x.id === l.id) ? 'Saved' : 'Save', onclick: () => toggleSave(l) }));
+      acts.append(soonBtn('Buy', 'btn sm'), soonBtn('Save'));
     }
     const card = el('article', { className: 'card' }, art, el('div', { className: 'info' },
       el('h3', { textContent: l.item }),
@@ -220,26 +218,23 @@ function draw() {
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 function drawSaved() {
-  const box = $('lines'); box.replaceChildren();
-  if (!saved.length) box.append(el('div', { className: 'none' }, el('b', { textContent: 'Nothing saved' }), el('br'), 'Tap Save on any listing to keep it here.'));
-  saved.forEach((l) => box.append(el('div', { className: 'line' }, el('span', { textContent: (l.kind === 'sell' ? 'Selling ' : 'Buying ') + l.item }),
-    el('button', { textContent: 'Copy', onclick: () => copy(l.discord) }), el('button', { textContent: '✕', 'aria-label': 'Remove', onclick: () => toggleSave(l) }))));
-  $('count').textContent = saved.length + ' saved';
+  $('lines').replaceChildren(el('div', { className: 'none' }, el('b', { textContent: 'Cart is coming soon' }), el('br'), 'Buying and saving items will open here once checkout is ready.'));
+  $('cartFoot').replaceChildren(soonBtn('Buy now', 'btn'));
 }
-$('copyAll').onclick = () => saved.length && copy([...new Set(saved.map((l) => l.discord))].join(', '));
-$('clear').onclick = () => { saved = []; persist(); };
+
+
 
 function drawWho() {
   const w = $('who'); w.replaceChildren();
   if (me) {
-    w.append(el('button', { className: 'btn sm', textContent: 'Post listing', onclick: () => postDlg.showModal() }),
+    w.append(soonBtn('Post listing', 'btn sm'),
       RbxAuth.menu(me, async () => { await api('/api/logout', 'POST'); me = null; drawWho(); load(); }));
   } else {
     w.append(el('button', { className: 'btn sm', textContent: 'Log in with Roblox', onclick: openAuth }));
   }
 }
 function openAuth() { RbxAuth.open((u) => { me = u; drawWho(); load(); }); }
-$('heroPost').onclick = () => (me ? postDlg.showModal() : openAuth());
+$('heroPost').replaceWith(soonBtn('Post a listing', 'btn'));
 $('postForm').onsubmit = async (e) => {
   e.preventDefault();
   try { await api('/api/listings', 'POST', Object.fromEntries(new FormData(e.target))); postDlg.close(); e.target.reset(); $('err2').textContent = ''; toast('Listing posted'); load(); }
