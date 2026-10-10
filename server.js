@@ -9,7 +9,9 @@ const cx = require('./crypto.js');
 
 const app = express();
 app.set('trust proxy', 1);
-app.use(express.json({ limit: '10kb' }));
+// Owner item tools (picture uploads, pasted value lists) need bigger request bodies than everything else.
+const smallJson = express.json({ limit: '10kb' }), bigJson = express.json({ limit: '1mb' });
+app.use((req, res, next) => (req.path.startsWith('/api/admin/items') ? bigJson : smallJson)(req, res, next));
 app.use(cookieParser());
 
 // Buying and selling stay owner-only until LISTINGS_OPEN=true is set in Railway Variables.
@@ -136,6 +138,12 @@ async function init() {
     );
     CREATE INDEX IF NOT EXISTS balance_log_user ON balance_log (user_id, id DESC);
     CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value JSONB NOT NULL);
+    ALTER TABLE items ADD COLUMN IF NOT EXISTS demand INT;
+    ALTER TABLE items ADD COLUMN IF NOT EXISTS stability TEXT;
+    ALTER TABLE items ADD COLUMN IF NOT EXISTS value_change INT;
+    ALTER TABLE items ADD COLUMN IF NOT EXISTS value_updated_at TIMESTAMPTZ;
+    ALTER TABLE items ADD COLUMN IF NOT EXISTS image_data BYTEA;
+    ALTER TABLE items ADD COLUMN IF NOT EXISTS image_type TEXT;
     -- Crypto. locked_cents = deposited money that has to be spent on items before it can be withdrawn.
     ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_cents INT NOT NULL DEFAULT 0;
     CREATE TABLE IF NOT EXISTS crypto_addresses (
@@ -373,7 +381,7 @@ async function moveMoney(db, userId, delta, reason, note, lockDelta = 0) {
 }
 
 const MARKET_SELECT = `SELECT ml.id, ml.price_cents, ml.created_at, ml.seller_id, u.username AS seller,
-    i.id AS item_id, i.name, i.type, i.rarity, i.value, i.image_url
+    i.id AS item_id, i.name, i.type, i.rarity, i.value, i.image_url, i.demand, i.stability, i.value_change
   FROM market_listings ml JOIN items i ON i.id=ml.item_id JOIN users u ON u.id=ml.seller_id`;
 
 app.get('/api/market', wrap(async (req, res) => {
@@ -662,7 +670,7 @@ app.post('/api/admin/users/:id/balance', owner, wrap(async (req, res) => {
 
 // ---------- Items, inventory, trades ----------
 app.get('/api/items', wrap(async (req, res) => {
-  const { rows } = await pool.query('SELECT id, name, type, rarity, value, image_url FROM items WHERE active ORDER BY value DESC, name ASC');
+  const { rows } = await pool.query('SELECT id, name, type, rarity, value, image_url, demand, stability, value_change FROM items WHERE active ORDER BY value DESC, name ASC');
   res.json(rows);
 }));
 
@@ -670,7 +678,7 @@ app.get('/api/trading-info', (req, res) => res.json({ open: TRADING_OPEN, market
 
 app.get('/api/inventory', authAny, wrap(async (req, res) => {
   const { rows } = await pool.query(
-    `SELECT inv.id, inv.status, inv.created_at, i.id AS item_id, i.name, i.type, i.rarity, i.value, i.image_url,
+    `SELECT inv.id, inv.status, inv.created_at, i.id AS item_id, i.name, i.type, i.rarity, i.value, i.image_url, i.demand, i.stability, i.value_change,
        ml.id AS listing_id, ml.price_cents
      FROM inventory inv JOIN items i ON i.id=inv.item_id
      LEFT JOIN market_listings ml ON ml.inventory_id=inv.id AND ml.status='active'
@@ -822,13 +830,97 @@ function itemFields(b) {
   const rarity = RARITIES.includes(b.rarity) ? b.rarity : 'Common';
   const value = Math.max(0, Math.min(parseInt(b.value, 10) || 0, 1e9));
   const image = clean(b.image_url, 300);
-  if (image && !/^https:\/\//.test(image)) throw new Fail(400, 'Image link must start with https://');
+  if (image && !/^(https:\/\/|\/img\/item\/\d+)/.test(image)) throw new Fail(400, 'Image link must start with https://');
   return { name, type, rarity, value, image_url: image || null };
 }
 
+// Public value list for the Values page.
+app.get('/api/values', wrap(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT i.id, i.name, i.type, i.rarity, i.value, i.image_url, i.demand, i.stability, i.value_change, i.value_updated_at,
+       (SELECT min(ml.price_cents) FROM market_listings ml JOIN users u ON u.id=ml.seller_id WHERE ml.item_id=i.id AND ml.status='active' AND NOT u.banned) AS lowest_cents,
+       (SELECT count(*)::int FROM market_listings ml WHERE ml.item_id=i.id AND ml.status='active') AS for_sale
+     FROM items i WHERE i.active ORDER BY i.value DESC, i.name ASC`);
+  res.json(rows);
+}));
+
+// ---------- Item pictures (uploaded by owners, stored in the database) ----------
+app.get('/img/item/:id', wrap(async (req, res) => {
+  const r = (await pool.query('SELECT image_data, image_type FROM items WHERE id=$1', [parseInt(req.params.id, 10) || 0])).rows[0];
+  if (!r || !r.image_data) return res.status(404).end();
+  res.set('Content-Type', r.image_type || 'image/webp').set('Cache-Control', 'public, max-age=31536000, immutable').send(r.image_data);
+}));
+app.post('/api/admin/items/:id/image', owner, wrap(async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const m = /^data:(image\/(?:webp|png|jpeg));base64,([A-Za-z0-9+/=]+)$/.exec(String(req.body.data || ''));
+  if (!m) throw new Fail(400, 'Upload a PNG, JPG or WebP picture.');
+  const buf = Buffer.from(m[2], 'base64');
+  if (buf.length > 400 * 1024) throw new Fail(400, 'That picture is too big. Keep it under 400 KB.');
+  const url = '/img/item/' + id + '?v=' + Date.now().toString(36);
+  const r = await pool.query('UPDATE items SET image_data=$1, image_type=$2, image_url=$3 WHERE id=$4 RETURNING name', [buf, m[1], url, id]);
+  if (!r.rowCount) throw new Fail(404, 'Item not found.');
+  await log(null, req.user.username, 'item.image_uploaded', 'item:' + id, { name: r.rows[0].name, bytes: buf.length });
+  res.json({ ok: true, image_url: url });
+}));
+app.delete('/api/admin/items/:id/image', owner, wrap(async (req, res) => {
+  await pool.query('UPDATE items SET image_data=NULL, image_type=NULL, image_url=NULL WHERE id=$1', [parseInt(req.params.id, 10)]);
+  await log(null, req.user.username, 'item.image_removed', 'item:' + req.params.id);
+  res.json({ ok: true });
+}));
+
+// ---------- Paste a value list ----------
+// Understands blocks like:  Evergun / Value - 3,450 / Range - [N/A] / Stability - Stable Item Stability /
+// Demand - 5 Rarity - 4 / Change in Value - (-25) -0.7%   (anything else on the page is ignored)
+const normName = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const GUN_WORDS = /gun|luger|blaster|laser|beam|shot|cannon|revolver|pistol|rifle|sniper/i;
+function parseValueList(text) {
+  const lines = String(text || '').split(/\r?\n/).map((l) => l.replace(/\t+$/, '').trim());
+  const out = [];
+  for (let i = 1; i < lines.length; i++) {
+    const v = /^Value\s*[-–:]\s*([\d,]+)/i.exec(lines[i]);
+    if (!v) continue;
+    const name = lines[i - 1].replace(/\s*\((knife|gun)\)\s*$/i, '').trim();
+    if (!name || name.length > 60) continue;
+    const it = { name, value: parseInt(v[1].replace(/,/g, ''), 10), demand: null, stability: null, change: null };
+    for (let j = i + 1; j < Math.min(lines.length, i + 7); j++) {
+      if (/^Value\s*[-–:]/i.test(lines[j])) break;
+      const d = /Demand\s*[-–:]\s*(\d+)/i.exec(lines[j]); if (d) it.demand = parseInt(d[1], 10);
+      const st = /^Stability\s*[-–:]\s*(.+?)(\s+Item Stability)?$/i.exec(lines[j]); if (st) it.stability = st[1].trim().slice(0, 40);
+      const ch = /^Change in Value\s*[-–:]\s*\(([+-]?\d[\d,]*)\)/i.exec(lines[j]); if (ch) it.change = parseInt(ch[1].replace(/,/g, ''), 10);
+    }
+    out.push(it);
+  }
+  return out;
+}
+app.post('/api/admin/items/values', owner, wrap(async (req, res) => {
+  const parsed = parseValueList(req.body.text);
+  if (!parsed.length) throw new Fail(400, 'No items found. Paste the list with lines like "Value - 1,800" under each item name.');
+  const rarity = RARITIES.includes(req.body.rarity) ? req.body.rarity : 'Godly';
+  const addNew = req.body.add_new !== false;
+  const existing = new Map((await pool.query('SELECT id, name FROM items')).rows.map((r) => [normName(r.name), r]));
+  let updated = 0; const added = [], guessedGun = [], skipped = [];
+  await tx(async (db) => {
+    for (const it of parsed) {
+      const hit = existing.get(normName(it.name));
+      if (hit) {
+        await db.query('UPDATE items SET value=$1, demand=$2, stability=$3, value_change=$4, value_updated_at=now() WHERE id=$5', [it.value, it.demand, it.stability, it.change, hit.id]);
+        updated++;
+      } else if (addNew) {
+        const type = GUN_WORDS.test(it.name) ? 'Gun' : 'Knife';
+        const r = (await db.query('INSERT INTO items (name, type, rarity, value, demand, stability, value_change, value_updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,now()) RETURNING id',
+          [it.name, type, rarity, it.value, it.demand, it.stability, it.change])).rows[0];
+        existing.set(normName(it.name), { id: r.id, name: it.name });
+        added.push(it.name); if (type === 'Gun') guessedGun.push(it.name);
+      } else skipped.push(it.name);
+    }
+    await log(db, req.user.username, 'item.values_imported', null, { found: parsed.length, updated, added: added.length });
+  });
+  res.json({ found: parsed.length, updated, added, guessed_gun: guessedGun, skipped });
+}));
+
 app.get('/api/admin/items', owner, wrap(async (req, res) => {
   const { rows } = await pool.query(
-    `SELECT i.*, (SELECT count(*)::int FROM inventory v WHERE v.item_id=i.id AND v.status IN ('held','withdrawing')) AS held
+    `SELECT i.id, i.name, i.type, i.rarity, i.value, i.image_url, i.active, i.created_at, i.demand, i.stability, i.value_change, i.value_updated_at, (SELECT count(*)::int FROM inventory v WHERE v.item_id=i.id AND v.status IN ('held','withdrawing')) AS held
      FROM items i ORDER BY i.active DESC, i.value DESC, i.name ASC`);
   res.json(rows);
 }));
