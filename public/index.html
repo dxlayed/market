@@ -186,7 +186,7 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
     <div class="ticker"><span class="live">RECENT SALES</span><div class="track" id="track"></div></div>
     <div id="notice"></div>
     <div class="tools">
-      <div class="views" role="tablist" aria-label="What to show"><button type="button" role="tab" data-v="all" class="on">All items</button><button type="button" role="tab" data-v="listed">Listings only</button></div>
+      <div class="views" role="tablist" aria-label="What to show"><button type="button" role="tab" data-v="listed" class="on">Listings only</button><button type="button" role="tab" data-v="all">All items</button></div>
       <input id="q" placeholder="Search" aria-label="Search items">
       <select id="sort" aria-label="Sort"><option value="value">Highest value</option><option value="high">Price: high to low</option><option value="low">Price: low to high</option><option value="new">Newest listings</option></select>
       <span class="mute" id="count"></span>
@@ -230,7 +230,7 @@ function art(i) {
 }
 
 const seller = new URLSearchParams(location.search).get('seller');
-let view = seller ? 'listed' : 'all', catalog = [];
+let view = 'listed', catalog = [];
 const recCents = (v) => Math.round((v || 0) * (info.rec_per_1k ?? 20) / 10); // dollars per 1k value -> cents
 const estText = (v) => (window.estRange ? estRange(recCents(v)) : usd(recCents(v)));
 document.querySelectorAll('.views button').forEach((b) => {
