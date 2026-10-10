@@ -921,9 +921,9 @@ function parseValueList(text) {
       return { name, value, demand: Number.isFinite(+x.demand) && x.demand !== '' && x.demand != null ? +x.demand : null,
         stability: x.stability ? String(x.stability).replace(/\s*Item Stability\s*$/i, '').slice(0, 40) : null,
         change: ch ? parseInt(ch[1].replace(/,/g, ''), 10) : null,
-        type: TYPES.includes(x.type) ? x.type : null, rarity: RARITIES.includes(x.rarity) ? x.rarity : null, alias: x.alias ? clean(x.alias, 60) : null,
+        type: TYPES.includes(x.type) ? x.type : null, rarity: RARITIES.includes(x.rarity) ? x.rarity : null, alias: x.alias ? clean(x.alias, 60) : null, remove: x.remove === true,
         image: /^https:\/\/[^\s"'<>]{1,290}$/.test(img) || /^\/items\/[a-z0-9-]+\.webp$/.test(img) ? img : null };
-    }).filter((x) => x.name && (Number.isFinite(x.value) || x.value === null));
+    }).filter((x) => x.name && (x.remove || Number.isFinite(x.value) || x.value === null));
   }
   // CSV with a header row, e.g. Name,Category,Tier,Value,Value (number),Stability,Demand,...
   const firstLine = t.split(/\r?\n/, 1)[0];
@@ -978,10 +978,20 @@ async function importValues(text, rarityIn, addNew, actor) {
     if (old) return { hit: old, exact: true };
     return { hit: null, taken: plain.length > 0 };
   };
-  let updated = 0; const added = [], guessedGun = [], skipped = [];
+  let updated = 0; const added = [], guessedGun = [], skipped = [], removed = [];
   await tx(async (db) => {
     for (const it of parsed) {
       const { hit, exact, taken } = findItem(it);
+      // { "name": ..., "rarity": ..., "remove": true } hides an item and takes down its listings (items go back to sellers).
+      if (it.remove) {
+        if (hit) {
+          const l = await db.query("UPDATE market_listings SET status='cancelled' WHERE item_id=$1 AND status='active' RETURNING inventory_id", [hit.id]);
+          if (l.rowCount) await db.query("UPDATE inventory SET status='held' WHERE id = ANY($1) AND status='listed'", [l.rows.map((r) => r.inventory_id)]);
+          await db.query('UPDATE items SET active=false WHERE id=$1', [hit.id]);
+          removed.push(hit.name);
+        }
+        continue;
+      }
       if (hit) {
         // Only rename when no other item already uses the new name.
         const clash = (existing.get(normName(it.name)) || []).some((r) => r.id !== hit.id);
@@ -1013,9 +1023,9 @@ async function importValues(text, rarityIn, addNew, actor) {
         added.push(name); if (type === 'Gun' && !it.type) guessedGun.push(name);
       } else skipped.push(it.name);
     }
-    await log(db, actor, 'item.values_imported', null, { found: parsed.length, updated, added: added.length });
+    await log(db, actor, 'item.values_imported', null, { found: parsed.length, updated, added: added.length, removed });
   });
-  return { found: parsed.length, updated, added, guessed_gun: guessedGun, skipped };
+  return { found: parsed.length, updated, added, guessed_gun: guessedGun, skipped, removed };
 }
 app.post('/api/admin/items/values', owner, wrap(async (req, res) => {
   res.json(await importValues(req.body.text, req.body.rarity, req.body.add_new !== false, req.user.username));
@@ -1038,7 +1048,7 @@ async function seedItems() {
     await pool.query("INSERT INTO settings (key, value) VALUES ('seed_hash', $1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value", [JSON.stringify(hash)]);
     settings.seed_hash = hash;
     console.log('Items without a value hidden: ' + hidden.rowCount);
-    console.log('Starter items loaded: ' + r.added.length + ' added, ' + r.updated + ' updated');
+    console.log('Starter items loaded: ' + r.added.length + ' added, ' + r.updated + ' updated' + (r.removed.length ? ', removed: ' + r.removed.join(', ') : ''));
   } catch (e) { console.error('Starter items failed:', e.message); }
 }
 
