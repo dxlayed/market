@@ -433,7 +433,7 @@
 </div>`;
     const prev = document.activeElement;
     const close = () => {
-      try { localStorage.setItem('sm_welcomed', '1'); } catch {}
+      try { sessionStorage.setItem('sm_welcomed', '1'); } catch {}
       w.classList.remove('on'); setTimeout(() => w.remove(), 350);
       document.removeEventListener('keydown', esc); if (prev && prev.focus) prev.focus();
     };
@@ -446,7 +446,7 @@
     w.querySelector('.go').focus();
   };
   let seen = false;
-  try { seen = !!localStorage.getItem('sm_welcomed'); } catch {}
+  try { seen = !!sessionStorage.getItem('sm_welcomed'); } catch {}
   if (!seen && !document.body.dataset.nowelcome) window.showWelcome();
 
   // ---------- Live chat drawer, on every page ----------
