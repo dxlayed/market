@@ -243,10 +243,11 @@
       const addr = elx('input', { placeholder: 'Paste your ' + c.name + ' address', autocomplete: 'off', spellcheck: false });
       const amt = elx('input', { placeholder: '0.00', inputMode: 'decimal' });
       const est = elx('input', { placeholder: '0', disabled: true });
-      const fee = c.fee_cents, recv = elx('span'), err = elx('div', { className: 'err' });
+      const fee = c.fee_cents, tpct = cxInfo.withdraw_tax_pct || 0, taxS = elx('span'), recv = elx('span'), err = elx('div', { className: 'err' });
       const go = elx('button', { className: 'btn go', type: 'button', textContent: 'Withdraw' });
       const upd = () => {
-        const v = parseFloat(String(amt.value).replace(/^\$/, '')) || 0, cents = Math.round(v * 100), net = Math.max(0, cents - fee);
+        const v = parseFloat(String(amt.value).replace(/^\$/, '')) || 0, cents = Math.round(v * 100), tax = Math.round(cents * tpct / 100), net = Math.max(0, cents - fee - tax);
+        taxS.textContent = (tax ? '−' : '') + usdC(tax);
         est.value = c.price && net ? (net / 100 / c.price).toFixed(8) + ' ' + c.symbol : '';
         recv.textContent = usdC(net);
       };
@@ -267,6 +268,7 @@
         elx('div', { className: 'amt' }, amt, est),
         elx('div', { style: 'margin-top:10px' },
           elx('div', { className: 'sum' }, elx('span', { className: 'mute', textContent: 'Network fee' }), elx('span', { textContent: usdC(fee) })),
+          tpct ? elx('div', { className: 'sum' }, elx('span', { className: 'mute', textContent: 'Withdrawal fee (' + tpct + '%)' }), taxS) : null,
           elx('div', { className: 'sum big' }, elx('span', { textContent: 'You receive' }), recv)),
         go, err,
         elx('p', { className: 'note', textContent: 'Minimum ' + usdC(cxInfo.min_withdraw) + '. Money you deposited has to be spent on items first. Money from sales can be withdrawn anytime. The coin amount is an estimate and may shift slightly with the price.' }),
