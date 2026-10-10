@@ -133,7 +133,7 @@ const ICON = {
 function art(i) {
   const a = el('div', { className: 'art' });
   a.style.setProperty('--c', RC[i.rarity] || RC.Common);
-  if (i.image_url && /^(https:\/\/|\/img\/item\/)/.test(i.image_url)) a.append(el('img', { src: i.image_url, alt: '', loading: 'lazy' }));
+  if (i.image_url && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(i.image_url)) a.append(el('img', { src: i.image_url, alt: '', loading: 'lazy', referrerPolicy: 'no-referrer', onerror: (e) => { e.target.remove(); a.insertAdjacentHTML('beforeend', ICON[i.type] || ICON.Misc); } }));
   else a.insertAdjacentHTML('beforeend', ICON[i.type] || ICON.Misc);
   return a;
 }
