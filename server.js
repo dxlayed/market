@@ -144,6 +144,9 @@ async function init() {
     ALTER TABLE inventory ADD COLUMN IF NOT EXISTS added_by TEXT;
     ALTER TABLE market_listings ADD COLUMN IF NOT EXISTS fee_cents INT NOT NULL DEFAULT 0;
     ALTER TABLE crypto_withdrawals ADD COLUMN IF NOT EXISTS tax_cents INT NOT NULL DEFAULT 0;
+    CREATE TABLE IF NOT EXISTS tax_collections (id SERIAL PRIMARY KEY, amount_cents INT NOT NULL, sales_cents INT NOT NULL, withdraw_cents INT NOT NULL, collected_by TEXT, created_at TIMESTAMPTZ DEFAULT now());
+    ALTER TABLE market_listings ADD COLUMN IF NOT EXISTS collected_id INT;
+    ALTER TABLE crypto_withdrawals ADD COLUMN IF NOT EXISTS collected_id INT;
     ALTER TABLE items ADD COLUMN IF NOT EXISTS stability TEXT;
     ALTER TABLE items ADD COLUMN IF NOT EXISTS value_change INT;
     ALTER TABLE items ADD COLUMN IF NOT EXISTS value_updated_at TIMESTAMPTZ;
@@ -920,6 +923,64 @@ app.get('/api/bot/trades', botAuth, wrap(async (req, res) => {
 app.post('/api/bot/trades/:id/claim', botAuth, wrap(async (req, res) => res.json(await tx((db) => claimTrade(db, parseInt(req.params.id, 10), req.actor)))));
 app.post('/api/bot/trades/:id/complete', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'completed', { received: req.body.received, note: req.body.note })))));
 app.post('/api/bot/trades/:id/fail', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'failed', { note: req.body.reason })))));
+
+// ---------- Owner: analytics and fee collection ----------
+async function uncollected(db) {
+  const r = (await db.query(`SELECT
+    (SELECT COALESCE(sum(fee_cents),0)::int FROM market_listings WHERE status='sold' AND fee_cents>0 AND collected_id IS NULL) AS sales,
+    (SELECT count(*)::int FROM market_listings WHERE status='sold' AND fee_cents>0 AND collected_id IS NULL) AS sales_n,
+    (SELECT COALESCE(sum(tax_cents),0)::int FROM crypto_withdrawals WHERE status='paid' AND tax_cents>0 AND collected_id IS NULL) AS wd,
+    (SELECT count(*)::int FROM crypto_withdrawals WHERE status='paid' AND tax_cents>0 AND collected_id IS NULL) AS wd_n,
+    (SELECT COALESCE(sum(tax_cents),0)::int FROM crypto_withdrawals WHERE status='pending' AND tax_cents>0) AS wd_pending`)).rows[0];
+  return { ...r, total: r.sales + r.wd };
+}
+app.get('/api/admin/analytics', owner, wrap(async (req, res) => {
+  const period = async (iv) => {
+    const w = (col) => (iv ? `AND ${col} > now() - interval '${iv}'` : '');
+    return (await pool.query(`SELECT
+      (SELECT COALESCE(sum(price_cents),0)::int FROM market_listings WHERE status='sold' ${w('sold_at')}) AS sales_cents,
+      (SELECT count(*)::int FROM market_listings WHERE status='sold' ${w('sold_at')}) AS sales_n,
+      (SELECT COALESCE(sum(fee_cents),0)::int FROM market_listings WHERE status='sold' ${w('sold_at')}) AS sale_fees,
+      (SELECT COALESCE(sum(usd_cents),0)::int FROM crypto_deposits WHERE status='credited' ${w('credited_at')}) AS dep_cents,
+      (SELECT count(*)::int FROM crypto_deposits WHERE status='credited' ${w('credited_at')}) AS dep_n,
+      (SELECT COALESCE(sum(usd_cents),0)::int FROM crypto_withdrawals WHERE status='paid' ${w('updated_at')}) AS wd_cents,
+      (SELECT count(*)::int FROM crypto_withdrawals WHERE status='paid' ${w('updated_at')}) AS wd_n,
+      (SELECT COALESCE(sum(tax_cents),0)::int FROM crypto_withdrawals WHERE status='paid' ${w('updated_at')}) AS wd_fees,
+      (SELECT COALESCE(sum(delta_cents),0)::int FROM balance_log WHERE reason='owner_added' ${w('created_at')}) AS added_cents,
+      (SELECT count(*)::int FROM trades WHERE kind='deposit' AND status='completed' ${w('updated_at')}) AS item_dep,
+      (SELECT count(*)::int FROM trades WHERE kind='withdraw' AND status='completed' ${w('updated_at')}) AS item_wd,
+      (SELECT count(*)::int FROM users WHERE true ${w('created_at')}) AS new_users,
+      (SELECT count(DISTINCT buyer_id)::int FROM market_listings WHERE status='sold' ${w('sold_at')}) AS buyers`)).rows[0];
+  };
+  const [day, week, month, all] = await Promise.all([period('1 day'), period('7 days'), period('30 days'), period(null)]);
+  const daily = (await pool.query(`
+    SELECT to_char(d, 'YYYY-MM-DD') AS day,
+      COALESCE((SELECT sum(price_cents) FROM market_listings WHERE status='sold' AND sold_at >= d AND sold_at < d + interval '1 day'),0)::int AS sales_cents,
+      COALESCE((SELECT count(*) FROM market_listings WHERE status='sold' AND sold_at >= d AND sold_at < d + interval '1 day'),0)::int AS sales_n,
+      (COALESCE((SELECT sum(fee_cents) FROM market_listings WHERE status='sold' AND sold_at >= d AND sold_at < d + interval '1 day'),0)
+       + COALESCE((SELECT sum(tax_cents) FROM crypto_withdrawals WHERE status='paid' AND updated_at >= d AND updated_at < d + interval '1 day'),0))::int AS fees
+    FROM generate_series(date_trunc('day', now()) - interval '29 days', date_trunc('day', now()), interval '1 day') d ORDER BY d`)).rows;
+  const top = (await pool.query(`SELECT i.name, i.rarity, i.image_url, count(*)::int AS n, sum(ml.price_cents)::int AS cents
+    FROM market_listings ml JOIN items i ON i.id=ml.item_id WHERE ml.status='sold' AND ml.sold_at > now() - interval '30 days'
+    GROUP BY i.id ORDER BY cents DESC LIMIT 8`)).rows;
+  const owed = await uncollected(pool);
+  const collections = (await pool.query('SELECT * FROM tax_collections ORDER BY id DESC LIMIT 20')).rows;
+  res.json({ day, week, month, all, daily, top, owed, collections, sale_tax: settings.sale_tax, withdraw_tax: settings.withdraw_tax });
+}));
+// Owner pressed "Tax collected": mark every uncollected fee as collected and start counting from zero.
+app.post('/api/admin/analytics/collect', owner, wrap(async (req, res) => {
+  const out = await tx(async (db) => {
+    await db.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['tax_collect']);
+    const o = await uncollected(db);
+    if (!o.total) throw new Fail(400, 'Nothing to collect yet.');
+    const c = (await db.query('INSERT INTO tax_collections (amount_cents, sales_cents, withdraw_cents, collected_by) VALUES ($1,$2,$3,$4) RETURNING *', [o.total, o.sales, o.wd, req.user.username])).rows[0];
+    await db.query("UPDATE market_listings SET collected_id=$1 WHERE status='sold' AND fee_cents>0 AND collected_id IS NULL", [c.id]);
+    await db.query("UPDATE crypto_withdrawals SET collected_id=$1 WHERE status='paid' AND tax_cents>0 AND collected_id IS NULL", [c.id]);
+    await log(db, req.user.username, 'tax.collected', 'collection:' + c.id, { amount: usd(o.total), sales: usd(o.sales), withdrawals: usd(o.wd) });
+    return c;
+  });
+  res.json(out);
+}));
 
 // ---------- Owner: bot info ----------
 app.get('/api/admin/bot', owner, wrap(async (req, res) => {
