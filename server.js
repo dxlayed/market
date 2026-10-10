@@ -954,7 +954,7 @@ app.post('/api/bot/trades/:id/complete', botAuth, wrap(async (req, res) => res.j
 app.post('/api/bot/trades/:id/fail', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'failed', { note: req.body.reason })))));
 
 // ---------- Balance codes (sold on SellAuth, redeemed here) ----------
-const CODES_URL = /^https:\/\//.test(process.env.CODES_URL || '') ? process.env.CODES_URL : 'https://splitzmarket.mysellauth.com/products';
+const CODES_URL = /^https:\/\//.test(process.env.CODES_URL || '') ? process.env.CODES_URL : 'https://splitzmarket.mysellauth.com/';
 const CODE_CHARS2 = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const makeBalanceCode = () => 'SPLITZ-' + [0, 1, 2].map(() => Array.from({ length: 4 }, () => CODE_CHARS2[crypto.randomInt(CODE_CHARS2.length)]).join('')).join('-');
 const normCode = (c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^SPLITZ/, '');
