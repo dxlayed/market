@@ -186,8 +186,8 @@ function shell() {
   const sellBtn = canSell() ? el('button', { className: 'btn', id: 'sellBtn', textContent: 'Sell selected', disabled: true, onclick: openSell }) : soonBtn('Sell', 'btn');
   depBtn.className = depBtn.className.replace(/\bbtn\b/, 'ghost');
   const notice = [];
-  if (!info.open) notice.push(el('div', { className: 'notice' }, el('b', { textContent: 'Trading is coming soon. ' }),
-    me.owner ? 'You can test deposits and withdrawals because you are an owner. Other users see Soon buttons.' : 'Deposits and withdrawals will open here when they are ready.'));
+  if (!info.open) notice.push(el('div', { className: 'notice' }, el('b', { textContent: 'Withdrawals are paused. ' }),
+    me.owner ? 'Only owners can withdraw right now (TRADING_OPEN is set to false).' : 'Your items are safe. Withdrawals are back shortly.'));
   if (info.accounts.length) notice.push(el('div', { className: 'notice' }, el('b', { textContent: 'Only trade with our official accounts: ' }), info.accounts.join(', '),
     '. Anyone else asking you for items is not SplitzMarket.'));
   $('main').replaceChildren(
