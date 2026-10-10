@@ -446,12 +446,8 @@ async function buy() {
     cart = []; saveCart(); me.balance = r.balance; setBalance(r.balance);
     toast('Bought ' + r.bought + ' item' + (r.bought === 1 ? '' : 's') + '. They are in your inventory now.');
     busy = false; await load();
-    const send = el('button', { className: 'btn', type: 'button', textContent: 'Withdraw now', onclick: async () => {
-      send.disabled = true;
-      try { await api('/api/trades/withdraw', 'POST', { inventory_ids: r.inventory_ids }); location.href = '/inventory.html'; }
-      catch (e) { send.disabled = false; toast(e.message, true); }
-    } });
-    $('lines').replaceChildren(el('div', { className: 'none' }, el('b', { textContent: 'Purchase complete' }), el('br'), 'Your items are in your inventory. Withdraw them now and our bot will trade them to you in MM2, or keep them to sell later.', el('br'), el('br'),
+    const send = el('button', { className: 'btn', type: 'button', textContent: 'Withdraw now', onclick: () => openItemWithdraw(r.inventory_ids) });
+    $('lines').replaceChildren(el('div', { className: 'none' }, el('b', { textContent: 'Purchase complete' }), el('br'), 'Your items are in your inventory. Withdraw them now, join our bot\'s server and it trades them to you in MM2. Or keep them to sell later.', el('br'), el('br'),
       info.open || me.owner ? send : null, ' ', el('a', { className: 'ghost sm', href: '/inventory.html', textContent: 'Go to inventory', style: 'color:var(--text)' })));
   } catch (e) {
     busy = false;
