@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const fs = require('fs');
+const AdmZip = require('adm-zip');
 const crypto = require('crypto');
 const cx = require('./crypto.js');
 
@@ -830,9 +832,22 @@ function itemFields(b) {
   const rarity = RARITIES.includes(b.rarity) ? b.rarity : 'Common';
   const value = Math.max(0, Math.min(parseInt(b.value, 10) || 0, 1e9));
   const image = clean(b.image_url, 300);
-  if (image && !/^(https:\/\/|\/img\/item\/\d+)/.test(image)) throw new Fail(400, 'Image link must start with https://');
+  if (image && !/^(https:\/\/|\/img\/item\/\d+|\/items\/[a-z0-9-]+\.webp)/.test(image)) throw new Fail(400, 'Image link must start with https://');
   return { name, type, rarity, value, image_url: image || null };
 }
+
+// ---------- Item pictures bundled in item-images.zip (one 200x200 webp per item) ----------
+const bundled = new Map();
+try {
+  const zp = path.join(__dirname, 'item-images.zip');
+  if (fs.existsSync(zp)) for (const e of new AdmZip(zp).getEntries()) if (!e.isDirectory && /^[a-z0-9-]+\.webp$/.test(e.entryName)) bundled.set(e.entryName, e.getData());
+  console.log('Item pictures loaded: ' + bundled.size);
+} catch (e) { console.error('item-images.zip could not be read:', e.message); }
+app.get('/items/:file', (req, res) => {
+  const b = bundled.get(req.params.file);
+  if (!b) return res.status(404).end();
+  res.set('Content-Type', 'image/webp').set('Cache-Control', 'public, max-age=604800').send(b);
+});
 
 // Public value list for the Values page.
 app.get('/api/values', wrap(async (req, res) => {
@@ -874,6 +889,23 @@ app.delete('/api/admin/items/:id/image', owner, wrap(async (req, res) => {
 const normName = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 const GUN_WORDS = /gun|luger|blaster|laser|beam|shot|cannon|revolver|pistol|rifle|sniper/i;
 function parseValueList(text) {
+  const t = String(text || '').replace(/^\uFEFF/, '').trim();
+  // JSON lists: [{ name, value | numericValue, type, demand, stability, changeInValue | change, imageUrl | image }]
+  if (t.startsWith('[')) {
+    let arr; try { arr = JSON.parse(t); } catch { throw new Fail(400, 'That looks like JSON but it could not be read.'); }
+    return (Array.isArray(arr) ? arr : []).map((x) => {
+      const name = clean(x.name || x.rawName, 60);
+      const rawV = x.numericValue ?? x.value;
+      const value = rawV == null || rawV === '' ? null : Number.isFinite(+rawV) ? +rawV : parseInt(String(rawV).replace(/,/g, ''), 10);
+      const ch = /\(?([+-]?\d[\d,]*)\)?/.exec(String(x.change ?? x.changeInValue ?? ''));
+      const img = String(x.image || x.imageUrl || '');
+      return { name, value, demand: Number.isFinite(+x.demand) && x.demand !== '' && x.demand != null ? +x.demand : null,
+        stability: x.stability ? String(x.stability).replace(/\s*Item Stability\s*$/i, '').slice(0, 40) : null,
+        change: ch ? parseInt(ch[1].replace(/,/g, ''), 10) : null,
+        type: TYPES.includes(x.type) ? x.type : null, rarity: RARITIES.includes(x.rarity) ? x.rarity : null,
+        image: /^https:\/\/[^\s"'<>]{1,290}$/.test(img) || /^\/items\/[a-z0-9-]+\.webp$/.test(img) ? img : null };
+    }).filter((x) => x.name && (Number.isFinite(x.value) || x.value === null));
+  }
   const lines = String(text || '').split(/\r?\n/).map((l) => l.replace(/\t+$/, '').trim());
   const out = [];
   for (let i = 1; i < lines.length; i++) {
@@ -892,31 +924,55 @@ function parseValueList(text) {
   }
   return out;
 }
-app.post('/api/admin/items/values', owner, wrap(async (req, res) => {
-  const parsed = parseValueList(req.body.text);
+async function importValues(text, rarityIn, addNew, actor) {
+  const parsed = parseValueList(text);
   if (!parsed.length) throw new Fail(400, 'No items found. Paste the list with lines like "Value - 1,800" under each item name.');
-  const rarity = RARITIES.includes(req.body.rarity) ? req.body.rarity : 'Godly';
-  const addNew = req.body.add_new !== false;
+  const rarity = RARITIES.includes(rarityIn) ? rarityIn : 'Godly';
   const existing = new Map((await pool.query('SELECT id, name FROM items')).rows.map((r) => [normName(r.name), r]));
   let updated = 0; const added = [], guessedGun = [], skipped = [];
   await tx(async (db) => {
     for (const it of parsed) {
       const hit = existing.get(normName(it.name));
       if (hit) {
-        await db.query('UPDATE items SET value=$1, demand=$2, stability=$3, value_change=$4, value_updated_at=now() WHERE id=$5', [it.value, it.demand, it.stability, it.change, hit.id]);
+        // Type and picture link only change when the list provides them; an uploaded picture is never replaced.
+        // Entries without a value (or 0) never wipe a value that's already set.
+        const hasV = Number.isFinite(it.value) && it.value > 0;
+        await db.query(`UPDATE items SET value=CASE WHEN $8 THEN $1 ELSE value END, demand=CASE WHEN $8 THEN $2 ELSE demand END,
+            stability=CASE WHEN $8 THEN $3 ELSE stability END, value_change=CASE WHEN $8 THEN $4 ELSE value_change END,
+            value_updated_at=CASE WHEN $8 THEN now() ELSE value_updated_at END,
+            type=COALESCE($6, type), image_url=CASE WHEN $7::text IS NOT NULL AND image_data IS NULL THEN $7 ELSE image_url END WHERE id=$5`,
+          [it.value, it.demand, it.stability, it.change, hit.id, it.type || null, it.image || null, hasV]);
         updated++;
       } else if (addNew) {
-        const type = GUN_WORDS.test(it.name) ? 'Gun' : 'Knife';
-        const r = (await db.query('INSERT INTO items (name, type, rarity, value, demand, stability, value_change, value_updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,now()) RETURNING id',
-          [it.name, type, rarity, it.value, it.demand, it.stability, it.change])).rows[0];
+        const type = it.type || (GUN_WORDS.test(it.name) ? 'Gun' : 'Knife');
+        const v = Number.isFinite(it.value) ? it.value : 0;
+        const r = (await db.query('INSERT INTO items (name, type, rarity, value, demand, stability, value_change, value_updated_at, image_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id',
+          [it.name, type, it.rarity || rarity, v, it.demand, it.stability, it.change, v > 0 ? new Date() : null, it.image || null])).rows[0];
         existing.set(normName(it.name), { id: r.id, name: it.name });
-        added.push(it.name); if (type === 'Gun') guessedGun.push(it.name);
+        added.push(it.name); if (type === 'Gun' && !it.type) guessedGun.push(it.name);
       } else skipped.push(it.name);
     }
-    await log(db, req.user.username, 'item.values_imported', null, { found: parsed.length, updated, added: added.length });
+    await log(db, actor, 'item.values_imported', null, { found: parsed.length, updated, added: added.length });
   });
-  res.json({ found: parsed.length, updated, added, guessed_gun: guessedGun, skipped });
+  return { found: parsed.length, updated, added, guessed_gun: guessedGun, skipped };
+}
+app.post('/api/admin/items/values', owner, wrap(async (req, res) => {
+  res.json(await importValues(req.body.text, req.body.rarity, req.body.add_new !== false, req.user.username));
 }));
+
+// One-time starter catalog: on the first start after deploy, seed-items.json (all 865 weapons with rarity, type and picture, plus the owners' Godly values)
+// is loaded into the item catalog. It never runs again, so later edits in the owner panel are kept.
+async function seedItems() {
+  if (settings.seed_items_v3) return;
+  const file = path.join(__dirname, 'seed-items.json');
+  if (!fs.existsSync(file)) return;
+  try {
+    const r = await importValues(fs.readFileSync(file, 'utf8'), 'Godly', true, 'system');
+    await pool.query("INSERT INTO settings (key, value) VALUES ('seed_items_v3', 'true') ON CONFLICT (key) DO UPDATE SET value='true'");
+    settings.seed_items_v3 = true;
+    console.log('Starter items loaded: ' + r.added.length + ' added, ' + r.updated + ' updated');
+  } catch (e) { console.error('Starter items failed:', e.message); }
+}
 
 app.get('/api/admin/items', owner, wrap(async (req, res) => {
   const { rows } = await pool.query(
@@ -1225,4 +1281,4 @@ app.use((err, req, res, next) => {
 process.on('unhandledRejection', (e) => console.error('Unhandled', e));
 
 const port = process.env.PORT || 3000;
-init().then(() => app.listen(port, () => console.log('Running on ' + port))).catch((e) => { console.error(e); process.exit(1); });
+init().then(seedItems).then(() => app.listen(port, () => console.log('Running on ' + port))).catch((e) => { console.error(e); process.exit(1); });
