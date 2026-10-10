@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Inventory | SplitzMarket</title>
+<title>My Shop | SplitzMarket</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
@@ -71,6 +71,26 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .art img{max-width:80%;max-height:84px}.art svg{width:52px;height:52px}
 .it .info{padding:10px 12px}
 .it b{display:block;font-size:15px;overflow-wrap:anywhere}
+.shophd{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.shophd .av{width:56px;height:56px;border-radius:14px;font-size:22px}
+.shophd h1{font-size:30px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.chip{font-family:Manrope,sans-serif;font-size:13px;font-weight:800;border-radius:99px;padding:3px 10px;background:var(--raise);color:var(--mute);border:1px solid var(--line)}
+.chip.g{background:#4ade801a;color:#4ade80;border-color:#4ade8040}
+.shophd .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.sums{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:16px}
+.sums div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.sums span{display:block;color:var(--mute);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.sums b{display:block;font-family:Outfit,sans-serif;font-size:24px;margin-top:2px}.sums em{font-style:normal;color:var(--mute);font-size:12px}
+.sums .get{border-color:#4ade8055;background:linear-gradient(180deg,#4ade8012,var(--surface))}.sums .get b{color:#4ade80}
+.stools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.stools input{flex:1;min-width:180px}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--mute);border-radius:9px;padding:7px 14px;font-weight:800}
+.seg button.on{background:var(--gold);color:#fff}
+.qty{position:absolute;right:8px;bottom:8px;font-family:Outfit,sans-serif;font-weight:900;font-size:14px;background:#000b;border:1px solid var(--line);color:#fff;border-radius:8px;padding:1px 8px}
+.it .stp{display:flex;align-items:center;justify-content:space-between;margin:0 12px 12px;background:var(--raise);border:1px solid var(--line);border-radius:9px;padding:2px}
+.it .stp span{width:28px;height:26px;display:grid;place-items:center;border-radius:7px;font-weight:900;cursor:pointer}.it .stp span:hover{background:#341b1b}
+.it .stp em{font-style:normal;font-weight:800;font-size:13px}
+.it .each{color:var(--mute);font-size:12px;font-weight:700}
 .it .tick{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:6px;border:2px solid var(--line);background:var(--bg);display:grid;place-items:center;font-size:13px;font-weight:800;color:#fff}
 .it.sel .tick{background:var(--gold);border-color:var(--gold)}
 .tag{position:absolute;top:8px;left:8px;font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:#0009;border:1px solid var(--c);color:#fff}
@@ -190,47 +210,104 @@ function shell() {
     me.owner ? 'Only owners can withdraw right now (TRADING_OPEN is set to false).' : 'Your items are safe. Withdrawals are back shortly.'));
   if (info.accounts.length) notice.push(el('div', { className: 'notice' }, el('b', { textContent: 'Only trade with our official accounts: ' }), info.accounts.join(', '),
     '. Anyone else asking you for items is not SplitzMarket.'));
+  const search = el('input', { id: 'shopQ', placeholder: 'Item name, rarity, etc...', oninput: () => drawInv() });
+  const seg = el('div', { className: 'seg', id: 'seg' }, ...[['all', 'All'], ['listed', 'Listed'], ['unlisted', 'Unlisted']].map(([k, l]) => el('button', { type: 'button', textContent: l, className: shopView === k ? 'on' : '', onclick: () => { shopView = k; [...$('seg').children].forEach((b, n) => b.classList.toggle('on', ['all', 'listed', 'unlisted'][n] === k)); drawInv(); } })));
+  const selAll = el('button', { className: 'ghost', type: 'button', id: 'selAll', textContent: 'Select all', onclick: () => {
+    const held = visible().filter((i) => i.status === 'held');
+    const all = held.length && held.every((i) => selected.has(i.id));
+    held.forEach((i) => (all ? selected.delete(i.id) : selected.add(i.id))); drawInv();
+  } });
   $('main').replaceChildren(
-    el('div', { className: 'title' }, el('div', {}, el('h1', { textContent: 'Inventory' }), el('p', { textContent: 'Items you deposited or bought. Select items to sell them on the market or withdraw them to your Roblox account.' })),
-      el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' }, depBtn, wdBtn, sellBtn)),
+    el('div', { className: 'shophd' }, window.avEl(me),
+      el('div', {}, el('h1', {}, 'My Shop', el('span', { className: 'chip', id: 'cCount' }), el('span', { className: 'chip g', id: 'cValue' })),
+        el('a', { className: 'mute', href: '/?seller=' + encodeURIComponent(me.username), textContent: 'View your public shop page →', style: 'color:var(--mute)' })),
+      el('div', { className: 'acts' }, depBtn, wdBtn, sellBtn)),
     ...notice,
+    el('div', { className: 'sums', id: 'sums' }),
     el('div', { className: 'layout' },
-      el('section', { className: 'card' }, el('h2', {}, el('span', { id: 'invTitle', textContent: 'Your items' }), el('span', { className: 'mute', id: 'invValue' })), el('div', { className: 'grid', id: 'grid' })),
+      el('section', { className: 'card' }, el('div', { className: 'stools' }, search, selAll, seg), el('div', { className: 'grid', id: 'grid' })),
       el('aside', {}, el('section', { className: 'card' }, el('h2', { textContent: 'Trade requests' }), el('div', { id: 'trades' })))));
 }
 
+// One card per item (per price for listings) with a ×N count instead of duplicate cards.
+let shopView = 'all';
+function visible() {
+  const q = ($('shopQ') ? $('shopQ').value : '').trim().toLowerCase();
+  return inv.filter((i) => (shopView === 'all' || (shopView === 'listed' ? i.status === 'listed' : i.status !== 'listed'))
+    && (!q || (i.name + ' ' + i.rarity + ' ' + i.type).toLowerCase().includes(q)));
+}
+function groupsOf(list) {
+  const m = new Map();
+  for (const i of list) {
+    const k = i.status + ':' + i.item_id + (i.status === 'listed' ? ':' + i.price_cents : '');
+    if (!m.has(k)) m.set(k, { ...i, units: [] });
+    m.get(k).units.push(i);
+  }
+  const order = { held: 0, listed: 1, withdrawing: 2 };
+  return [...m.values()].sort((a, b) => order[a.status] - order[b.status] || b.value - a.value || a.name.localeCompare(b.name));
+}
+function drawSums() {
+  const listed = inv.filter((i) => i.status === 'listed'), held = inv.filter((i) => i.status === 'held');
+  const pct = info.sale_tax_pct || 0;
+  const gross = listed.reduce((a, i) => a + i.price_cents, 0);
+  const get = listed.reduce((a, i) => a + i.price_cents - Math.round(i.price_cents * pct / 100), 0);
+  const est = held.reduce((a, i) => a + recCents(i.value), 0);
+  $('cCount').textContent = inv.length + ' item' + (inv.length === 1 ? '' : 's') + ' total';
+  $('cValue').textContent = '~' + usd(gross + est);
+  $('sums').replaceChildren(
+    el('div', {}, el('span', { textContent: 'Listed for sale' }), el('b', { textContent: usd(gross) }), el('em', { textContent: listed.length + ' item' + (listed.length === 1 ? '' : 's') })),
+    el('div', { className: 'get' }, el('span', { textContent: 'You will get' }), el('b', { textContent: usd(get) }), el('em', { textContent: pct ? 'if everything listed sells, after the ' + pct + '% fee' : 'if everything listed sells' })),
+    el('div', {}, el('span', { textContent: 'Not listed' }), el('b', { textContent: '~' + usd(est) }), el('em', { textContent: held.length + ' item' + (held.length === 1 ? '' : 's') + ' at recommended prices' })),
+    el('div', {}, el('span', { textContent: 'Total value' }), el('b', { textContent: inv.reduce((a, i) => a + (i.value || 0), 0).toLocaleString() }), el('em', { textContent: 'MM2 value of everything here' })));
+}
 function drawInv() {
   const g = $('grid'); g.replaceChildren();
   const held = inv.filter((i) => i.status === 'held');
-  $('invTitle').textContent = 'Your items (' + inv.length + ')';
-  const listed = inv.filter((i) => i.status === 'listed');
-  $('invValue').textContent = (listed.length ? listed.length + ' for sale · ' : '') + 'value ' + inv.reduce((a, i) => a + i.value, 0).toLocaleString();
-  if (!inv.length) g.append(el('div', { className: 'empty', style: 'grid-column:1/-1', textContent: 'Nothing here yet. Deposit items to see them here.' }));
-  const order = { held: 0, listed: 1, withdrawing: 2 };
-  [...inv].sort((a, b) => order[a.status] - order[b.status]).forEach((i) => {
-    const t = el('div', { className: 'tag', textContent: i.status === 'withdrawing' ? 'WITHDRAWING' : i.status === 'listed' ? 'FOR SALE' : i.rarity.toUpperCase() });
-    t.style.setProperty('--c', i.status === 'listed' ? 'var(--gold)' : RC[i.rarity] || RC.Common);
-    const meta = el('span', { className: 'mute', textContent: i.type + ' · value ' + i.value.toLocaleString() });
-    if (i.status === 'listed') {
-      const down = el('button', { className: 'ghost down', type: 'button', textContent: 'Take down', onclick: async () => {
-        down.disabled = true;
-        try { await api('/api/market/' + i.listing_id + '/cancel', 'POST'); toast('Listing taken down'); refresh(); } catch (e) { toast(e.message, true); refresh(); }
-      } });
-      const lc = el('div', { className: 'it listed' }, art(i), t,
-        el('div', { className: 'info' }, el('b', { textContent: i.name }), el('span', { className: 'price', textContent: usd(i.price_cents) + ' ' }), meta), down);
-      if (window.valueTip) valueTip(lc.querySelector('.art'), i);
-      g.append(lc);
-      return;
-    }
-    const busy = i.status !== 'held';
-    const card = el('button', { className: 'it' + (selected.has(i.id) ? ' sel' : '') + (busy ? ' busy' : ''), type: 'button', disabled: busy || !(canTrade() || canSell()) },
-      art(i), t, busy ? null : el('span', { className: 'tick', textContent: selected.has(i.id) ? '✓' : '' }),
-      el('div', { className: 'info' }, el('b', { textContent: i.name }), meta));
-    card.onclick = () => { selected.has(i.id) ? selected.delete(i.id) : selected.add(i.id); drawInv(); };
-    if (window.valueTip) valueTip(card, i);
-    g.append(card);
-  });
   for (const id of [...selected]) if (!held.some((i) => i.id === id)) selected.delete(id);
+  drawSums();
+  const list = visible();
+  if (!inv.length) g.append(el('div', { className: 'empty', style: 'grid-column:1/-1', textContent: 'Nothing here yet. Deposit items to see them here.' }));
+  else if (!list.length) g.append(el('div', { className: 'empty', style: 'grid-column:1/-1', textContent: 'No items match.' }));
+  for (const x of groupsOf(list)) {
+    const n = x.units.length;
+    const t = el('div', { className: 'tag', textContent: x.status === 'withdrawing' ? 'WITHDRAWING' : x.status === 'listed' ? 'LISTED' : x.rarity.toUpperCase() });
+    t.style.setProperty('--c', x.status === 'listed' ? 'var(--gold)' : RC[x.rarity] || RC.Common);
+    const pic = art(x); pic.style.position = 'relative';
+    if (n > 1) pic.append(el('span', { className: 'qty', textContent: n + 'x' }));
+    const meta = el('span', { className: 'mute', textContent: x.type + ', ' + x.rarity + (x.value ? ' · value ' + x.value.toLocaleString() : '') });
+    if (x.status === 'listed') {
+      const down = el('button', { className: 'ghost down', type: 'button', textContent: n > 1 ? 'Take down all ' + n : 'Take down', onclick: async () => {
+        down.disabled = true;
+        try { for (const u of x.units) await api('/api/market/' + u.listing_id + '/cancel', 'POST'); toast(n > 1 ? n + ' listings taken down' : 'Listing taken down'); }
+        catch (e) { toast(e.message, true); }
+        refresh();
+      } });
+      const lc = el('div', { className: 'it listed' }, pic, t,
+        el('div', { className: 'info' }, el('b', { textContent: x.name }),
+          el('span', { className: 'price', textContent: usd(x.price_cents * n) }),
+          n > 1 ? el('span', { className: 'each', textContent: usd(x.price_cents) + ' each · ' }) : null, meta), down);
+      if (window.valueTip) valueTip(lc.querySelector('.art'), x);
+      g.append(lc);
+      continue;
+    }
+    const busy = x.status !== 'held';
+    const pickedN = x.units.filter((u) => selected.has(u.id)).length;
+    const card = el('div', { className: 'it' + (pickedN ? ' sel' : '') + (busy ? ' busy' : ''), role: 'button', tabIndex: busy ? -1 : 0 },
+      pic, t, busy ? null : el('span', { className: 'tick', textContent: pickedN ? '✓' : '' }),
+      el('div', { className: 'info' }, el('b', { textContent: x.name }), meta));
+    if (!busy && n > 1 && pickedN) {
+      const setN = (k) => { x.units.forEach((u, j) => (j < k ? selected.add(u.id) : selected.delete(u.id))); drawInv(); };
+      card.append(el('div', { className: 'stp', onclick: (e) => e.stopPropagation() },
+        el('span', { textContent: '−', onclick: () => setN(pickedN - 1) }), el('em', { textContent: pickedN + ' / ' + n + ' selected' }), el('span', { textContent: '+', onclick: () => setN(Math.min(n, pickedN + 1)) })));
+    }
+    if (!busy && (canTrade() || canSell())) {
+      const toggle = () => { x.units.forEach((u) => (pickedN ? selected.delete(u.id) : selected.add(u.id))); drawInv(); };
+      card.onclick = toggle; card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } };
+    }
+    if (window.valueTip) valueTip(card, x);
+    g.append(card);
+  }
+  const sa = $('selAll'); if (sa) { const h = list.filter((i) => i.status === 'held'); sa.textContent = h.length && h.every((i) => selected.has(i.id)) ? 'Clear selection' : 'Select all'; sa.disabled = !h.length; }
   const w = $('wdBtn'); if (w) { w.textContent = selected.size ? 'Withdraw ' + selected.size + ' item' + (selected.size === 1 ? '' : 's') : 'Withdraw items'; }
   const sb = $('sellBtn'); if (sb) { sb.disabled = !selected.size; sb.textContent = selected.size ? 'Sell ' + selected.size : 'Sell selected'; }
 }
@@ -306,7 +383,7 @@ function sellTotal(skip) {
   let t = 0;
   let fee = 0; const pct = info.sale_tax_pct || 0;
   sellRows.forEach((r) => {
-    const c = toC(r.input.value); t += c; fee += Math.round(c * pct / 100);
+    const c = toC(r.input.value); t += c * r.ids.length; fee += Math.round(c * pct / 100) * r.ids.length;
     if (r.slider !== skip && r.rec && c) r.slider.value = priceToPos(r.rec, c);
     const [cls, label] = dealOf(c, r.rec);
     r.tag.className = 'deal ' + cls; r.tag.textContent = label;
@@ -316,7 +393,9 @@ function sellTotal(skip) {
 function openSell() {
   const box = $('sellList'); box.replaceChildren(); sellRows = [];
   $('sellAll').value = ''; $('sellRatio').value = '';
-  inv.filter((i) => selected.has(i.id)).forEach((i) => {
+  const picked = new Map();
+  inv.filter((i) => selected.has(i.id)).forEach((i) => { if (!picked.has(i.item_id)) picked.set(i.item_id, { ...i, ids: [] }); picked.get(i.item_id).ids.push(i.id); });
+  [...picked.values()].forEach((i) => {
     const rec = recCents(i.value);
     const input = el('input', { inputMode: 'decimal', placeholder: '0.00', value: rec ? (rec / 100).toFixed(2) : '', 'aria-label': 'Price for ' + i.name });
     input.oninput = () => sellTotal();
@@ -328,17 +407,17 @@ function openSell() {
     slider.oninput = () => { input.value = (posToPrice(rec, +slider.value) / 100).toFixed(2); sellTotal(slider); };
     const recBtn = rec ? el('button', { type: 'button', textContent: '✓ Recommended: ' + usd(rec), title: 'Use the recommended price', onclick: () => { input.value = (rec / 100).toFixed(2); sellTotal(); } }) : el('span', { className: 'mute', textContent: 'No value yet', style: 'font-size:12px' });
     box.append(el('div', { className: 'sitem' },
-      el('div', { className: 'top' }, ph, el('div', { className: 'nm' }, el('b', {}, i.name, el('small', { textContent: i.rarity + ' ' + i.type + (i.value ? ' · value ' + i.value.toLocaleString() : '') })), recBtn),
-        el('label', { className: 'money' }, el('span', { textContent: '$' }), input)),
+      el('div', { className: 'top' }, ph, el('div', { className: 'nm' }, el('b', {}, i.name + (i.ids.length > 1 ? ' ×' + i.ids.length : ''), el('small', { textContent: i.rarity + ' ' + i.type + (i.value ? ' · value ' + i.value.toLocaleString() : '') })), recBtn),
+        el('label', { className: 'money', title: i.ids.length > 1 ? 'Price for each one' : '' }, el('span', { textContent: '$' }), input, i.ids.length > 1 ? el('em', { textContent: 'each' }) : null)),
       el('div', { className: 'guide' }, slider, tag)));
-    sellRows.push({ id: i.id, rec, input, slider, tag });
+    sellRows.push({ ids: i.ids, value: i.value, rec, input, slider, tag });
   });
   $('sellErr').textContent = ''; sellTotal(); sellDlg.showModal();
 }
 $('sellAll').oninput = () => { const c = toC($('sellAll').value); if (!c) return; $('sellRatio').value = ''; sellRows.forEach((r) => (r.input.value = (c / 100).toFixed(2))); sellTotal(); };
 $('sellRatio').oninput = () => {
   const d = parseFloat($('sellRatio').value); if (!(d > 0)) return; $('sellAll').value = '';
-  inv.filter((i) => selected.has(i.id)).forEach((i, k) => { const c = Math.max(5, Math.round((i.value || 0) * d / 10)); sellRows[k].input.value = (c / 100).toFixed(2); });
+  sellRows.forEach((r) => { const c = Math.max(5, Math.round((r.value || 0) * d / 10)); r.input.value = (c / 100).toFixed(2); });
   sellTotal();
 };
 $('sellGo').onclick = async () => {
@@ -347,7 +426,7 @@ $('sellGo').onclick = async () => {
   if (bad) { $('sellErr').textContent = 'Every item needs a price of at least $0.05.'; bad.input.focus(); return; }
   $('sellGo').disabled = true;
   try {
-    const r = await api('/api/market/list', 'POST', { items: sellRows.map((x) => ({ inventory_id: x.id, price: x.input.value })) });
+    const r = await api('/api/market/list', 'POST', { items: sellRows.flatMap((x) => x.ids.map((id) => ({ inventory_id: id, price: x.input.value }))) });
     sellDlg.close(); selected.clear(); toast('Listed ' + r.listed + ' item' + (r.listed === 1 ? '' : 's') + ' on the market'); refresh();
   } catch (e) { $('sellErr').textContent = e.message; }
   $('sellGo').disabled = false;
