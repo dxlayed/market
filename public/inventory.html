@@ -133,7 +133,7 @@ body{background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transpare
   <div class="pick" id="sellList"></div>
   <div class="totals">
     <div class="sumline"><span class="mute">Total price</span><span id="sellTotal">$0.00</span></div>
-    <div class="sumline"><span class="mute">Marketplace fee (0%)</span><span>$0.00</span></div>
+    <div class="sumline"><span class="mute" id="sellFeeL">Marketplace fee (0%)</span><span id="sellFee">$0.00</span></div>
     <div class="sumline big"><span>You will receive</span><span id="sellGet">$0.00</span></div>
   </div>
   <div class="err" id="sellErr"></div>
@@ -304,13 +304,14 @@ function dealOf(c, rec) {
 }
 function sellTotal(skip) {
   let t = 0;
+  let fee = 0; const pct = info.sale_tax_pct || 0;
   sellRows.forEach((r) => {
-    const c = toC(r.input.value); t += c;
+    const c = toC(r.input.value); t += c; fee += Math.round(c * pct / 100);
     if (r.slider !== skip && r.rec && c) r.slider.value = priceToPos(r.rec, c);
     const [cls, label] = dealOf(c, r.rec);
     r.tag.className = 'deal ' + cls; r.tag.textContent = label;
   });
-  $('sellTotal').textContent = usd(t); $('sellGet').textContent = usd(t);
+  $('sellTotal').textContent = usd(t); $('sellFeeL').textContent = 'Marketplace fee (' + pct + '%)'; $('sellFee').textContent = (fee ? '−' : '') + usd(fee); $('sellGet').textContent = usd(t - fee);
 }
 function openSell() {
   const box = $('sellList'); box.replaceChildren(); sellRows = [];
