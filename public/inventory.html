@@ -40,7 +40,26 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .price{font-family:Outfit,sans-serif;font-weight:800;color:var(--text);display:block;font-size:18px;margin:2px 0}
 .sellrow{display:flex;align-items:center;gap:10px;margin:14px 0 4px}.sellrow input{flex:1;font-size:20px;font-weight:800;font-family:Outfit,sans-serif}
 .sellrow span{font-family:Outfit,sans-serif;font-size:22px;font-weight:800;color:var(--mute)}
-.sumline{display:flex;justify-content:space-between;font-weight:700;margin-top:10px}
+.sumline{display:flex;justify-content:space-between;font-weight:700;margin-top:8px}
+.sumline.big{font-size:17px;border-top:1px solid var(--line);padding-top:10px}.sumline.big span:last-child{color:#4ade80}
+.totals{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 14px 12px;margin-bottom:6px}
+.setall{margin:14px 0 4px}.setall .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.money{display:flex;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 10px}
+.money:focus-within{outline:2px solid var(--gold);outline-offset:1px}
+.money span{color:var(--mute);font-weight:800}.money em{font-style:normal;color:var(--mute);font-size:12px;white-space:nowrap}
+.money input{border:0;background:transparent;width:100%;min-width:0;padding:9px 6px;font-weight:700}.money input:focus{outline:0}
+.sitem{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.sitem .top{display:flex;align-items:center;gap:10px}
+.sitem .ph{width:46px;height:46px;border-radius:10px;background:var(--raise);display:grid;place-items:center;flex:none;overflow:hidden}
+.sitem .ph img{max-width:90%;max-height:90%}
+.sitem .nm{flex:1;min-width:0}.sitem .nm b{display:block;overflow-wrap:anywhere}
+.sitem .nm button{background:none;border:0;padding:0;color:#4ade80;font-size:12px;font-weight:800;cursor:pointer}
+.sitem .nm small{color:var(--mute);font-size:12px;margin-left:6px}
+.sitem .money{width:120px;flex:none}
+.guide{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:11px;font-weight:800;color:var(--mute)}
+.guide .bar{position:relative;flex:1;height:6px;border-radius:99px;background:linear-gradient(90deg,#4ade80 0%,#4ade80 45%,#e6b422 62%,#e8202a 100%);opacity:.75}
+.guide .bar i{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:#fff;border:3px solid #0a0707;transform:translate(-50%,-50%);box-shadow:0 0 0 2px #fff3}
+.guide .gtag{min-width:118px;text-align:right}.guide .gtag.ok{color:#4ade80}.guide .gtag.hi{color:#ff8a8f}.guide .gtag.lo{color:#e6b422}
 .vbox{text-align:right;display:flex;flex-direction:column;flex:none}.vbox b{font-family:Outfit,sans-serif}.vbox small{color:var(--mute);font-size:12px}
 .art{height:100px;display:grid;place-items:center;background:radial-gradient(circle at 50% 55%,color-mix(in srgb,var(--c) 40%,transparent),transparent 70%),var(--raise);color:var(--c)}
 .art img{max-width:80%;max-height:84px}.art svg{width:52px;height:52px}
@@ -101,11 +120,16 @@ body{background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transpare
 </dialog>
 <dialog id="sellDlg">
   <h2>Sell items</h2>
-  <p class="mute" style="margin:6px 0 0">Set a price for each item. When someone buys, the money goes straight to your balance and the item moves to their inventory.</p>
+  <p class="mute" style="margin:6px 0 0">Each item starts at its recommended price. Change any of them, or set one price for everything. When someone buys, the money goes straight to your balance.</p>
+  <div class="setall"><label class="mute">Set price for all items</label>
+    <div class="two"><label class="money"><span>$</span><input id="sellAll" inputmode="decimal" placeholder="0.00" autocomplete="off" aria-label="Price for every item"></label>
+      <label class="money"><span>$</span><input id="sellRatio" inputmode="decimal" placeholder="per 1k value" autocomplete="off" aria-label="Dollars per 1,000 value"><em>/ 1k value</em></label></div></div>
   <div class="pick" id="sellList"></div>
-  <label class="mute" for="sellPrice">Price per item (USD)</label>
-  <div class="sellrow"><span>$</span><input id="sellPrice" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
-  <div class="sumline"><span class="mute">You get if all sell</span><span id="sellTotal">$0.00</span></div>
+  <div class="totals">
+    <div class="sumline"><span class="mute">Total price</span><span id="sellTotal">$0.00</span></div>
+    <div class="sumline"><span class="mute">Marketplace fee (0%)</span><span>$0.00</span></div>
+    <div class="sumline big"><span>You will receive</span><span id="sellGet">$0.00</span></div>
+  </div>
   <div class="err" id="sellErr"></div>
   <div style="display:flex;justify-content:flex-end;gap:8px"><button class="ghost" onclick="sellDlg.close()">Cancel</button> <button class="btn" id="sellGo">List for sale</button></div>
 </dialog>
@@ -264,27 +288,54 @@ $('depGo').onclick = async () => {
   catch (e) { $('depErr').textContent = e.message; }
   $('depGo').disabled = false;
 };
+// Recommended price: RECOMMENDED_PER_1K dollars per 1,000 value (default $20).
+const recCents = (v) => Math.round((v || 0) * (info.rec_per_1k ?? 20) / 10);
+const toC = (v) => { const t = String(v || '').trim().replace(/^\$/, ''); return /^\d+(\.\d{1,2})?$/.test(t) ? Math.round(parseFloat(t) * 100) : 0; };
+let sellRows = [];
 function sellTotal() {
-  const v = $('sellPrice').value.trim().replace(/^\$/, '');
-  const c = /^\d+(\.\d{1,2})?$/.test(v) ? Math.round(parseFloat(v) * 100) : 0;
-  $('sellTotal').textContent = usd(c * selected.size);
+  let t = 0;
+  sellRows.forEach((r) => {
+    const c = toC(r.input.value); t += c;
+    const rec = r.rec || 1, pos = Math.max(2, Math.min(98, (c / rec) * 50));
+    r.dot.style.left = pos + '%';
+    r.tag.className = 'gtag ' + (!c ? '' : c > rec * 1.15 ? 'hi' : c < rec * 0.85 ? 'lo' : 'ok');
+    r.tag.textContent = !c ? 'Enter a price' : !r.rec ? '' : c > rec * 1.15 ? 'Above recommended' : c < rec * 0.85 ? 'Below recommended' : 'Recommended';
+  });
+  $('sellTotal').textContent = usd(t); $('sellGet').textContent = usd(t);
 }
 function openSell() {
-  const box = $('sellList'); box.replaceChildren();
+  const box = $('sellList'); box.replaceChildren(); sellRows = [];
+  $('sellAll').value = ''; $('sellRatio').value = '';
   inv.filter((i) => selected.has(i.id)).forEach((i) => {
-    const ch = i.value_change;
-    box.append(el('div', { className: 'pr' }, el('span', {}, i.name + ' ', el('small', { textContent: i.rarity + ' ' + i.type })),
-      el('span', { className: 'vbox' }, el('b', { textContent: 'Value ' + i.value.toLocaleString() }),
-        el('small', { textContent: (i.demand != null ? 'Demand ' + i.demand : '') + (ch ? (i.demand != null ? ' · ' : '') + (ch > 0 ? '▲ +' : '▼ ') + ch.toLocaleString() : '') }))));
+    const rec = recCents(i.value);
+    const input = el('input', { inputMode: 'decimal', placeholder: '0.00', value: rec ? (rec / 100).toFixed(2) : '', 'aria-label': 'Price for ' + i.name });
+    input.oninput = sellTotal;
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('sellGo').click(); });
+    const ph = el('div', { className: 'ph' });
+    if (i.image_url && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(i.image_url)) ph.append(el('img', { src: i.image_url, alt: '', referrerPolicy: 'no-referrer' })); else { ph.innerHTML = ICON[i.type] || ICON.Misc; ph.style.color = RC[i.rarity] || RC.Common; }
+    const dot = el('i'), tag = el('span', { className: 'gtag' });
+    const recBtn = rec ? el('button', { type: 'button', textContent: '✓ Recommended: ' + usd(rec), title: 'Use the recommended price', onclick: () => { input.value = (rec / 100).toFixed(2); sellTotal(); } }) : el('span', { className: 'mute', textContent: 'No value yet', style: 'font-size:12px' });
+    box.append(el('div', { className: 'sitem' },
+      el('div', { className: 'top' }, ph, el('div', { className: 'nm' }, el('b', {}, i.name, el('small', { textContent: i.rarity + ' ' + i.type + (i.value ? ' · value ' + i.value.toLocaleString() : '') })), recBtn),
+        el('label', { className: 'money' }, el('span', { textContent: '$' }), input)),
+      el('div', { className: 'guide' }, el('span', { textContent: 'Price guide' }), el('div', { className: 'bar' }, dot), tag)));
+    sellRows.push({ id: i.id, rec, input, dot, tag });
   });
-  $('sellErr').textContent = ''; sellTotal(); sellDlg.showModal(); $('sellPrice').focus();
+  $('sellErr').textContent = ''; sellTotal(); sellDlg.showModal();
 }
-$('sellPrice').oninput = sellTotal;
-$('sellPrice').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('sellGo').click(); });
+$('sellAll').oninput = () => { const c = toC($('sellAll').value); if (!c) return; $('sellRatio').value = ''; sellRows.forEach((r) => (r.input.value = (c / 100).toFixed(2))); sellTotal(); };
+$('sellRatio').oninput = () => {
+  const d = parseFloat($('sellRatio').value); if (!(d > 0)) return; $('sellAll').value = '';
+  inv.filter((i) => selected.has(i.id)).forEach((i, k) => { const c = Math.max(5, Math.round((i.value || 0) * d / 10)); sellRows[k].input.value = (c / 100).toFixed(2); });
+  sellTotal();
+};
 $('sellGo').onclick = async () => {
-  $('sellErr').textContent = ''; $('sellGo').disabled = true;
+  $('sellErr').textContent = '';
+  const bad = sellRows.find((r) => toC(r.input.value) < 5);
+  if (bad) { $('sellErr').textContent = 'Every item needs a price of at least $0.05.'; bad.input.focus(); return; }
+  $('sellGo').disabled = true;
   try {
-    const r = await api('/api/market/list', 'POST', { inventory_ids: [...selected], price: $('sellPrice').value });
+    const r = await api('/api/market/list', 'POST', { items: sellRows.map((x) => ({ inventory_id: x.id, price: x.input.value })) });
     sellDlg.close(); selected.clear(); toast('Listed ' + r.listed + ' item' + (r.listed === 1 ? '' : 's') + ' on the market'); refresh();
   } catch (e) { $('sellErr').textContent = e.message; }
   $('sellGo').disabled = false;
