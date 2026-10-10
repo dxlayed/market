@@ -159,7 +159,7 @@ function armed(label, armedLabel, run, cls = 'ghost sm danger') {
 const userCell = (name, avatar) => el('span', { className: 'who' }, avEl({ username: name || '?', avatar }), name || 'deleted');
 
 let me = null, tab = 'overview', stats = null, poll = null;
-const TABS = [['overview', 'Overview'], ['analytics', 'Analytics'], ['trades', 'Trades'], ['bot', 'Bot'], ['giveaways', 'Giveaways'], ['market', 'Market'], ['crypto', 'Crypto'], ['codes', 'Balance codes'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
+const TABS = [['overview', 'Overview'], ['active', 'Active now'], ['analytics', 'Analytics'], ['trades', 'Trades'], ['bot', 'Bot'], ['giveaways', 'Giveaways'], ['market', 'Market'], ['crypto', 'Crypto'], ['codes', 'Balance codes'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
 const usd = (c) => window.money ? window.money(c) : '$' + (c / 100).toFixed(2);
 
 function shell() {
@@ -169,11 +169,11 @@ function shell() {
 }
 function drawSide() {
   $('side').replaceChildren(...TABS.map(([k, label]) => el('button', { className: tab === k ? 'on' : '', onclick: () => go(k) },
-    label, k === 'support' && stats && stats.waiting ? el('i', { textContent: stats.waiting }) : k === 'trades' && stats && stats.activeTrades ? el('i', { textContent: stats.activeTrades }) : k === 'crypto' && stats && stats.withdrawalsPending ? el('i', { textContent: stats.withdrawalsPending }) : null)));
+    label, k === 'active' && stats && stats.online ? el('i', { textContent: stats.online.total, style: 'background:#4ade80;color:#06240f' }) : k === 'support' && stats && stats.waiting ? el('i', { textContent: stats.waiting }) : k === 'trades' && stats && stats.activeTrades ? el('i', { textContent: stats.activeTrades }) : k === 'crypto' && stats && stats.withdrawalsPending ? el('i', { textContent: stats.withdrawalsPending }) : null)));
 }
 async function go(k) {
   tab = k; clearInterval(poll); drawSide();
-  try { await ({ overview, analytics, users, support, chat, market, crypto: cryptoTab, items, trades, logs, bot: botTab, giveaways: giveawaysTab, codes: codesTab })[k](); }
+  try { await ({ overview, active: activeTab, analytics, users, support, chat, market, crypto: cryptoTab, items, trades, logs, bot: botTab, giveaways: giveawaysTab, codes: codesTab })[k](); }
   catch (e) { $('main').replaceChildren(el('div', { className: 'card', textContent: e.message })); }
 }
 async function refreshStats() { stats = await api('/api/admin/stats'); drawSide(); }
@@ -202,6 +202,7 @@ async function overview() {
     mBtn);
   $('main').replaceChildren(el('h1', { textContent: 'Overview' }), maint, feesCard(set),
     el('div', { className: 'stats' },
+      tile('On the site now', s.online ? s.online.total : 0, s.online ? s.online.users + ' logged in · ' + (s.online.total - s.online.users) + ' guests' : ''),
       tile('Users', s.users, s.newUsers + ' joined in the last 24h'),
       tile('Waiting on reply', s.waiting, s.openTickets + ' open tickets', s.waiting > 0),
       tile('Chat messages', s.messages, s.messagesToday + ' in the last 24h'),
@@ -728,6 +729,45 @@ async function giveawaysTab() {
   }
   await load();
   poll = setInterval(() => { if (!document.querySelector('#main .arm') && !document.querySelector('#main input:focus, #main select:focus')) load().catch(() => {}); }, 10000);
+}
+
+// ---------- Active now ----------
+const PAGE_NAMES = { '/': 'Market', '/index': 'Market', '/values': 'Values', '/giveaways': 'Giveaways', '/inventory': 'My Shop', '/profile': 'Profile', '/support': 'Support', '/owner': 'Owner panel', '/maintenance': 'Maintenance page' };
+const pageLabel = (p) => PAGE_NAMES[p] || p;
+const ago = (ms) => { const s = Math.max(0, Math.round(ms / 1000)); return s < 60 ? s + 's' : s < 3600 ? Math.round(s / 60) + ' min' : Math.floor(s / 3600) + 'h ' + Math.round(s % 3600 / 60) + 'm'; };
+async function activeTab() {
+  async function load() {
+    const d = await api('/api/admin/active');
+    const total = d.users.length + d.guests.length;
+    const uBody = el('tbody'), gBody = el('tbody');
+    if (!d.users.length) uBody.append(el('tr', {}, el('td', { colSpan: 4, className: 'empty', textContent: 'Nobody logged in is on the site right now.' })));
+    d.users.forEach((u) => uBody.append(el('tr', {},
+      el('td', {}, userCell(u.username, u.avatar), u.owner ? el('span', { className: 'pill gold', textContent: 'Owner', style: 'margin-left:8px' }) : null),
+      el('td', { textContent: u.pages.map(pageLabel).join(', ') + (u.tabs > 1 ? ' (' + u.tabs + ' tabs)' : '') }),
+      el('td', { className: 'mute', textContent: u.devices.join(', ') }),
+      el('td', {}, el('span', { className: 'pill ' + (u.hidden ? '' : 'ok'), textContent: u.hidden ? 'Tab in background' : 'Looking now' }), el('span', { className: 'mute', textContent: ' · on for ' + ago(d.now - u.first) })))));
+    if (!d.guests.length) gBody.append(el('tr', {}, el('td', { colSpan: 3, className: 'empty', textContent: 'No guests right now.' })));
+    d.guests.forEach((g, i) => gBody.append(el('tr', {},
+      el('td', {}, el('span', { className: 'who' }, el('span', { className: 'av', textContent: '?', style: 'background:var(--raise);color:var(--mute)' }), 'Guest ' + (i + 1))),
+      el('td', { textContent: pageLabel(g.page) + ' · ' + g.device }),
+      el('td', {}, el('span', { className: 'pill ' + (g.hidden ? '' : 'ok'), textContent: g.hidden ? 'Tab in background' : 'Looking now' }), el('span', { className: 'mute', textContent: ' · on for ' + ago(d.now - g.first) })))));
+    const pages = Object.entries(d.pages).sort((a, b) => b[1] - a[1]);
+    $('main').replaceChildren(el('h1', {}, 'Active now ', el('span', { className: 'pill ok', textContent: '● live', style: 'vertical-align:middle;font-size:12px' })),
+      el('div', { className: 'stats' },
+        el('div', { className: 'hot' }, el('span', { textContent: 'On the site now' }), String(total), el('em', { textContent: 'people with the site open' })),
+        el('div', {}, el('span', { textContent: 'Logged in' }), String(d.users.length), el('em', { textContent: 'Roblox accounts' })),
+        el('div', {}, el('span', { textContent: 'Guests' }), String(d.guests.length), el('em', { textContent: 'not logged in' })),
+        el('div', {}, el('span', { textContent: 'Most at once today' }), String(d.peak.n), el('em', { textContent: d.peak.at ? 'at ' + when(d.peak.at) : '' }))),
+      el('section', { className: 'card' }, el('h2', { textContent: 'Where they are' }),
+        pages.length ? el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' }, ...pages.map(([p, n]) => el('span', { className: 'pill', style: 'font-size:13px;padding:5px 12px', textContent: pageLabel(p) + ' · ' + n }))) : el('p', { className: 'mute', textContent: 'Nobody on the site right now.' })),
+      el('section', { className: 'card scroll' }, el('h2', { textContent: 'Logged in (' + d.users.length + ')' }),
+        el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['Who', 'Page', 'Device', 'Status'].map((h) => el('th', { textContent: h })))), uBody)),
+      el('section', { className: 'card scroll' }, el('h2', { textContent: 'Guests (' + d.guests.length + ')' }),
+        el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['Who', 'Page', 'Status'].map((h) => el('th', { textContent: h })))), gBody)),
+      el('p', { className: 'mute', textContent: 'Updates every 5 seconds. Someone counts as on the site while they have it open in a tab; they drop off about a minute after closing it. Each guest browser tab counts once.' }));
+  }
+  await load();
+  poll = setInterval(() => load().catch(() => {}), 5000);
 }
 
 // ---------- Analytics ----------
