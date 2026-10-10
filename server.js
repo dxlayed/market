@@ -273,23 +273,55 @@ const authAny = wrap(async (req, res, next) => {
 
 // ---------- Maintenance mode ----------
 // Owners flip this in the owner panel. Owners keep seeing the normal site; everyone else gets
-// public/maintenance.html, and the API refuses requests except login and the bot API.
+// public/maintenance, and the API refuses requests except login and the bot API.
 const settings = { maintenance: false, sale_tax: { on: false, pct: 5 }, withdraw_tax: { on: false, pct: 5 } };
 // Site fees, switched on and off in Owner panel → Overview.
 const taxPct = (k) => (settings[k] && settings[k].on ? Math.min(Math.max(Number(settings[k].pct) || 0, 0), 50) : 0);
 const taxOf = (cents, pct) => Math.round(cents * pct / 100);
 const OPEN_DURING_MAINTENANCE = /^\/api\/(auth\/|logout$|me$|status$|bot\/)/;
+// Pages are served at clean addresses (/owner, /inventory, ...). The file in public/ can be named
+// either "owner.html" or just "owner"; both work. Old ".html" links redirect to the clean address.
+const PUB = path.join(__dirname, 'public');
+const PAGES = new Set(['index', 'values', 'giveaways', 'inventory', 'profile', 'support', 'owner', 'maintenance', 'board']);
+function pageFile(name) {
+  for (const f of [name + '.html', name]) { const fp = path.join(PUB, f); try { if (fs.statSync(fp).isFile()) return fp; } catch {} }
+  return null;
+}
+function pageName(p) {
+  if (p === '/' || p === '/index') return 'index';
+  const m = p.match(/^\/([\w-]+)\/?$/);
+  return m && PAGES.has(m[1]) ? m[1] : null;
+}
+app.use((req, res, next) => {
+  const m = req.path.match(/^\/([\w-]+)\.html$/);
+  if ((req.method === 'GET' || req.method === 'HEAD') && m && PAGES.has(m[1])) {
+    const q = req.originalUrl.indexOf('?');
+    return res.redirect(301, (m[1] === 'index' ? '/' : '/' + m[1]) + (q >= 0 ? req.originalUrl.slice(q) : ''));
+  }
+  next();
+});
 app.use(wrap(async (req, res, next) => {
   if (!settings.maintenance) return next();
   const p = req.path;
-  const isPage = p === '/' || /^\/[\w-]+\.html$/.test(p);
-  if (p === '/maintenance.html' || (!isPage && !p.startsWith('/api/')) || OPEN_DURING_MAINTENANCE.test(p)) return next();
+  const isPage = !!pageName(p);
+  if (pageName(p) === 'maintenance' || (!isPage && !p.startsWith('/api/')) || OPEN_DURING_MAINTENANCE.test(p)) return next();
   if (isOwner(await currentUser(req))) return next();
   res.status(503).set('Retry-After', '600');
   if (p.startsWith('/api/')) return res.json({ error: "SplitzMarket is down for maintenance. We'll be back soon.", maintenance: true });
-  res.set('Cache-Control', 'no-store').sendFile(path.join(__dirname, 'public', 'maintenance.html'));
+  res.set('Cache-Control', 'no-store').type('html').sendFile(pageFile('maintenance'));
 }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.get(/^\/[\w-]*\/?$/, (req, res, next) => {
+  const name = pageName(req.path), file = name && pageFile(name);
+  if (!file) return next();
+  res.type('html').sendFile(file);
+});
+app.use(express.static(PUB, { index: false }));
+// Scripts/styles whose file lost its extension (e.g. public/auth instead of public/auth.js) still load.
+app.get(/^\/([\w-]+)\.(js|css)$/, (req, res, next) => {
+  const fp = path.join(PUB, req.params[0]);
+  try { if (fs.statSync(fp).isFile()) return res.type(req.params[1]).sendFile(fp); } catch {}
+  next();
+});
 
 const owner = wrap(async (req, res, next) => {
   const u = await currentUser(req);
