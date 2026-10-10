@@ -146,6 +146,17 @@ async function init() {
     ALTER TABLE crypto_withdrawals ADD COLUMN IF NOT EXISTS tax_cents INT NOT NULL DEFAULT 0;
     CREATE TABLE IF NOT EXISTS tax_collections (id SERIAL PRIMARY KEY, amount_cents INT NOT NULL, sales_cents INT NOT NULL, withdraw_cents INT NOT NULL, collected_by TEXT, created_at TIMESTAMPTZ DEFAULT now());
     ALTER TABLE market_listings ADD COLUMN IF NOT EXISTS collected_id INT;
+    CREATE TABLE IF NOT EXISTS balance_codes (
+      id SERIAL PRIMARY KEY,
+      code TEXT UNIQUE NOT NULL,
+      amount_cents INT NOT NULL,
+      batch TEXT,
+      created_by TEXT,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      redeemed_by INT REFERENCES users(id) ON DELETE SET NULL,
+      redeemed_at TIMESTAMPTZ,
+      disabled BOOLEAN NOT NULL DEFAULT false
+    );
     CREATE TABLE IF NOT EXISTS giveaways (
       id SERIAL PRIMARY KEY,
       inventory_id INT REFERENCES inventory(id),
@@ -942,6 +953,86 @@ app.post('/api/bot/trades/:id/claim', botAuth, wrap(async (req, res) => res.json
 app.post('/api/bot/trades/:id/complete', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'completed', { received: req.body.received, note: req.body.note })))));
 app.post('/api/bot/trades/:id/fail', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'failed', { note: req.body.reason })))));
 
+// ---------- Balance codes (sold on SellAuth, redeemed here) ----------
+const CODES_URL = /^https:\/\//.test(process.env.CODES_URL || '') ? process.env.CODES_URL : 'https://splitzmarket.mysellauth.com/products';
+const CODE_CHARS2 = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const makeBalanceCode = () => 'SPLITZ-' + [0, 1, 2].map(() => Array.from({ length: 4 }, () => CODE_CHARS2[crypto.randomInt(CODE_CHARS2.length)]).join('')).join('-');
+const normCode = (c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^SPLITZ/, '');
+const fmtCode = (n) => 'SPLITZ-' + n.slice(0, 4) + '-' + n.slice(4, 8) + '-' + n.slice(8, 12);
+const codeFails = new Map(); // user id or ip -> { n, at }
+function codeLocked(key) { const f = codeFails.get(key); return f && f.n >= 8 && Date.now() - f.at < 30 * 60e3; }
+function codeFail(key) { const f = codeFails.get(key); const fresh = !f || Date.now() - f.at > 30 * 60e3; codeFails.set(key, { n: fresh ? 1 : f.n + 1, at: Date.now() }); }
+
+app.post('/api/codes/redeem', auth, wrap(async (req, res) => {
+  if (!req.user.roblox_id) throw new Fail(400, 'Log in with Roblox first.');
+  const keys = ['u' + req.user.id, 'ip' + req.ip];
+  if (keys.some(codeLocked)) throw new Fail(429, 'Too many wrong codes. Try again in 30 minutes, or open a support ticket.');
+  if (!limit('rc' + req.user.id, 1500)) throw new Fail(429, 'Slow down a little.');
+  const n = normCode(req.body.code);
+  if (n.length !== 12) { keys.forEach(codeFail); throw new Fail(400, 'That doesn\'t look like a SplitzMarket code. It should look like SPLITZ-XXXX-XXXX-XXXX.'); }
+  const code = fmtCode(n);
+  const out = await tx(async (db) => {
+    const c = (await db.query('SELECT * FROM balance_codes WHERE code=$1 FOR UPDATE', [code])).rows[0];
+    if (!c || c.disabled) { keys.forEach(codeFail); throw new Fail(400, 'That code is not valid. Check it and try again.'); }
+    if (c.redeemed_by) throw new Fail(400, c.redeemed_by === req.user.id ? 'You already redeemed this code.' : 'This code was already used.');
+    await db.query('UPDATE balance_codes SET redeemed_by=$1, redeemed_at=now() WHERE id=$2', [req.user.id, c.id]);
+    await db.query('SELECT id FROM users WHERE id=$1 FOR UPDATE', [req.user.id]);
+    // Like crypto deposits, code money is spent on items before it can be withdrawn.
+    const balance = await moveMoney(db, req.user.id, c.amount_cents, 'code_redeemed', code.slice(0, 12) + '…', c.amount_cents);
+    await log(db, req.user.username, 'code.redeemed', 'code:' + c.id, { amount: usd(c.amount_cents), batch: c.batch });
+    return { ok: true, amount_cents: c.amount_cents, balance };
+  });
+  res.json(out);
+}));
+
+app.get('/api/admin/codes', owner, wrap(async (req, res) => {
+  const summary = (await pool.query(`SELECT amount_cents, count(*)::int AS total,
+      count(*) FILTER (WHERE redeemed_by IS NULL AND NOT disabled)::int AS unused,
+      count(*) FILTER (WHERE redeemed_by IS NOT NULL)::int AS redeemed,
+      count(*) FILTER (WHERE disabled AND redeemed_by IS NULL)::int AS disabled
+    FROM balance_codes GROUP BY amount_cents ORDER BY amount_cents`)).rows;
+  const recent = (await pool.query(`SELECT c.id, c.code, c.amount_cents, c.redeemed_at, u.username FROM balance_codes c LEFT JOIN users u ON u.id=c.redeemed_by
+    WHERE c.redeemed_by IS NOT NULL ORDER BY c.redeemed_at DESC LIMIT 30`)).rows;
+  const redeemed = (await pool.query('SELECT COALESCE(sum(amount_cents),0)::int AS c FROM balance_codes WHERE redeemed_by IS NOT NULL')).rows[0].c;
+  res.json({ summary, recent, redeemed_cents: redeemed, url: CODES_URL });
+}));
+app.post('/api/admin/codes', owner, wrap(async (req, res) => {
+  const amounts = [...new Set((Array.isArray(req.body.amounts) ? req.body.amounts : []).map((a) => Math.round(parseFloat(String(a).replace(/^\$/, '')) * 100)).filter((c) => c >= 100 && c <= 100000))].slice(0, 10);
+  const count = Math.min(Math.max(parseInt(req.body.count, 10) || 0, 1), 500);
+  if (!amounts.length) throw new Fail(400, 'Add at least one amount between $1 and $1,000.');
+  const batch = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  const out = await tx(async (db) => {
+    const made = {};
+    for (const a of amounts) {
+      made[a] = [];
+      while (made[a].length < count) {
+        const code = makeBalanceCode();
+        const r = await db.query('INSERT INTO balance_codes (code, amount_cents, batch, created_by) VALUES ($1,$2,$3,$4) ON CONFLICT (code) DO NOTHING RETURNING code', [code, a, batch, req.user.username]);
+        if (r.rowCount) made[a].push(code);
+      }
+    }
+    await log(db, req.user.username, 'codes.created', null, { amounts: amounts.map(usd), count, batch });
+    return made;
+  });
+  res.json({ ok: true, batch, codes: out });
+}));
+// Download unused codes for one amount as a text file, one per line (ready to paste into SellAuth).
+app.get('/api/admin/codes/export', owner, wrap(async (req, res) => {
+  const a = parseInt(req.query.amount, 10);
+  const rows = (await pool.query('SELECT code FROM balance_codes WHERE amount_cents=$1 AND redeemed_by IS NULL AND NOT disabled ORDER BY id', [a])).rows;
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="splitz-codes-' + (a / 100) + 'usd.txt"');
+  res.send(rows.map((r) => r.code).join('\n') + (rows.length ? '\n' : ''));
+}));
+app.post('/api/admin/codes/disable', owner, wrap(async (req, res) => {
+  const n = normCode(req.body.code);
+  if (n.length !== 12) throw new Fail(400, 'Paste the full code.');
+  const r = await pool.query('UPDATE balance_codes SET disabled=true WHERE code=$1 AND redeemed_by IS NULL RETURNING amount_cents', [fmtCode(n)]);
+  if (!r.rowCount) throw new Fail(404, 'No unused code like that.');
+  await log(null, req.user.username, 'code.disabled', fmtCode(n).slice(0, 12) + '…');
+  res.json({ ok: true });
+}));
+
 // ---------- Giveaways ----------
 // Owners put one of their own held items up. Anyone logged in with Roblox can join once, for free.
 // When time runs out a winner is picked at random (every entry has the same chance) and the item moves to them.
@@ -1068,6 +1159,8 @@ app.get('/api/admin/analytics', owner, wrap(async (req, res) => {
       (SELECT count(*)::int FROM crypto_withdrawals WHERE status='paid' ${w('updated_at')}) AS wd_n,
       (SELECT COALESCE(sum(tax_cents),0)::int FROM crypto_withdrawals WHERE status='paid' ${w('updated_at')}) AS wd_fees,
       (SELECT COALESCE(sum(delta_cents),0)::int FROM balance_log WHERE reason='owner_added' ${w('created_at')}) AS added_cents,
+      (SELECT COALESCE(sum(amount_cents),0)::int FROM balance_codes WHERE redeemed_by IS NOT NULL ${w('redeemed_at')}) AS code_cents,
+      (SELECT count(*)::int FROM balance_codes WHERE redeemed_by IS NOT NULL ${w('redeemed_at')}) AS code_n,
       (SELECT count(*)::int FROM trades WHERE kind='deposit' AND status='completed' ${w('updated_at')}) AS item_dep,
       (SELECT count(*)::int FROM trades WHERE kind='withdraw' AND status='completed' ${w('updated_at')}) AS item_wd,
       (SELECT count(*)::int FROM users WHERE true ${w('created_at')}) AS new_users,
@@ -1520,7 +1613,7 @@ app.get('/api/crypto', wrap(async (req, res) => {
   if (u) withdrawable = Math.max(0, u.balance_cents - (await pool.query('SELECT locked_cents FROM users WHERE id=$1', [u.id])).rows[0].locked_cents);
   res.json({
     coins: Object.values(CRYPTO).map((c) => ({ id: c.id, name: c.name, symbol: c.symbol, price: prices[c.id] || null, confirmations: c.confirmations, fee_cents: feeCents(c) })),
-    min_deposit: MIN_DEPOSIT, min_withdraw: MIN_WITHDRAW, withdraw_tax_pct: taxPct('withdraw_tax'),
+    min_deposit: MIN_DEPOSIT, min_withdraw: MIN_WITHDRAW, withdraw_tax_pct: taxPct('withdraw_tax'), codes_url: CODES_URL,
     balance: u ? u.balance_cents : null, withdrawable,
     open: LISTINGS_OPEN || isOwner(u),
   });
