@@ -148,7 +148,7 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
 <body>
 <div class="bar">
   <a class="logo" href="/">Splitz<b>Market</b></a>
-  <nav><a class="on" href="/">Market</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a></nav>
+  <nav><a class="on" href="/">Market</a><a href="/inventory">Inventory</a><a href="/support">Support</a></nav>
   <div id="who"></div>
 </div>
 
@@ -175,7 +175,7 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
       <div>
         <h1 id="hTitle">Buy and sell MM2 items.</h1>
         <p id="hSub">Every item on SplitzMarket is already held by us, so you get exactly what you pay for. It lands in your inventory the moment you buy, and our bot trades it to you in game.</p>
-        <div class="acts"><a class="btn" href="/inventory.html">Sell your items</a><button class="ghost" type="button" onclick="document.getElementById('q').focus()">Browse</button></div>
+        <div class="acts"><a class="btn" href="/inventory">Sell your items</a><button class="ghost" type="button" onclick="document.getElementById('q').focus()">Browse</button></div>
       </div>
       <div class="steps">
         <div><i>1</i>Add funds to your balance</div>
@@ -394,7 +394,7 @@ function draw() {
     if (x.ids.length > 1) a.append(el('span', { className: 'qty', textContent: '×' + x.ids.length }));
     const inCart = x.ids.filter((id) => cart.includes(id)).length;
     const acts = el('div', { className: 'acts' });
-    if (me && me.id === x.seller_id) acts.append(el('a', { className: 'btn sm', href: '/inventory.html', textContent: 'Your listing', style: 'text-align:center;background:var(--raise)' }));
+    if (me && me.id === x.seller_id) acts.append(el('a', { className: 'btn sm', href: '/inventory', textContent: 'Your listing', style: 'text-align:center;background:var(--raise)' }));
     else {
       const free = x.ids.find((id) => !cart.includes(id));
       acts.append(el('button', { className: 'btn sm', type: 'button', disabled: !free, textContent: !free ? 'All in cart' : inCart ? 'Add another (' + inCart + ')' : 'Add to cart',
@@ -448,7 +448,7 @@ async function buy() {
     busy = false; await load();
     const send = el('button', { className: 'btn', type: 'button', textContent: 'Withdraw now', onclick: () => openItemWithdraw(r.inventory_ids) });
     $('lines').replaceChildren(el('div', { className: 'none' }, el('b', { textContent: 'Purchase complete' }), el('br'), 'Your items are in your inventory. Withdraw them now, join our bot\'s server and it trades them to you in MM2. Or keep them to sell later.', el('br'), el('br'),
-      info.open || me.owner ? send : null, ' ', el('a', { className: 'ghost sm', href: '/inventory.html', textContent: 'Go to inventory', style: 'color:var(--text)' })));
+      info.open || me.owner ? send : null, ' ', el('a', { className: 'ghost sm', href: '/inventory', textContent: 'Go to inventory', style: 'color:var(--text)' })));
   } catch (e) {
     busy = false;
     if (e.status === 409) await load();
