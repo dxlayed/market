@@ -63,7 +63,7 @@ button:focus-visible,input:focus,select:focus,a:focus-visible{outline:2px solid 
 <body>
 <div class="bar">
   <a class="logo" href="/">Splitz<b>Market</b></a>
-  <nav><a href="/">Market</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a></nav>
+  <nav><a href="/">Market</a><a href="/inventory">Inventory</a><a href="/support">Support</a></nav>
   <div id="who"></div>
 </div>
 <div class="wrap">
