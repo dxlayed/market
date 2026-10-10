@@ -181,8 +181,8 @@ function gate() {
 }
 
 function shell() {
-  const depBtn = canTrade() ? el('button', { className: 'btn', textContent: 'Deposit items', onclick: openDeposit }) : soonBtn('Deposit items', 'btn');
-  const wdBtn = canTrade() ? el('button', { className: 'ghost', id: 'wdBtn', textContent: 'Withdraw items', disabled: true, onclick: withdraw }) : soonBtn('Withdraw', 'ghost');
+  const depBtn = el('button', { className: 'btn', textContent: 'Deposit items', onclick: () => openItemDeposit() });
+  const wdBtn = canTrade() ? el('button', { className: 'ghost', id: 'wdBtn', textContent: 'Withdraw items', onclick: withdraw }) : soonBtn('Withdraw', 'ghost');
   const sellBtn = canSell() ? el('button', { className: 'btn', id: 'sellBtn', textContent: 'Sell selected', disabled: true, onclick: openSell }) : soonBtn('Sell', 'btn');
   depBtn.className = depBtn.className.replace(/\bbtn\b/, 'ghost');
   const notice = [];
@@ -191,7 +191,7 @@ function shell() {
   if (info.accounts.length) notice.push(el('div', { className: 'notice' }, el('b', { textContent: 'Only trade with our official accounts: ' }), info.accounts.join(', '),
     '. Anyone else asking you for items is not SplitzMarket.'));
   $('main').replaceChildren(
-    el('div', { className: 'title' }, el('div', {}, el('h1', { textContent: 'Inventory' }), el('p', { textContent: 'Items you deposited or bought. Select items to sell them on the market or withdraw them in game.' })),
+    el('div', { className: 'title' }, el('div', {}, el('h1', { textContent: 'Inventory' }), el('p', { textContent: 'Items you deposited or bought. Select items to sell them on the market or withdraw them to your Roblox account.' })),
       el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' }, depBtn, wdBtn, sellBtn)),
     ...notice,
     el('div', { className: 'layout' },
@@ -231,7 +231,7 @@ function drawInv() {
     g.append(card);
   });
   for (const id of [...selected]) if (!held.some((i) => i.id === id)) selected.delete(id);
-  const w = $('wdBtn'); if (w) { w.disabled = !selected.size; w.textContent = selected.size ? 'Withdraw ' + selected.size + ' item' + (selected.size === 1 ? '' : 's') : 'Withdraw items'; }
+  const w = $('wdBtn'); if (w) { w.textContent = selected.size ? 'Withdraw ' + selected.size + ' item' + (selected.size === 1 ? '' : 's') : 'Withdraw items'; }
   const sb = $('sellBtn'); if (sb) { sb.disabled = !selected.size; sb.textContent = selected.size ? 'Sell ' + selected.size : 'Sell selected'; }
 }
 
@@ -246,12 +246,8 @@ function drawTrades(rows) {
       el('div', { className: 'row' }, el('b', { textContent: (t.kind === 'deposit' ? 'Deposit' : 'Withdraw') + ' #' + t.id }), el('span', { className: 'pill ' + t.status, textContent: label[t.status] || t.status })),
       el('div', { className: 'mute', style: 'margin-top:4px;overflow-wrap:anywhere', textContent: names }));
     if (active) {
-      const bot = info.accounts.length ? info.accounts.join(' or ') : 'our official bot';
-      card.append(el('div', { className: 'botnote' }, el('span', { className: 'live' }), t.status === 'in_progress' ? 'Our bot is on it. Watch for a trade request in MM2.' : 'Waiting for our bot. This usually takes a few minutes.'),
-        el('ol', { className: 'steps' },
-          el('li', {}, 'Be online in Murder Mystery 2.'),
-          el('li', {}, 'Accept the trade from ', el('b', { textContent: bot }), t.kind === 'deposit' ? ' and put in exactly the items above.' : '. It will contain the items above.'),
-          el('li', {}, 'Only trade with ', el('b', { textContent: bot }), '. Anyone else messaging you about this is not SplitzMarket.')));
+      card.append(el('div', { className: 'botnote' }, el('span', { className: 'live' }), t.status === 'in_progress' ? 'The bot is trading you now. Accept it in MM2.' : 'Join the bot\'s private server and it will trade you.'),
+        el('button', { className: 'btn sm', style: 'margin-top:8px', textContent: 'Join bot', onclick: () => openItemDeposit(t.kind === 'withdraw' ? 'receive' : '') }));
       if (t.status === 'pending') card.append(el('button', { className: 'ghost sm', style: 'margin-top:8px', textContent: 'Cancel request', onclick: async () => {
         try { await api('/api/trades/' + t.id + '/cancel', 'POST'); toast('Request cancelled'); refresh(); } catch (e) { toast(e.message, true); }
       } }));
@@ -355,10 +351,8 @@ $('sellGo').onclick = async () => {
   } catch (e) { $('sellErr').textContent = e.message; }
   $('sellGo').disabled = false;
 };
-async function withdraw() {
-  try { await api('/api/trades/withdraw', 'POST', { inventory_ids: [...selected] }); selected.clear(); toast('Withdrawal requested. Our bot will send you a trade.'); refresh(); }
-  catch (e) { toast(e.message, true); }
-}
+function withdraw() { openItemWithdraw([...selected]); }
+window.onItemsChanged = () => { selected.clear(); refresh(); };
 
 async function init() {
   me = await api('/api/me').catch(() => null);
