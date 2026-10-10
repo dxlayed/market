@@ -210,7 +210,7 @@ const ICON = {
 };
 function art(i) {
   const a = el('div', { className: 'art' });
-  if (i.image_url && /^https:\/\//.test(i.image_url)) a.append(el('img', { src: i.image_url, alt: '', loading: 'lazy' }));
+  if (i.image_url && /^(https:\/\/|\/img\/item\/)/.test(i.image_url)) a.append(el('img', { src: i.image_url, alt: '', loading: 'lazy' }));
   else a.insertAdjacentHTML('beforeend', ICON[i.type] || ICON.Misc);
   return a;
 }
@@ -339,6 +339,7 @@ function draw() {
       el('div', { className: 'mute' }, x.type + ' · value ' + x.value.toLocaleString() + ' · by ', el('a', { href: '/?seller=' + encodeURIComponent(x.seller), textContent: x.seller, style: 'color:inherit' })),
       el('div', { className: 'price', textContent: usd(x.price_cents) }), acts));
     card.style.setProperty('--c', c);
+    if (window.valueTip) valueTip(a, x);
     g.append(card);
   });
 }
@@ -420,6 +421,7 @@ async function loadSales() {
 }
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+{ const qp = new URLSearchParams(location.search).get('q'); if (qp) $('q').value = qp.slice(0, 50); }
 if (seller) { $('hTitle').textContent = seller + "'s shop"; $('hSub').textContent = 'Everything this player has for sale right now. Every item is held by SplitzMarket until you buy it.'; }
 (async () => {
   [me, info] = await Promise.all([api('/api/me').catch(() => null), api('/api/trading-info').catch(() => info)]);
