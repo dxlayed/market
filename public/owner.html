@@ -129,7 +129,7 @@ function armed(label, armedLabel, run, cls = 'ghost sm danger') {
 const userCell = (name, avatar) => el('span', { className: 'who' }, avEl({ username: name || '?', avatar }), name || 'deleted');
 
 let me = null, tab = 'overview', stats = null, poll = null;
-const TABS = [['overview', 'Overview'], ['trades', 'Trades'], ['market', 'Market'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
+const TABS = [['overview', 'Overview'], ['trades', 'Trades'], ['market', 'Market'], ['crypto', 'Crypto'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
 const usd = (c) => window.money ? window.money(c) : '$' + (c / 100).toFixed(2);
 
 function shell() {
@@ -139,11 +139,11 @@ function shell() {
 }
 function drawSide() {
   $('side').replaceChildren(...TABS.map(([k, label]) => el('button', { className: tab === k ? 'on' : '', onclick: () => go(k) },
-    label, k === 'support' && stats && stats.waiting ? el('i', { textContent: stats.waiting }) : k === 'trades' && stats && stats.activeTrades ? el('i', { textContent: stats.activeTrades }) : null)));
+    label, k === 'support' && stats && stats.waiting ? el('i', { textContent: stats.waiting }) : k === 'trades' && stats && stats.activeTrades ? el('i', { textContent: stats.activeTrades }) : k === 'crypto' && stats && stats.withdrawalsPending ? el('i', { textContent: stats.withdrawalsPending }) : null)));
 }
 async function go(k) {
   tab = k; clearInterval(poll); drawSide();
-  try { await ({ overview, users, support, chat, market, items, trades, logs })[k](); }
+  try { await ({ overview, users, support, chat, market, crypto: cryptoTab, items, trades, logs })[k](); }
   catch (e) { $('main').replaceChildren(el('div', { className: 'card', textContent: e.message })); }
 }
 async function refreshStats() { stats = await api('/api/admin/stats'); drawSide(); }
@@ -179,6 +179,7 @@ async function overview() {
       tile('Sales (24h)', usd(s.volume24), s.sales24 + ' items sold'),
       tile('For sale', s.listings, 'active listings'),
       tile('Balances owed', usd(s.balances), 'total of everyone\'s balance'),
+      tile('Withdrawals to send', s.withdrawalsPending, 'in the Crypto tab', s.withdrawalsPending > 0),
       tile('Banned users', s.banned, '')),
     el('section', { className: 'card' }, el('h2', { textContent: 'Tickets waiting on you' }), list),
     el('p', { className: 'mute', textContent: 'Owners: ' + s.owners.join(', ') + '. Change this with the OWNERS variable in Railway. Trading API: ' + (s.apiEnabled ? 'on' : 'off (set BOT_API_KEY in Railway)') + '.' }));
@@ -296,6 +297,63 @@ function adjust(u, done) {
     el('p', { className: 'mute', textContent: 'Positive adds funds. Negative removes them, for example after paying a cash out.', style: 'margin:0 0 10px' }),
     el('div', { className: 'tools', style: 'margin:0' }, amt, note, save, el('button', { className: 'ghost', textContent: 'Cancel', onclick: () => $('adjust').replaceChildren() })), err));
   amt.focus(); window.scrollTo({ top: 0 });
+}
+
+async function cryptoTab() {
+  const body = el('div');
+  async function load() {
+    const d = await api('/api/admin/crypto');
+    const ex = Object.fromEntries(d.coins.map((c) => [c.id, c]));
+    const sym = (id) => id.toUpperCase();
+    body.replaceChildren();
+    if (!d.coins.length) {
+      body.append(el('section', { className: 'card' }, el('h2', { textContent: 'Crypto is off' }),
+        el('p', { className: 'mute', textContent: 'Add BTC_XPUB and/or LTC_XPUB in Railway Variables (the Master Public Key from Electrum or Electrum-LTC), then redeploy.' })));
+    }
+    const pend = d.withdrawals.filter((w) => w.status === 'pending');
+    const q = el('section', { className: 'card' }, el('h2', { textContent: 'Withdrawals to send (' + pend.length + ')' }),
+      el('p', { className: 'mute', style: 'margin:0 0 12px', textContent: 'Send the coin amount shown to the address from your wallet, then paste the transaction ID and mark it sent. Reject gives the money back to their balance.' }));
+    if (!pend.length) q.append(el('p', { className: 'mute', textContent: 'Nothing waiting.' }));
+    pend.forEach((w) => {
+      const txid = el('input', { placeholder: 'Transaction ID from your wallet', style: 'flex:1;min-width:220px' });
+      const copy = (t, label) => el('button', { className: 'ghost sm', textContent: label, onclick: () => navigator.clipboard.writeText(t).then(() => toast('Copied')) });
+      q.append(el('div', { className: 'card', style: 'background:var(--bg);margin:0 0 10px' },
+        el('div', { className: 'row', style: 'justify-content:space-between' },
+          el('b', { textContent: '#' + w.id + ' · ' + (w.username || 'deleted') + ' · ' + usd(w.usd_cents) + ' (fee ' + usd(w.fee_cents) + ')' }),
+          el('span', { className: 'mute', textContent: when(w.created_at) })),
+        el('div', { className: 'row', style: 'margin:10px 0' },
+          el('span', { className: 'code', textContent: (w.send_now || w.coin_amount || '?') + ' ' + sym(w.coin) }), copy(w.send_now || w.coin_amount || '', 'Copy amount')),
+        el('div', { className: 'row', style: 'margin-bottom:10px' }, el('span', { className: 'tag', textContent: w.address }), copy(w.address, 'Copy address')),
+        el('div', { className: 'row' }, txid,
+          armed('Mark sent', 'Confirm sent', async () => { await api('/api/admin/crypto/withdrawals/' + w.id + '/paid', 'POST', { txid: txid.value.trim() }); toast('Marked as sent'); load(); refreshStats(); }, 'btn sm'),
+          armed('Reject & refund', 'Confirm refund', async () => { await api('/api/admin/crypto/withdrawals/' + w.id + '/reject', 'POST', { reason: 'Rejected by ' + me.username }); toast('Refunded to their balance'); load(); refreshStats(); }))));
+    });
+    const done = el('tbody');
+    d.withdrawals.filter((w) => w.status !== 'pending').slice(0, 50).forEach((w) => done.append(el('tr', {},
+      el('td', { textContent: '#' + w.id }), el('td', { textContent: w.username || '' }), el('td', { textContent: usd(w.usd_cents) + ' ' + sym(w.coin) }),
+      el('td', {}, el('span', { className: 'pill ' + (w.status === 'paid' ? 'ok' : 'bad'), textContent: w.status })),
+      el('td', {}, w.txid && ex[w.coin] ? el('a', { href: ex[w.coin].explorer + w.txid, target: '_blank', rel: 'noopener', textContent: w.txid.slice(0, 12) + '…' }) : (w.note || '')),
+      el('td', { className: 'mute', textContent: when(w.updated_at) }))));
+    const deps = el('tbody');
+    if (!d.deposits.length) deps.append(el('tr', {}, el('td', { colSpan: 6, className: 'empty', textContent: 'No deposits yet.' })));
+    d.deposits.forEach((x) => deps.append(el('tr', {},
+      el('td', { textContent: x.username || '' }), el('td', { textContent: (x.amount_sats / 1e8).toFixed(8).replace(/0+$/, '') + ' ' + sym(x.coin) }),
+      el('td', { textContent: usd(x.usd_cents) }),
+      el('td', {}, el('span', { className: 'pill ' + (x.status === 'credited' ? 'ok' : x.status === 'pending' ? 'gold' : 'bad'), textContent: x.status === 'pending' ? 'confirming ' + x.confirmations : x.status })),
+      el('td', {}, ex[x.coin] ? el('a', { href: ex[x.coin].explorer + x.txid, target: '_blank', rel: 'noopener', textContent: x.txid.slice(0, 12) + '…' }) : x.txid.slice(0, 12)),
+      el('td', { className: 'mute', textContent: when(x.created_at) }))));
+    const w = d.watch;
+    body.append(q,
+      el('section', { className: 'card scroll' }, el('h2', { textContent: 'Recent deposits' }),
+        el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['User', 'Amount', 'USD', 'Status', 'Transaction', 'When'].map((h) => el('th', { textContent: h })))), deps)),
+      el('section', { className: 'card scroll' }, el('h2', { textContent: 'Past withdrawals' }),
+        el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['#', 'User', 'Amount', 'Status', 'Transaction', 'When'].map((h) => el('th', { textContent: h })))), done)),
+      el('p', { className: 'mute', textContent: 'Prices: ' + d.coins.map((c) => c.name + ' ' + (c.price ? '$' + c.price.toLocaleString() : 'unavailable')).join(', ') +
+        '. Blockchain watcher last ran ' + (w.lastRun ? when(w.lastRun) : 'never') + (w.lastError ? '. Last problem: ' + w.lastError : '.') }));
+  }
+  $('main').replaceChildren(el('h1', { textContent: 'Crypto' }), body);
+  await load();
+  poll = setInterval(() => load().catch(() => {}), 15000);
 }
 
 async function market() {
@@ -422,7 +480,7 @@ async function trades() {
 
 async function logs() {
   const q = el('input', { placeholder: 'Search by username, trade:12, item name...' });
-  const type = el('select', {}, ...[['', 'Everything'], ['trade', 'Trades'], ['user', 'Users and logins'], ['item', 'Items'], ['ticket', 'Tickets'], ['chat', 'Chat'], ['market', 'Market'], ['balance', 'Balances'], ['site', 'Maintenance']].map(([v, t]) => el('option', { value: v, textContent: t })));
+  const type = el('select', {}, ...[['', 'Everything'], ['trade', 'Trades'], ['user', 'Users and logins'], ['item', 'Items'], ['ticket', 'Tickets'], ['chat', 'Chat'], ['market', 'Market'], ['balance', 'Balances'], ['site', 'Maintenance'], ['crypto', 'Crypto']].map(([v, t]) => el('option', { value: v, textContent: t })));
   const body = el('tbody');
   const nice = (a) => a.replace('.', ' ').replace(/_/g, ' ');
   async function load() {
