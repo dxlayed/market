@@ -666,6 +666,7 @@ app.get('/api/admin/stats', owner, wrap(async (req, res) => {
       + (SELECT COALESCE(sum(tax_cents),0) FROM crypto_withdrawals WHERE status<>'rejected' AND created_at > now() - interval '24 hours'))::int AS n`),
     feesAll: await q(`SELECT ((SELECT COALESCE(sum(fee_cents),0) FROM market_listings WHERE status='sold')
       + (SELECT COALESCE(sum(tax_cents),0) FROM crypto_withdrawals WHERE status<>'rejected'))::int AS n`),
+    online: (() => { const l = activeVisitors(); return { total: new Set(l.map((v, i) => (v.user_id ? 'u' + v.user_id : 'g' + i))).size, users: new Set(l.filter((v) => v.user_id).map((v) => v.user_id)).size }; })(),
     owners: OWNERS,
     apiEnabled: BOT_KEY.length >= 32,
   });
@@ -1053,6 +1054,57 @@ app.post('/api/bot/trades/:id/complete', botAuth, wrap(async (req, res) => {
   catch (e) { botError('trade #' + req.params.id + ' complete', req.body, e.message); throw e; }
 }));
 app.post('/api/bot/trades/:id/fail', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'failed', { note: req.body.reason })))));
+
+// ---------- Live visitors (owners see who is on the site right now) ----------
+// Every open tab checks in every 20s with a random tab id, logged in or not. Kept in memory only.
+const visitors = new Map(); // sid -> { user_id, username, avatar, page, device, hidden, first, at }
+let visitorPeak = { n: 0, at: null, day: new Date().toDateString() };
+const deviceOf = (ua) => /iPad|Tablet/i.test(ua) ? 'Tablet' : /Mobi|Android|iPhone/i.test(ua) ? 'Phone' : 'Computer';
+app.post('/api/presence', wrap(async (req, res) => {
+  const sid = String(req.body.sid || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
+  if (sid.length < 8) return res.json({ ok: false });
+  // Leaving a page: expire soon unless the next page checks in (keeps "on site since" across page changes).
+  if (req.body.leave) { const v = visitors.get(sid); if (v) v.at = Math.min(v.at, Date.now() - 50e3); return res.json({ ok: true }); }
+  if (!limit('pr' + sid, 4000)) return res.json({ ok: true });
+  if (!visitors.has(sid) && visitors.size >= 5000) return res.json({ ok: false });
+  const u = await currentUser(req);
+  const prev = visitors.get(sid);
+  visitors.set(sid, {
+    user_id: u ? u.id : null, username: u ? u.username : null, avatar: u ? u.avatar_url : null, owner: u ? isOwner(u) : false,
+    page: clean(String(req.body.page || '/'), 60) || '/', device: deviceOf(String(req.headers['user-agent'] || '')),
+    hidden: !!req.body.hidden, first: prev ? prev.first : Date.now(), at: Date.now(),
+  });
+  res.json({ ok: true });
+}));
+function activeVisitors() {
+  const cut = Date.now() - 60e3;
+  for (const [k, v] of visitors) if (v.at < cut) visitors.delete(k);
+  const list = [...visitors.values()];
+  const today = new Date().toDateString();
+  if (visitorPeak.day !== today) visitorPeak = { n: 0, at: null, day: today };
+  const people = new Set(list.map((v, i) => (v.user_id ? 'u' + v.user_id : 'g' + i))).size;
+  if (people > visitorPeak.n) visitorPeak = { n: people, at: new Date().toISOString(), day: today };
+  return list;
+}
+setInterval(activeVisitors, 30e3);
+app.get('/api/admin/active', owner, (req, res) => {
+  const list = activeVisitors();
+  // One row per logged-in person (all their tabs together), one row per guest tab.
+  const users = new Map(), guests = [];
+  list.forEach((v) => {
+    if (v.user_id) {
+      const x = users.get(v.user_id) || { username: v.username, avatar: v.avatar, owner: v.owner, pages: [], devices: new Set(), tabs: 0, first: v.first, at: 0, hidden: true };
+      x.pages.push(v.page); x.devices.add(v.device); x.tabs++; x.first = Math.min(x.first, v.first); x.at = Math.max(x.at, v.at); x.hidden = x.hidden && v.hidden;
+      users.set(v.user_id, x);
+    } else guests.push({ page: v.page, device: v.device, first: v.first, at: v.at, hidden: v.hidden });
+  });
+  const pages = {};
+  list.forEach((v) => (pages[v.page] = (pages[v.page] || 0) + 1));
+  res.json({
+    users: [...users.values()].map((x) => ({ ...x, devices: [...x.devices], pages: [...new Set(x.pages)] })).sort((a, b) => a.first - b.first),
+    guests: guests.sort((a, b) => a.first - b.first), pages, peak: visitorPeak, now: Date.now(),
+  });
+});
 
 // ---------- Balance codes (sold on SellAuth, redeemed here) ----------
 const CODES_URL = /^https:\/\//.test(process.env.CODES_URL || '') ? process.env.CODES_URL : 'https://splitzmarket.mysellauth.com/';
