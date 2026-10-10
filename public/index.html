@@ -36,13 +36,53 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
 .side{position:sticky;top:76px}
 .panel h3{font-size:17px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .panel h4{margin:16px 0 8px;font-size:12px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
-.pills{display:flex;flex-wrap:wrap;gap:6px}
-.pills button{padding:6px 12px;font-size:13px;border-radius:99px;background:var(--raise)}
-.pills button.on{background:var(--gold);border-color:var(--gold);color:#fff}
-.chk{display:flex;align-items:center;gap:10px;padding:4px 2px;cursor:pointer;font-weight:700;font-size:14px}
-.chk input{accent-color:var(--gold);width:16px;height:16px;padding:0}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
-.range{display:flex;gap:6px;align-items:center}.range input{width:100%;min-width:0}
+.fhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.fhead h3{margin:0}
+.fsec{margin-top:18px}
+.fsec h4{margin:0 0 9px;font-size:13px;color:var(--mute);font-weight:700;display:flex;justify-content:space-between;align-items:baseline}
+.fsec h4 small{font-weight:600;font-size:12px;color:#7d6261}
+#reset{display:inline-flex;align-items:center;gap:6px;color:#ff8a8f;border-color:#e8202a55;background:#e8202a12}
+#reset:hover{background:#e8202a26}
+#reset svg{width:13px;height:13px}
+.game{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:11px 12px;border-radius:12px;margin-bottom:8px;background:var(--raise);border:1px solid var(--line);cursor:default}
+.game.on{border-color:var(--gold);background:linear-gradient(100deg,#e8202a26,var(--raise) 70%)}
+.game.off{opacity:.45}
+.game .gi{width:32px;height:32px;border-radius:9px;background:#0a0707;display:grid;place-items:center;flex:none;color:var(--text)}
+.game .gi svg{width:20px;height:20px}
+.game b{display:block;font-size:13.5px;line-height:1.25}
+.game small{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--mute)}
+.game.on small{color:#ff8a8f}
+.game .gdot{margin-left:auto;width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 3px #e8202a33}
+.prices{display:flex;align-items:center;gap:8px}
+.prices label{flex:1;display:flex;align-items:center;background:var(--raise);border:1px solid var(--line);border-radius:10px;padding:0 10px}
+.prices label:focus-within{outline:2px solid var(--gold);outline-offset:1px}
+.prices label span{color:var(--mute);font-weight:700}
+.prices input{border:0;background:transparent;padding:9px 4px;width:100%;min-width:0;font-weight:700}
+.prices input:focus{outline:0}
+.slider{position:relative;height:28px;margin:8px 4px 0}
+.slider .rail{position:absolute;left:0;right:0;top:12px;height:4px;border-radius:99px;background:#2a1414}
+.slider .fill{position:absolute;top:12px;height:4px;border-radius:99px;background:var(--gold);box-shadow:0 0 10px #e8202a88}
+.slider input{position:absolute;inset:0;width:100%;margin:0;padding:0;background:none;border:0;pointer-events:none;-webkit-appearance:none;appearance:none;height:28px}
+.slider input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:16px;height:16px;border-radius:5px;background:#fff;border:3px solid var(--gold);cursor:grab;transform:rotate(45deg)}
+.slider input::-moz-range-thumb{pointer-events:auto;width:12px;height:12px;border-radius:4px;background:#fff;border:3px solid var(--gold);cursor:grab;transform:rotate(45deg)}
+.slider input:focus{outline:0}
+.slider input:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px #e8202a88}
+.rlist{display:grid;gap:2px}
+.rrow{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:transparent;border:0;border-left:3px solid transparent;border-radius:0 9px 9px 0;padding:7px 9px;font-weight:700;font-size:14px;color:var(--text)}
+.rrow:hover{background:var(--raise)}
+.rrow.on{background:linear-gradient(90deg,color-mix(in srgb,var(--c) 22%,transparent),transparent);border-left-color:var(--c)}
+.rrow.zero{color:#6e5554}
+.rrow i{margin-left:auto;font-style:normal;font-size:12px;color:var(--mute);font-weight:700}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);flex:none}
+.dot.chroma{background:conic-gradient(#ff5a5f,#ffd166,#4fe3d0,#8b6cff,#ff5a5f);box-shadow:0 0 8px #c58bff}
+.tiles{display:grid;gap:7px}
+.tile{position:relative;display:flex;align-items:center;justify-content:space-between;width:100%;height:50px;overflow:hidden;padding:0 12px;border-radius:11px;background:var(--raise);border:1px solid var(--line);text-align:left;color:var(--text)}
+.tile:hover{border-color:#5a1f1f}
+.tile.on{border-color:var(--gold);background:linear-gradient(100deg,#e8202a2e,var(--raise) 65%)}
+.tile b{font-size:14px;z-index:1}
+.tile b small{display:block;font-size:11px;color:var(--mute);font-weight:700}
+.tile svg{width:58px;height:58px;color:#ffffff22;transform:translate(8px,4px) rotate(-14deg);flex:none}
+.tile.on svg{color:#e8202a66}
 
 .banner{border-radius:18px;padding:30px;background:radial-gradient(circle at 88% 10%,#e8202a50,transparent 45%),linear-gradient(120deg,#3a0a0d,#120707 70%);border:1px solid var(--line);display:flex;gap:24px;justify-content:space-between;align-items:center;flex-wrap:wrap}
 .banner h1{font-size:clamp(26px,3.6vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.05}
@@ -101,11 +141,20 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
 
 <div class="layout">
   <aside class="panel side">
-    <h3>Filters <button class="ghost sm" id="reset" type="button">Reset</button></h3>
-    <h4>Type</h4><div class="pills" id="types"></div>
-    <h4>Rarity</h4><div id="rars"></div>
-    <h4>Price (USD)</h4>
-    <div class="range"><input id="pmin" inputmode="decimal" placeholder="Min" aria-label="Minimum price"><span class="mute">to</span><input id="pmax" inputmode="decimal" placeholder="Max" aria-label="Maximum price"></div>
+    <div class="fhead"><h3>Filters</h3><button class="sm" id="reset" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.5V5h-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Reset</button></div>
+    <div class="fsec"><h4>Game</h4>
+      <div class="game on" aria-current="true"><span class="gi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20 17 4l2.5 1.6L8.2 21.4z" fill="currentColor"/><path d="M3 18.5 7 21" stroke="#e8202a" stroke-width="2.6" stroke-linecap="round"/></svg></span>
+        <span><b>Murder Mystery 2</b><small><svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M9 1 3 9h4l-1 6 6-8H8z" fill="currentColor"/></svg>Sent by our bot</small></span><span class="gdot" aria-hidden="true"></span></div>
+      <div class="game off" aria-disabled="true"><span class="gi"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="11" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10.5v4M6 12.5h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="11.5" r="1.2" fill="currentColor"/><circle cx="17.5" cy="14" r="1.2" fill="currentColor"/></svg></span>
+        <span><b>More games</b><small>On the way</small></span></div>
+    </div>
+    <div class="fsec"><h4>Price <small id="pnote"></small></h4>
+      <div class="prices"><label><span>$</span><input id="pmin" inputmode="decimal" placeholder="0" aria-label="Minimum price"></label><span class="mute">to</span><label><span>$</span><input id="pmax" inputmode="decimal" placeholder="Any" aria-label="Maximum price"></label></div>
+      <div class="slider"><div class="rail"></div><div class="fill" id="pfill"></div>
+        <input type="range" id="rmin" min="0" max="1000" value="0" aria-label="Minimum price slider"><input type="range" id="rmax" min="0" max="1000" value="1000" aria-label="Maximum price slider"></div>
+    </div>
+    <div class="fsec"><h4>Rarity</h4><div class="rlist" id="rars"></div></div>
+    <div class="fsec"><h4>Type</h4><div class="tiles" id="types"></div></div>
   </aside>
 
   <main>
@@ -167,31 +216,93 @@ function art(i) {
 }
 
 const seller = new URLSearchParams(location.search).get('seller');
-let me = null, info = { market: false }, rows = [], type = '', rars = new Set(), cart = [], busy = false;
+let me = null, info = { market: false }, rows = [], rars = new Set(), cart = [], busy = false;
 try { cart = JSON.parse(localStorage.getItem('cart') || '[]').filter(Number.isInteger); } catch {}
 const saveCart = () => { try { localStorage.setItem('cart', JSON.stringify(cart)); } catch {} };
 const canBuy = () => info.market || (me && me.owner);
 
-['', 'Knife', 'Gun', 'Pet', 'Misc'].forEach((t) => $('types').append(el('button', { type: 'button', textContent: t || 'All', className: t === type ? 'on' : '',
-  onclick: (e) => { type = t; [...$('types').children].forEach((b) => b.classList.toggle('on', b === e.target)); draw(); } })));
-Object.keys(RC).forEach((r) => {
-  const cb = el('input', { type: 'checkbox', onchange: () => { cb.checked ? rars.add(r) : rars.delete(r); draw(); } });
-  const dot = el('span', { className: 'dot' }); dot.style.setProperty('--c', RC[r]);
-  $('rars').append(el('label', { className: 'chk' }, cb, dot, r));
-});
-$('reset').onclick = () => {
-  type = ''; rars.clear(); $('q').value = $('pmin').value = $('pmax').value = '';
-  document.querySelectorAll('#rars input').forEach((c) => (c.checked = false));
-  [...$('types').children].forEach((b, i) => b.classList.toggle('on', i === 0)); draw();
+const TYPE_ICON = {
+  Knife: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 54 44 8l9 6-30 44z" fill="currentColor"/><path d="M6 50l14 10" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></svg>',
+  Gun: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M4 20h48v12H34l-5 20H15l4-20H4z" fill="currentColor"/><rect x="50" y="22" width="10" height="5" rx="2" fill="currentColor"/></svg>',
+  Pet: '<svg viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="40" rx="15" ry="13" fill="currentColor"/><circle cx="16" cy="22" r="6" fill="currentColor"/><circle cx="27" cy="13" r="6" fill="currentColor"/><circle cx="39" cy="13" r="6" fill="currentColor"/><circle cx="50" cy="22" r="6" fill="currentColor"/></svg>',
+  Misc: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4l7 16 17 2-13 12 4 17-15-9-15 9 4-17L8 22l17-2z" fill="currentColor"/></svg>',
 };
-['q', 'pmin', 'pmax'].forEach((id) => ($(id).oninput = draw)); $('sort').onchange = draw;
+const TYPE_SUB = { Knife: 'Blades & scythes', Gun: 'Guns & bows', Pet: 'Companions', Misc: 'Sets & extras' };
+const types = new Set();
+let priceTop = 500000; // slider top in cents, set from the most expensive listing
+// The slider is curved so low prices get most of the track, where most items are.
+const posToCents = (p) => (p >= 1000 ? Infinity : Math.round(priceTop * Math.pow(p / 1000, 2.6)));
+const centsToPos = (c) => (c == null || !isFinite(c) ? 1000 : Math.round(1000 * Math.pow(Math.min(1, c / priceTop), 1 / 2.6)));
+const toInput = (c) => (c / 100 >= 100 ? String(Math.round(c / 100)) : (c / 100).toFixed(2));
+function paintSlider() {
+  const a = +$('rmin').value, b = +$('rmax').value;
+  $('pfill').style.left = a / 10 + '%'; $('pfill').style.right = (100 - b / 10) + '%';
+}
+function fromSlider(which) {
+  let a = +$('rmin').value, b = +$('rmax').value;
+  if (a > b - 10) { if (which === 'min') $('rmin').value = a = b - 10; else $('rmax').value = b = a + 10; }
+  $('pmin').value = a <= 0 ? '' : toInput(posToCents(a));
+  $('pmax').value = b >= 1000 ? '' : toInput(posToCents(b));
+  paintSlider(); draw();
+}
+function fromInputs() {
+  const mn = parseFloat($('pmin').value), mx = parseFloat($('pmax').value);
+  $('rmin').value = isNaN(mn) ? 0 : centsToPos(mn * 100);
+  $('rmax').value = isNaN(mx) ? 1000 : centsToPos(mx * 100);
+  paintSlider(); draw();
+}
+$('rmin').oninput = () => fromSlider('min'); $('rmax').oninput = () => fromSlider('max');
+$('pmin').oninput = fromInputs; $('pmax').oninput = fromInputs;
+function buildFacets() {
+  $('rars').replaceChildren(...Object.keys(RC).map((r) => {
+    const dot = el('span', { className: 'dot' + (r === 'Chroma' ? ' chroma' : '') });
+    const b = el('button', { type: 'button', className: 'rrow', 'aria-pressed': 'false', onclick: () => { rars.has(r) ? rars.delete(r) : rars.add(r); draw(); } }, dot, r, el('i'));
+    b.dataset.k = r; b.style.setProperty('--c', RC[r]); return b;
+  }));
+  $('types').replaceChildren(...['Knife', 'Gun', 'Pet', 'Misc'].map((t) => {
+    const b = el('button', { type: 'button', className: 'tile', 'aria-pressed': 'false', onclick: () => { types.has(t) ? types.delete(t) : types.add(t); draw(); } },
+      el('b', {}, t, el('small', { textContent: TYPE_SUB[t] })));
+    b.insertAdjacentHTML('beforeend', TYPE_ICON[t]); b.dataset.k = t; return b;
+  }));
+}
+buildFacets();
+// Counts next to each rarity and type follow the search and price filters.
+function paintFacets() {
+  const q = $('q').value.toLowerCase().trim();
+  const min = parseFloat($('pmin').value) * 100, max = parseFloat($('pmax').value) * 100;
+  const base = rows.filter((l) => (!q || l.name.toLowerCase().includes(q)) && (isNaN(min) || l.price_cents >= min) && (isNaN(max) || l.price_cents <= max));
+  document.querySelectorAll('#rars .rrow').forEach((b) => {
+    const n = base.filter((l) => l.rarity === b.dataset.k && (!types.size || types.has(l.type))).length;
+    b.classList.toggle('on', rars.has(b.dataset.k)); b.setAttribute('aria-pressed', String(rars.has(b.dataset.k)));
+    b.classList.toggle('zero', !n); b.querySelector('i').textContent = n;
+  });
+  document.querySelectorAll('#types .tile').forEach((b) => {
+    const n = base.filter((l) => l.type === b.dataset.k && (!rars.size || rars.has(l.rarity))).length;
+    b.classList.toggle('on', types.has(b.dataset.k)); b.setAttribute('aria-pressed', String(types.has(b.dataset.k)));
+    b.querySelector('small').textContent = TYPE_SUB[b.dataset.k] + ' · ' + n;
+  });
+  const top = rows.reduce((a, l) => Math.max(a, l.price_cents), 0);
+  const nextTop = Math.max(1000, Math.ceil(top / 1000) * 1000);
+  if (nextTop !== priceTop) { priceTop = nextTop; fromInputsQuiet(); }
+  $('pnote').textContent = rows.length ? 'up to ' + usd(priceTop) : '';
+}
+function fromInputsQuiet() {
+  const mn = parseFloat($('pmin').value), mx = parseFloat($('pmax').value);
+  $('rmin').value = isNaN(mn) ? 0 : centsToPos(mn * 100); $('rmax').value = isNaN(mx) ? 1000 : centsToPos(mx * 100); paintSlider();
+}
+paintSlider();
+$('reset').onclick = () => {
+  types.clear(); rars.clear(); $('q').value = $('pmin').value = $('pmax').value = '';
+  $('rmin').value = 0; $('rmax').value = 1000; paintSlider(); draw();
+};
+$('q').oninput = draw; $('sort').onchange = draw;
 
 // Identical items from the same seller at the same price show as one card with a count.
 function groups() {
   const q = $('q').value.toLowerCase().trim();
   const min = parseFloat($('pmin').value) * 100, max = parseFloat($('pmax').value) * 100;
   const m = new Map();
-  rows.filter((l) => (!q || l.name.toLowerCase().includes(q)) && (!type || l.type === type) && (!rars.size || rars.has(l.rarity))
+  rows.filter((l) => (!q || l.name.toLowerCase().includes(q)) && (!types.size || types.has(l.type)) && (!rars.size || rars.has(l.rarity))
     && (isNaN(min) || l.price_cents >= min) && (isNaN(max) || l.price_cents <= max))
     .forEach((l) => {
       const k = l.item_id + ':' + l.seller_id + ':' + l.price_cents;
@@ -204,6 +315,7 @@ function groups() {
 }
 
 function draw() {
+  paintFacets();
   const list = groups(), g = $('grid');
   g.replaceChildren();
   const units = list.reduce((a, x) => a + x.ids.length, 0);
