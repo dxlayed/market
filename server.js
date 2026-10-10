@@ -891,7 +891,21 @@ app.delete('/api/admin/items/:id/image', owner, wrap(async (req, res) => {
 // ---------- Paste a value list ----------
 // Understands blocks like:  Evergun / Value - 3,450 / Range - [N/A] / Stability - Stable Item Stability /
 // Demand - 5 Rarity - 4 / Change in Value - (-25) -0.7%   (anything else on the page is ignored)
-const normName = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+// Names match ignoring case, spaces and punctuation; "C. Evergun" counts as "Chroma Evergun".
+const normName = (s) => String(s || '').toLowerCase().replace(/^\s*c\.\s*/, 'chroma ').replace(/[^a-z0-9]/g, '');
+// Minimal CSV reader (handles quoted fields with commas).
+function csvRows(text) {
+  const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"' && text[i + 1] === '"') { cur += '"'; i++; } else if (c === '"') q = false; else cur += c; }
+    else if (c === '"') q = true; else if (c === ',') { row.push(cur); cur = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; }
+    else cur += c;
+  }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter((r) => r.some((x) => x.trim()));
+}
 const GUN_WORDS = /gun|luger|blaster|laser|beam|shot|cannon|revolver|pistol|rifle|sniper/i;
 function parseValueList(text) {
   const t = String(text || '').replace(/^\uFEFF/, '').trim();
@@ -907,9 +921,24 @@ function parseValueList(text) {
       return { name, value, demand: Number.isFinite(+x.demand) && x.demand !== '' && x.demand != null ? +x.demand : null,
         stability: x.stability ? String(x.stability).replace(/\s*Item Stability\s*$/i, '').slice(0, 40) : null,
         change: ch ? parseInt(ch[1].replace(/,/g, ''), 10) : null,
-        type: TYPES.includes(x.type) ? x.type : null, rarity: RARITIES.includes(x.rarity) ? x.rarity : null,
+        type: TYPES.includes(x.type) ? x.type : null, rarity: RARITIES.includes(x.rarity) ? x.rarity : null, alias: x.alias ? clean(x.alias, 60) : null,
         image: /^https:\/\/[^\s"'<>]{1,290}$/.test(img) || /^\/items\/[a-z0-9-]+\.webp$/.test(img) ? img : null };
     }).filter((x) => x.name && (Number.isFinite(x.value) || x.value === null));
+  }
+  // CSV with a header row, e.g. Name,Category,Tier,Value,Value (number),Stability,Demand,...
+  const firstLine = t.split(/\r?\n/, 1)[0];
+  if (/(^|,)\s*name\s*(,|$)/i.test(firstLine) && /value/i.test(firstLine) && firstLine.includes(',')) {
+    const rows = csvRows(t); const head = rows.shift().map((h) => h.trim().toLowerCase());
+    const col = (...names) => { for (const n of names) { const i = head.indexOf(n); if (i >= 0) return i; } return -1; };
+    const iN = col('name'), iV = col('value (number)', 'numericvalue', 'value'), iR = col('category', 'rarity'), iS = col('stability'), iD = col('demand'), iT = col('type');
+    return rows.map((r) => {
+      const raw = String(r[iV] ?? '').replace(/,/g, '').trim();
+      const name = clean(r[iN], 60), m = /\((Gun|Knife)\)/i.exec(name);
+      const typ = iT >= 0 ? TYPES.find((x) => x.toLowerCase() === String(r[iT] || '').trim().toLowerCase()) : null;
+      return { name, value: /^\d+$/.test(raw) ? parseInt(raw, 10) : NaN, rarity: RARITIES.find((x) => x.toLowerCase() === String(r[iR] || '').trim().toLowerCase()) || null,
+        stability: iS >= 0 && r[iS] ? String(r[iS]).trim().slice(0, 40) : null, demand: iD >= 0 && /^\d+$/.test(String(r[iD]).trim()) ? parseInt(r[iD], 10) : null,
+        change: null, type: typ || (m ? (m[1][0].toUpperCase() + m[1].slice(1).toLowerCase()) : null), image: null };
+    }).filter((x) => x.name && Number.isFinite(x.value) && x.value > 0); // rows without a number value are skipped
   }
   const lines = String(text || '').split(/\r?\n/).map((l) => l.replace(/\t+$/, '').trim());
   const out = [];
@@ -933,12 +962,36 @@ async function importValues(text, rarityIn, addNew, actor) {
   const parsed = parseValueList(text);
   if (!parsed.length) throw new Fail(400, 'No items found. Paste the list with lines like "Value - 1,800" under each item name.');
   const rarity = RARITIES.includes(rarityIn) ? rarityIn : 'Godly';
-  const existing = new Map((await pool.query('SELECT id, name FROM items')).rows.map((r) => [normName(r.name), r]));
+  // Same names can exist in several rarities ("Laser" Godly vs "Laser (Vintage)"), so match on rarity when the list has one.
+  const existing = new Map();
+  const remember = (r) => { const k = normName(r.name); if (!existing.has(k)) existing.set(k, []); existing.get(k).push(r); };
+  (await pool.query('SELECT id, name, rarity FROM items')).rows.forEach(remember);
+  const findItem = (it) => {
+    const plain = existing.get(normName(it.name)) || [];
+    if (!it.rarity) return { hit: plain[0], exact: true };
+    const same = plain.find((r) => r.rarity === it.rarity);
+    if (same) return { hit: same, exact: true };
+    const suffixed = (existing.get(normName(it.name + ' ' + it.rarity)) || [])[0];
+    if (suffixed) return { hit: suffixed, exact: false };
+    // An older name for the same item (from an earlier catalog) gets renamed instead of duplicated.
+    const old = it.alias && (existing.get(normName(it.alias)) || []).find((r) => !it.rarity || r.rarity === it.rarity);
+    if (old) return { hit: old, exact: true };
+    return { hit: null, taken: plain.length > 0 };
+  };
   let updated = 0; const added = [], guessedGun = [], skipped = [];
   await tx(async (db) => {
     for (const it of parsed) {
-      const hit = existing.get(normName(it.name));
+      const { hit, exact, taken } = findItem(it);
       if (hit) {
+        // Only rename when no other item already uses the new name.
+        const clash = (existing.get(normName(it.name)) || []).some((r) => r.id !== hit.id);
+        let newName = exact && !clash && !/^\s*C\.\s/i.test(it.name) ? it.name : null;
+        // Name already used by a different-rarity item: use "Name (Rarity)" instead, if that's free.
+        if (exact && clash && it.rarity && !/^\s*C\.\s/i.test(it.name) && !/\((Chroma|Ancient|Godly|Unique|Vintage|Legendary|Rare|Uncommon|Common)\)$/.test(it.name)) {
+          const alt = it.name + ' (' + it.rarity + ')';
+          if (!(existing.get(normName(alt)) || []).some((r) => r.id !== hit.id)) newName = alt;
+        }
+        if (newName && newName !== hit.name) { const k = normName(hit.name); existing.set(k, (existing.get(k) || []).filter((r) => r.id !== hit.id)); hit.name = newName; remember(hit); }
         // Type and picture link only change when the list provides them; an uploaded picture is never replaced.
         // Entries without a value (or 0) never wipe a value that's already set.
         const hasV = Number.isFinite(it.value) && it.value > 0;
@@ -946,16 +999,18 @@ async function importValues(text, rarityIn, addNew, actor) {
             stability=CASE WHEN $8 THEN $3 ELSE stability END, value_change=CASE WHEN $8 THEN $4 ELSE value_change END,
             value_updated_at=CASE WHEN $8 THEN now() ELSE value_updated_at END,
             type=COALESCE($6, type), image_url=CASE WHEN $7::text IS NOT NULL AND image_data IS NULL THEN $7 ELSE image_url END,
-            rarity=COALESCE($9, rarity), name=$10, active=CASE WHEN $8 THEN true ELSE active END WHERE id=$5`,
-          [it.value, it.demand, it.stability, it.change, hit.id, it.type || null, it.image || null, hasV, it.rarity || null, it.name]);
+            rarity=COALESCE($9, rarity), name=COALESCE($10, name), active=CASE WHEN $8 THEN true ELSE active END WHERE id=$5`,
+          [it.value, it.demand, it.stability, it.change, hit.id, it.type || null, it.image || null, hasV, it.rarity || null,
+           newName]);
         updated++;
       } else if (addNew) {
         const type = it.type || (GUN_WORDS.test(it.name) ? 'Gun' : 'Knife');
         const v = Number.isFinite(it.value) ? it.value : 0;
+        const name = taken ? it.name + ' (' + (it.rarity || rarity) + ')' : it.name;
         const r = (await db.query('INSERT INTO items (name, type, rarity, value, demand, stability, value_change, value_updated_at, image_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id',
-          [it.name, type, it.rarity || rarity, v, it.demand, it.stability, it.change, v > 0 ? new Date() : null, it.image || null])).rows[0];
-        existing.set(normName(it.name), { id: r.id, name: it.name });
-        added.push(it.name); if (type === 'Gun' && !it.type) guessedGun.push(it.name);
+          [name, type, it.rarity || rarity, v, it.demand, it.stability, it.change, v > 0 ? new Date() : null, it.image || null])).rows[0];
+        remember({ id: r.id, name, rarity: it.rarity || rarity });
+        added.push(name); if (type === 'Gun' && !it.type) guessedGun.push(name);
       } else skipped.push(it.name);
     }
     await log(db, actor, 'item.values_imported', null, { found: parsed.length, updated, added: added.length });
@@ -966,19 +1021,22 @@ app.post('/api/admin/items/values', owner, wrap(async (req, res) => {
   res.json(await importValues(req.body.text, req.body.rarity, req.body.add_new !== false, req.user.username));
 }));
 
-// One-time starter catalog: on the first start after deploy, seed-items.json (the 383 items that have a number value, with rarity, type and picture)
-// is loaded into the item catalog. It never runs again, so later edits in the owner panel are kept.
+// Starter catalog: seed-items.json (items with a number value, plus rarity, type and picture) is loaded on start
+// whenever the file is new or has changed since it was last loaded. If the file hasn't changed, nothing runs,
+// so edits made in the owner panel stay put until a new seed-items.json is uploaded.
 async function seedItems() {
-  if (settings.seed_items_v4) return;
   const file = path.join(__dirname, 'seed-items.json');
   if (!fs.existsSync(file)) return;
+  const text = fs.readFileSync(file, 'utf8');
+  const hash = crypto.createHash('sha256').update(text).digest('hex').slice(0, 16);
+  if (settings.seed_hash === hash) return console.log('Starter items already up to date');
   try {
-    const r = await importValues(fs.readFileSync(file, 'utf8'), 'Godly', true, 'system');
+    const r = await importValues(text, 'Godly', true, 'system');
     // Items without a real value are hidden, unless someone holds one, it's listed, or an owner uploaded its picture.
     const hidden = await pool.query(`UPDATE items i SET active=false WHERE i.active AND i.value <= 0 AND i.image_data IS NULL
       AND NOT EXISTS (SELECT 1 FROM inventory v WHERE v.item_id=i.id AND v.status IN ('held','listed','withdrawing'))`);
-    await pool.query("INSERT INTO settings (key, value) VALUES ('seed_items_v4', 'true') ON CONFLICT (key) DO UPDATE SET value='true'");
-    settings.seed_items_v4 = true;
+    await pool.query("INSERT INTO settings (key, value) VALUES ('seed_hash', $1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value", [JSON.stringify(hash)]);
+    settings.seed_hash = hash;
     console.log('Items without a value hidden: ' + hidden.rowCount);
     console.log('Starter items loaded: ' + r.added.length + ' added, ' + r.updated + ' updated');
   } catch (e) { console.error('Starter items failed:', e.message); }
