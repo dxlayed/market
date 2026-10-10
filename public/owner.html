@@ -14,7 +14,7 @@
 body{margin:0;font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--text)}
 h1,h2,h3,.logo{font-family:Outfit,system-ui,sans-serif;margin:0}
 button,input,select,textarea{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
-textarea{resize:vertical}
+textarea{resize:vertical;width:100%}
 button{cursor:pointer;font-weight:700}
 button:focus-visible,input:focus,textarea:focus,select:focus,a:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 button:disabled{opacity:.6;cursor:wait}
@@ -78,6 +78,8 @@ h1{font-size:28px;margin-bottom:16px}
 .form input,.form select{min-width:0;width:100%}
 .thumb{width:36px;height:36px;border-radius:8px;background:var(--raise);display:grid;place-items:center;overflow:hidden;flex:none}
 .thumb img{max-width:100%;max-height:100%}
+.thumb.up{padding:0;border:1px dashed #5a1f1f;cursor:pointer;color:var(--mute);font-size:18px;font-weight:800}
+.thumb.up:hover{border-color:var(--gold);color:var(--text)}
 .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;background:var(--c)}
 .code{font-family:Outfit,sans-serif;letter-spacing:2px;color:var(--gold);font-size:17px}
 .tag{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--mute);overflow-wrap:anywhere}
@@ -385,6 +387,48 @@ const RC = { Chroma: '#b78bff', Ancient: '#7c5cff', Godly: '#d94fd0', Unique: '#
 const TYPES = ['Knife', 'Gun', 'Pet', 'Misc'], RARITIES = Object.keys(RC);
 const sel = (list, v) => { const s = el('select', {}, ...list.map((x) => el('option', { value: x, textContent: x }))); if (v) s.value = v; return s; };
 
+// Owners upload item pictures here. They are shrunk to 256px in the browser before upload.
+function pickImage(item, done) {
+  const f = el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp' });
+  f.onchange = async () => {
+    const file = f.files[0]; if (!file) return;
+    try {
+      const img = await new Promise((ok, bad) => { const im = new Image(); im.onload = () => ok(im); im.onerror = bad; im.src = URL.createObjectURL(file); });
+      const max = 256, k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      let data = c.toDataURL('image/webp', 0.9); if (!data.startsWith('data:image/webp')) data = c.toDataURL('image/png');
+      await api('/api/admin/items/' + item.id + '/image', 'POST', { data });
+      toast('Picture saved for ' + item.name); done();
+    } catch (e) { toast(e.message || 'Could not read that picture', true); }
+  };
+  f.click();
+}
+
+// Paste a value list (name, then "Value - 1,800", "Demand - 5", "Stability - ...", "Change in Value - (+25)").
+function valuesCard(done) {
+  const text = el('textarea', { rows: 8, placeholder: 'Paste the value list here. Each item needs its name on one line and "Value - 1,800" on the next. Demand, stability and change are picked up too.' });
+  const rarity = sel(RARITIES, 'Godly');
+  const addNew = el('input', { type: 'checkbox', checked: true, id: 'vAdd' });
+  const out = el('div', { className: 'mute', style: 'margin-top:10px' });
+  const go = el('button', { className: 'btn', textContent: 'Update values' });
+  go.onclick = async () => {
+    go.disabled = true; out.replaceChildren();
+    try {
+      const r = await api('/api/admin/items/values', 'POST', { text: text.value, rarity: rarity.value, add_new: addNew.checked });
+      out.append(el('div', { textContent: 'Found ' + r.found + ' items: updated ' + r.updated + ', added ' + r.added.length + (r.skipped.length ? ', skipped ' + r.skipped.length + ' not in the catalog' : '') + '.' }));
+      if (r.added.length) out.append(el('div', { textContent: 'New items were added as ' + rarity.value + '. Guessed as guns: ' + (r.guessed_gun.join(', ') || 'none') + '. Everything else was set to Knife, so check the types below and fix any that are wrong.' }));
+      text.value = ''; done();
+    } catch (e) { out.append(el('div', { textContent: e.message, style: 'color:var(--bad)' })); }
+    go.disabled = false;
+  };
+  return el('section', { className: 'card' }, el('h2', { textContent: 'Paste a value list' }),
+    el('p', { className: 'mute', textContent: 'Updates value, demand, stability and recent change for every item it finds. Items already in the catalog are matched by name, ignoring spaces and apostrophes.' }),
+    text,
+    el('div', { className: 'row', style: 'margin-top:10px' }, el('label', { className: 'mute', htmlFor: 'vAdd', style: 'display:flex;gap:6px;align-items:center' }, addNew, 'Add items that are not in the catalog yet, as'), rarity, go),
+    out);
+}
+
 async function items() {
   const name = el('input', { placeholder: 'Item name', maxLength: 60 }), type = sel(TYPES), rarity = sel(RARITIES, 'Godly');
   const value = el('input', { type: 'number', min: 0, placeholder: 'Value' }), img = el('input', { placeholder: 'Image link (https://, optional)' });
@@ -416,14 +460,15 @@ async function items() {
     const q = search.value.toLowerCase();
     body.replaceChildren();
     const rows = all.filter((i) => i.name.toLowerCase().includes(q));
-    if (!rows.length) body.append(el('tr', {}, el('td', { colSpan: 6, className: 'empty', textContent: all.length ? 'No matches.' : 'No items yet. Add one above or import a list.' })));
+    if (!rows.length) body.append(el('tr', {}, el('td', { colSpan: 7, className: 'empty', textContent: all.length ? 'No matches.' : 'No items yet. Add one above or import a list.' })));
     rows.forEach((i) => {
-      const th = el('span', { className: 'thumb' });
-      if (i.image_url) th.append(el('img', { src: i.image_url, alt: '', loading: 'lazy' }));
+      const th = el('button', { className: 'thumb up', type: 'button', title: i.image_url ? 'Change picture' : 'Upload picture', 'aria-label': (i.image_url ? 'Change picture for ' : 'Upload picture for ') + i.name, onclick: () => pickImage(i, load) });
+      if (i.image_url) th.append(el('img', { src: i.image_url, alt: '', loading: 'lazy' })); else th.append(el('span', { textContent: '+' }));
       const dot = el('span', { className: 'dot' }); dot.style.setProperty('--c', RC[i.rarity] || RC.Common);
       body.append(el('tr', { style: i.active ? '' : 'opacity:.5' },
         el('td', {}, el('span', { className: 'who' }, th, i.name)),
         el('td', { textContent: i.type }), el('td', {}, dot, i.rarity), el('td', { textContent: i.value.toLocaleString() }),
+        el('td', { className: 'mute', textContent: (i.demand != null ? 'D' + i.demand : '—') + (i.value_change ? ' · ' + (i.value_change > 0 ? '+' : '') + i.value_change : '') }),
         el('td', { textContent: i.held }),
         el('td', { style: 'white-space:nowrap' },
           el('button', { className: 'ghost sm', textContent: 'Edit', onclick: () => { editing = i.id; name.value = i.name; type.value = i.type; rarity.value = i.rarity; value.value = i.value; img.value = i.image_url || ''; save.textContent = 'Save item'; cancel.hidden = false; name.focus(); window.scrollTo({ top: 0 }); } }), ' ',
@@ -434,12 +479,13 @@ async function items() {
   search.oninput = draw;
   $('main').replaceChildren(el('h1', { textContent: 'Items' }),
     el('section', { className: 'card' }, el('h2', { textContent: 'Add or edit an item' }), el('div', { className: 'form' }, name, type, rarity, value, img, save), el('div', { style: 'margin-top:8px' }, cancel)),
+    valuesCard(load),
     el('section', { className: 'card' }, el('h2', { textContent: 'Import a list' }),
       el('p', { className: 'mute', textContent: 'One item per line. Paste from a spreadsheet saved as CSV. Items with a name that already exists get updated.' }),
       csv, el('div', { className: 'row', style: 'margin-top:10px' }, imp, result)),
     el('div', { className: 'tools' }, search),
     el('div', { className: 'card scroll' }, el('table', { className: 'tbl' },
-      el('thead', {}, el('tr', {}, ...['Item', 'Type', 'Rarity', 'Value', 'Held on site', ''].map((h) => el('th', { textContent: h })))), body)));
+      el('thead', {}, el('tr', {}, ...['Item (click picture to upload)', 'Type', 'Rarity', 'Value', 'Demand / change', 'Held on site', ''].map((h) => el('th', { textContent: h })))), body)));
   await load();
 }
 
