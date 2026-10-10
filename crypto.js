@@ -19,10 +19,10 @@ const PREFIX = {
 const COINS = {
   btc: { id: 'btc', name: 'Bitcoin', symbol: 'BTC', gecko: 'bitcoin', hrp: 'bc', p2pkh: 0x00, decimals: 8,
     api: process.env.BTC_API || 'https://mempool.space/api', explorer: 'https://mempool.space/tx/',
-    confirmations: Math.max(1, parseInt(process.env.BTC_CONFIRMATIONS, 10) || 2), fee: process.env.BTC_WITHDRAW_FEE || '1.00' },
+    confirmations: Math.max(1, parseInt(process.env.BTC_CONFIRMATIONS, 10) || 1), fee: process.env.BTC_WITHDRAW_FEE || '1.00' },
   ltc: { id: 'ltc', name: 'Litecoin', symbol: 'LTC', gecko: 'litecoin', hrp: 'ltc', p2pkh: 0x30, decimals: 8,
     api: process.env.LTC_API || 'https://litecoinspace.org/api', explorer: 'https://litecoinspace.org/tx/',
-    confirmations: Math.max(1, parseInt(process.env.LTC_CONFIRMATIONS, 10) || 4), fee: process.env.LTC_WITHDRAW_FEE || '0.05' },
+    confirmations: Math.max(1, parseInt(process.env.LTC_CONFIRMATIONS, 10) || 1), fee: process.env.LTC_WITHDRAW_FEE || '0.05' },
 };
 
 // Parse any extended public key by swapping its version bytes for the standard xpub ones.
