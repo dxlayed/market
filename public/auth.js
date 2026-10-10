@@ -385,6 +385,7 @@
       dl.append(mk('dt', '', k)); const dd = mk('dd', '', val); if (val == null) dd.append(chEl); dl.append(dd);
     });
     if (i.price_cents) { dl.append(mk('dt', '', 'Price')); dl.append(mk('dd', '', money(i.price_cents))); }
+    if (i.rec_cents) { dl.append(mk('dt', '', 'Recommended')); const r = mk('dd', '', money(i.rec_cents)); r.style.color = '#4ade80'; dl.append(r); }
     const top = mk('div', 'top');
     if (i.image_url && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(i.image_url)) { const im = mk('img'); im.src = i.image_url; im.alt = ''; im.referrerPolicy = 'no-referrer'; im.onerror = () => im.remove(); top.append(im); }
     const nm = mk('div'); nm.append(mk('div', 'n', i.name), mk('div', 's', [i.rarity, i.type].filter(Boolean).join(' '))); top.append(nm);
