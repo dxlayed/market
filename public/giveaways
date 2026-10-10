@@ -65,7 +65,7 @@ h2.sec .live{width:9px;height:9px;border-radius:99px;background:var(--gold);box-
 <body>
 <div class="bar">
   <a class="logo" href="/">Splitz<b>Market</b></a>
-  <nav><a href="/">Market</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a></nav>
+  <nav><a href="/">Market</a><a href="/inventory">Inventory</a><a href="/support">Support</a></nav>
   <div id="who"></div>
 </div>
 <div class="wrap">
