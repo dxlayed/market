@@ -120,7 +120,7 @@
     const lab = document.createElement('div'); lab.className = 'mute'; lab.textContent = 'Your balance'; lab.style.cssText = 'color:var(--mute);font-size:13px';
     const p = document.createElement('p');
     p.textContent = add
-      ? 'Card checkout is coming soon. For now, open a support ticket saying how much you want to add and the team will top up your balance.'
+      ? 'Open a support ticket saying how much you want to add and the team will top up your balance.'
       : 'Open a support ticket with the amount you want to withdraw and where to send it. The team will send it and take it off your balance.';
     const go = document.createElement('a'); go.className = 'btn'; go.textContent = add ? 'Open a ticket to add funds' : 'Request a withdrawal';
     go.href = '/support.html?subject=' + encodeURIComponent(add ? 'Add funds' : 'Withdrawal request');
@@ -209,7 +209,7 @@
       });
       bd.append(elx('label', { textContent: tab === 'in' ? 'Pick a coin to deposit' : 'Pick a coin to receive' }), grid);
       const c = cxInfo.coins.find((x) => x.id === coin);
-      if (!cxInfo.open) bd.append(elx('p', { className: 'note', textContent: 'Deposits and withdrawals open soon.' }));
+      if (!cxInfo.open) bd.append(elx('p', { className: 'note', textContent: 'Crypto deposits and withdrawals are paused right now.' }));
       else if (c && tab === 'in') depositPane(bd, c);
       else if (c && tab === 'out') withdrawPane(bd, c);
       cd.replaceChildren(elx('div', { className: 'hd' }, ...tabs, elx('button', { className: 'x', type: 'button', textContent: '×', 'aria-label': 'Close', onclick: close })), bd);
@@ -409,7 +409,7 @@
         ex('div', { className: 'acts' },
           ex('a', { className: 'fr', href: b.profile, target: '_blank', rel: 'noopener', html: IC.check + '<span>Friends</span>' }),
           ex('a', { className: 'js', href: b.link, target: '_blank', rel: 'noopener', html: IC.play + '<span>Join Server</span>' })));
-    }) : [ex('div', { className: 'empty', textContent: 'No bots right now. Check back soon or ask in our Discord.' })]));
+    }) : [ex('div', { className: 'empty', textContent: 'No bots right now. Ask in our Discord.' })]));
   };
 
   // Withdraw Items
@@ -527,14 +527,14 @@
   scss.textContent = `.soonbtn{opacity:.6;cursor:not-allowed}
 .soonbtn i{font-style:normal;font-size:10px;font-weight:800;background:var(--raise);color:var(--gold);border-radius:6px;padding:1px 6px;margin-left:6px}`;
   document.head.append(scss);
-  window.soonMsg = (label) => { if (typeof toast === 'function') toast(label + ' is coming soon'); };
+  window.soonMsg = (label) => { if (typeof toast === 'function') toast(label + ' is paused right now'); };
   window.soonBtn = function (label, cls) {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = (cls || 'ghost sm') + ' soonbtn';
     b.setAttribute('aria-disabled', 'true');
     b.append(label);
-    const i = document.createElement('i'); i.textContent = 'Soon'; b.append(i);
+    const i = document.createElement('i'); i.textContent = 'Paused'; b.append(i);
     b.onclick = () => window.soonMsg(label);
     return b;
   };
