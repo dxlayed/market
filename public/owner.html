@@ -407,7 +407,7 @@ function pickImage(item, done) {
 
 // Paste a value list (name, then "Value - 1,800", "Demand - 5", "Stability - ...", "Change in Value - (+25)").
 function valuesCard(done) {
-  const text = el('textarea', { rows: 8, placeholder: 'Paste the value list here. Each item needs its name on one line and "Value - 1,800" on the next. Demand, stability and change are picked up too.' });
+  const text = el('textarea', { rows: 8, placeholder: 'Paste a value list here: a CSV spreadsheet (Name, Category, Value (number), Stability, Demand...), a JSON list, or text with "Value - 1,800" under each item name. Items without a number value are skipped.' });
   const rarity = sel(RARITIES, 'Godly');
   const addNew = el('input', { type: 'checkbox', checked: true, id: 'vAdd' });
   const out = el('div', { className: 'mute', style: 'margin-top:10px' });
@@ -423,7 +423,7 @@ function valuesCard(done) {
     go.disabled = false;
   };
   return el('section', { className: 'card' }, el('h2', { textContent: 'Paste a value list' }),
-    el('p', { className: 'mute', textContent: 'Updates value, demand, stability and recent change for every item it finds. Items already in the catalog are matched by name, ignoring spaces and apostrophes.' }),
+    el('p', { className: 'mute', textContent: 'Updates value, demand, stability and recent change for every item it finds. Items are matched by name and rarity, ignoring spaces and apostrophes ("C." counts as "Chroma"). Rows without a number value are skipped.' }),
     text,
     el('div', { className: 'row', style: 'margin-top:10px' }, el('label', { className: 'mute', htmlFor: 'vAdd', style: 'display:flex;gap:6px;align-items:center' }, addNew, 'Add items that are not in the catalog yet, as'), rarity, go),
     out);
@@ -463,7 +463,7 @@ async function items() {
     if (!rows.length) body.append(el('tr', {}, el('td', { colSpan: 7, className: 'empty', textContent: all.length ? 'No matches.' : 'No items yet. Add one above or import a list.' })));
     rows.forEach((i) => {
       const th = el('button', { className: 'thumb up', type: 'button', title: i.image_url ? 'Change picture' : 'Upload picture', 'aria-label': (i.image_url ? 'Change picture for ' : 'Upload picture for ') + i.name, onclick: () => pickImage(i, load) });
-      if (i.image_url) th.append(el('img', { src: i.image_url, alt: '', loading: 'lazy' })); else th.append(el('span', { textContent: '+' }));
+      if (i.image_url) th.append(el('img', { src: i.image_url, alt: '', loading: 'lazy', referrerPolicy: 'no-referrer', onerror: (e) => { e.target.replaceWith(el('span', { textContent: '!', title: 'Picture link is broken. Click to upload one.' })); } })); else th.append(el('span', { textContent: '+' }));
       const dot = el('span', { className: 'dot' }); dot.style.setProperty('--c', RC[i.rarity] || RC.Common);
       body.append(el('tr', { style: i.active ? '' : 'opacity:.5' },
         el('td', {}, el('span', { className: 'who' }, th, i.name)),
