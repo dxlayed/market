@@ -69,7 +69,8 @@
   "value": 42,
   "demand": 1,
   "stability": "Stable",
-  "image": "/items/batwing.webp"
+  "image": "/items/batwing.webp",
+  "change": -1
  },
  {
   "name": "Elderwood Scythe",
@@ -1329,24 +1330,6 @@
   "demand": 5,
   "stability": "Stable",
   "image": "/items/bloom.webp"
- },
- {
-  "name": "Batwing (Godly)",
-  "rarity": "Godly",
-  "type": "Knife",
-  "value": 1000000,
-  "demand": 10,
-  "stability": "Stable",
-  "image": "/items/batwing-godly.webp"
- },
- {
-  "name": "Black Luger",
-  "rarity": "Godly",
-  "type": "Gun",
-  "value": 1000000,
-  "demand": 10,
-  "stability": "Stable",
-  "image": "/items/black-luger.webp"
  },
  {
   "name": "Heart Wand",
@@ -3512,5 +3495,15 @@
   "demand": 1,
   "stability": "Stable",
   "image": "/items/splitter.webp"
+ },
+ {
+  "name": "Batwing (Godly)",
+  "rarity": "Godly",
+  "remove": true
+ },
+ {
+  "name": "Black Luger",
+  "rarity": "Godly",
+  "remove": true
  }
 ]
