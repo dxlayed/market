@@ -632,6 +632,11 @@
     if (location.pathname === '/values.html') a.className = 'on';
     const first = nav.querySelector('a'); first ? first.after(a) : nav.append(a);
   }
+  if (nav && !nav.querySelector('a[href="/giveaways.html"]')) {
+    const g = document.createElement('a'); g.href = '/giveaways.html'; g.textContent = 'Giveaways';
+    if (location.pathname === '/giveaways.html') g.className = 'on';
+    const v = nav.querySelector('a[href="/values.html"]'); v ? v.after(g) : nav.append(g);
+  }
 
   // ---------- Discord, owner maintenance banner, first-visit welcome ----------
   const DISCORD = 'https://discord.gg/splitzmarket';
@@ -643,7 +648,7 @@
 .dcLink svg{width:18px;height:18px}
 #mBanner{position:sticky;top:0;z-index:16;background:repeating-linear-gradient(-45deg,#e8202a,#e8202a 14px,#c4111b 14px,#c4111b 28px);color:#fff;font-weight:700;font-size:14px;text-align:center;padding:8px 16px}
 #mBanner a{color:#fff}
-#welcome{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;background:#050303e6;backdrop-filter:blur(6px);opacity:0;transition:opacity .35s}
+#welcome{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:20px;background:radial-gradient(ellipse 80% 70% at 50% 35%,#2a0709 0%,#0c0505 55%,#050303 100%);opacity:0;transition:opacity .35s;overflow:auto}
 #welcome.on{opacity:1}
 #welcome .seam{position:absolute;inset:-20% -10%;background:linear-gradient(103deg,transparent 49.6%,#e8202a 49.85%,#ff5a5f 50%,#e8202a 50.15%,transparent 50.4%);opacity:.45;filter:drop-shadow(0 0 22px #e8202a);pointer-events:none}
 #welcome .card{position:relative;width:min(600px,100%);max-height:calc(100vh - 40px);overflow:auto;background:linear-gradient(180deg,#170c0c,#0c0707);border:1px solid #4a1a1a;border-radius:24px;padding:40px 36px 30px;text-align:center;box-shadow:0 40px 120px #000}
@@ -710,17 +715,84 @@
     const prev = document.activeElement;
     const close = () => {
       try { sessionStorage.setItem('sm_welcomed', '1'); } catch {}
-      w.classList.remove('on'); setTimeout(() => w.remove(), 350);
+      w.classList.remove('on'); setTimeout(() => { w.remove(); document.documentElement.style.overflow = ''; }, 350);
       document.removeEventListener('keydown', esc); if (prev && prev.focus) prev.focus();
     };
     const esc = (e) => { if (e.key === 'Escape') close(); };
-    w.querySelector('.x').onclick = close; w.querySelector('.go').onclick = close;
+    w.querySelector('.x').onclick = close; w.querySelector('.go').onclick = () => { window.playStartSound(); close(); };
     w.onclick = (e) => { if (e.target === w) close(); };
     document.addEventListener('keydown', esc);
     document.body.append(w);
+    document.documentElement.style.overflow = 'hidden';
     requestAnimationFrame(() => requestAnimationFrame(() => w.classList.add('on')));
     w.querySelector('.go').focus();
   };
+
+  // Soft launch chime for "Start shopping", made in the browser (no sound file): a warm low swell,
+  // a rising open chord and a little sparkle on top, with a short echo for space.
+  window.playStartSound = function () {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      const ac = new AC(), t0 = ac.currentTime + 0.02;
+      const master = ac.createGain(); master.gain.value = 0.42;
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 5200;
+      const delay = ac.createDelay(); delay.delayTime.value = 0.19;
+      const fb = ac.createGain(); fb.gain.value = 0.28; const wet = ac.createGain(); wet.gain.value = 0.22;
+      lp.connect(master); lp.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(master); master.connect(ac.destination);
+      const tone = (type, f0, f1, start, peak, dur, attack = 0.015) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = type; o.frequency.setValueAtTime(f0, t0 + start);
+        if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t0 + start + 0.22);
+        g.gain.setValueAtTime(0.0001, t0 + start);
+        g.gain.exponentialRampToValueAtTime(peak, t0 + start + attack);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + dur);
+        o.connect(g); g.connect(lp); o.start(t0 + start); o.stop(t0 + start + dur + 0.05);
+      };
+      tone('sine', 82.4, 123.5, 0, 0.5, 0.9, 0.06);          // low swell
+      [[392, 0], [587.33, 0.07], [783.99, 0.14]].forEach(([f, d]) => { tone('sine', f, f, d, 0.22, 1.5); tone('triangle', f, f, d, 0.07, 1.1); });
+      tone('sine', 1567.98, 1567.98, 0.22, 0.06, 0.7);      // sparkle
+      tone('sine', 2349.32, 2349.32, 0.28, 0.03, 0.5);
+      setTimeout(() => ac.close().catch(() => {}), 2800);
+    } catch {}
+  };
+
+  // ---------- "Yooo ___ just won a ___" pop-up when a giveaway is won ----------
+  const gcss = document.createElement('style');
+  gcss.textContent = `#gwin{position:fixed;left:50%;top:18px;z-index:60;transform:translate(-50%,-140%);transition:transform .5s cubic-bezier(.2,1.2,.3,1);display:flex;align-items:center;gap:14px;max-width:calc(100vw - 32px);background:linear-gradient(135deg,#2a0b0d,#120808);border:1px solid var(--gold,#e8202a);border-radius:18px;padding:10px 18px 10px 10px;box-shadow:0 18px 60px #000c,0 0 40px #e8202a44;color:#fff;text-decoration:none;font-family:Manrope,system-ui,sans-serif}
+#gwin.on{transform:translate(-50%,0)}
+#gwin .pic{width:54px;height:54px;border-radius:12px;background:#1e1111;display:grid;place-items:center;flex:none;overflow:hidden}
+#gwin .pic img{max-width:88%;max-height:88%}
+#gwin small{display:block;color:#ff8a8f;font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+#gwin b{font-family:Outfit,system-ui,sans-serif;font-size:18px;line-height:1.25}
+#gwin b em{font-style:normal;color:#ff5a61}
+@media (prefers-reduced-motion:reduce){#gwin{transition:none}}`;
+  document.head.append(gcss);
+  const seenWins = () => { try { return JSON.parse(localStorage.getItem('sm_wins') || '[]'); } catch { return []; } };
+  function showWin(g) {
+    const old = document.getElementById('gwin'); if (old) old.remove();
+    const a = document.createElement('a'); a.id = 'gwin'; a.href = '/giveaways.html'; a.setAttribute('role', 'status');
+    const pic = document.createElement('span'); pic.className = 'pic';
+    if (g.image_url && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(g.image_url)) { const im = document.createElement('img'); im.src = g.image_url; im.alt = ''; im.referrerPolicy = 'no-referrer'; pic.append(im); }
+    const txt = document.createElement('span');
+    const sm = document.createElement('small'); sm.textContent = 'Giveaway winner' + (g.entries ? ' · 1 of ' + g.entries : '');
+    const b = document.createElement('b'); const w = document.createElement('em'); w.textContent = g.winner; const it = document.createElement('em'); it.textContent = g.name;
+    b.append('Yooo ', w, ' just won a ', it, '!');
+    txt.append(sm, b); a.append(pic, txt); document.body.append(a);
+    requestAnimationFrame(() => requestAnimationFrame(() => a.classList.add('on')));
+    setTimeout(() => { a.classList.remove('on'); setTimeout(() => a.remove(), 600); }, 8000);
+  }
+  async function checkWins() {
+    if (document.getElementById('welcome')) return;
+    try {
+      const g = await fetch('/api/giveaways/latest').then((r) => (r.ok ? r.json() : null));
+      if (!g) return;
+      const seen = seenWins(); if (seen.includes(g.id)) return;
+      try { localStorage.setItem('sm_wins', JSON.stringify([g.id, ...seen].slice(0, 30))); } catch {}
+      showWin(g);
+    } catch {}
+  }
+  window.showWin = showWin;
+  if (!document.body.dataset.nowelcome) { setTimeout(checkWins, 2500); setInterval(checkWins, 10000); }
   let seen = false;
   try { seen = !!sessionStorage.getItem('sm_welcomed'); } catch {}
   if (!seen && !document.body.dataset.nowelcome) window.showWelcome();
