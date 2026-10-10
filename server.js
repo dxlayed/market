@@ -141,6 +141,7 @@ async function init() {
     CREATE INDEX IF NOT EXISTS balance_log_user ON balance_log (user_id, id DESC);
     CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value JSONB NOT NULL);
     ALTER TABLE items ADD COLUMN IF NOT EXISTS demand INT;
+    ALTER TABLE inventory ADD COLUMN IF NOT EXISTS added_by TEXT;
     ALTER TABLE items ADD COLUMN IF NOT EXISTS stability TEXT;
     ALTER TABLE items ADD COLUMN IF NOT EXISTS value_change INT;
     ALTER TABLE items ADD COLUMN IF NOT EXISTS value_updated_at TIMESTAMPTZ;
@@ -850,6 +851,19 @@ app.get('/api/bot/users/:robloxId', botAuth, wrap(async (req, res) => {
      WHERE t.user_id=$1 AND t.status IN ('pending','in_progress') ORDER BY t.id`, [u.id])).rows;
   res.json({ registered: true, banned: u.banned, username: u.username, withdrawals: open.filter((t) => t.kind === 'withdraw').map(tradeView), deposits: open.filter((t) => t.kind === 'deposit').map(tradeView) });
 }));
+// Bot reports what it actually holds in game, so owners can compare it with what the site expects.
+app.post('/api/bot/inventory', botAuth, wrap(async (req, res) => {
+  const list = Array.isArray(req.body.items) ? req.body.items.slice(0, 2000) : null;
+  if (!list) throw new Fail(400, 'items must be a list like [{ "name": "Harvester", "qty": 3 }].');
+  const merged = new Map();
+  for (const r of list) {
+    const name = clean(r.name, 60); const qty = Math.max(0, Math.min(parseInt(r.qty, 10) || 1, 100000));
+    if (name && qty) merged.set(name.toLowerCase(), { name: merged.get(name.toLowerCase())?.name || name, qty: (merged.get(name.toLowerCase())?.qty || 0) + qty });
+  }
+  const stock = { at: new Date().toISOString(), by: req.actor, items: [...merged.values()] };
+  await pool.query("INSERT INTO settings (key, value) VALUES ('bot_stock', $1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value", [JSON.stringify(stock)]);
+  res.json({ ok: true, kinds: stock.items.length, units: stock.items.reduce((a, i) => a + i.qty, 0) });
+}));
 // Bot finished a deposit trade in game: add the items to the player's inventory.
 app.post('/api/bot/deposits', botAuth, wrap(async (req, res) => {
   const rid = String(req.body.roblox_id || '').replace(/\D/g, '');
@@ -881,6 +895,70 @@ app.get('/api/bot/trades', botAuth, wrap(async (req, res) => {
 app.post('/api/bot/trades/:id/claim', botAuth, wrap(async (req, res) => res.json(await tx((db) => claimTrade(db, parseInt(req.params.id, 10), req.actor)))));
 app.post('/api/bot/trades/:id/complete', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'completed', { received: req.body.received, note: req.body.note })))));
 app.post('/api/bot/trades/:id/fail', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'failed', { note: req.body.reason })))));
+
+// ---------- Owner: bot info ----------
+app.get('/api/admin/bot', owner, wrap(async (req, res) => {
+  const bot = await botView();
+  // What the bot should be holding: every real deposited item still on the site.
+  const expected = (await pool.query(
+    `SELECT i.id AS item_id, i.name, i.rarity, i.type, i.value, i.image_url,
+       count(*)::int AS qty,
+       count(*) FILTER (WHERE inv.status='held')::int AS held,
+       count(*) FILTER (WHERE inv.status='listed')::int AS listed,
+       count(*) FILTER (WHERE inv.status='withdrawing')::int AS withdrawing
+     FROM inventory inv JOIN items i ON i.id=inv.item_id
+     WHERE inv.status IN ('held','listed','withdrawing') AND inv.added_by IS NULL
+     GROUP BY i.id ORDER BY i.value DESC, i.name`)).rows;
+  const test = (await pool.query("SELECT count(*)::int AS n FROM inventory WHERE status IN ('held','listed','withdrawing') AND added_by IS NOT NULL")).rows[0].n;
+  const stock = (await pool.query("SELECT value FROM settings WHERE key='bot_stock'")).rows[0]?.value || null;
+  const queue = (await pool.query(
+    `SELECT t.id, t.status, t.items, t.created_at, u.username, u.roblox_id FROM trades t LEFT JOIN users u ON u.id=t.user_id
+     WHERE t.kind='withdraw' AND t.status IN ('pending','in_progress') ORDER BY t.id`)).rows.map((t) => ({ ...t, roblox_id: t.roblox_id ? String(t.roblox_id) : null }));
+  const recent = (await pool.query(
+    `SELECT t.id, t.kind, t.status, t.items, t.handled_by, t.updated_at, u.username FROM trades t LEFT JOIN users u ON u.id=t.user_id
+     WHERE t.handled_by LIKE 'api:%' ORDER BY t.updated_at DESC LIMIT 25`)).rows;
+  const day = (await pool.query(
+    `SELECT count(*) FILTER (WHERE kind='deposit')::int AS deposits, count(*) FILTER (WHERE kind='withdraw')::int AS withdrawals
+     FROM trades WHERE status='completed' AND updated_at > now() - interval '24 hours'`)).rows[0];
+  res.json({ bot, api_enabled: BOT_KEY.length >= 32, last_seen: botSeen ? new Date(botSeen).toISOString() : null, expected, test_items: test, stock, queue, recent, day, rec_per_1k: REC_PER_1K });
+}));
+
+// ---------- Owner: edit someone's inventory (testing and fixes) ----------
+app.get('/api/admin/users/:id/inventory', owner, wrap(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT inv.id, inv.status, inv.added_by, inv.created_at, i.id AS item_id, i.name, i.rarity, i.type, i.value, i.image_url
+     FROM inventory inv JOIN items i ON i.id=inv.item_id
+     WHERE inv.user_id=$1 AND inv.status IN ('held','listed','withdrawing') ORDER BY i.value DESC, inv.id`, [parseInt(req.params.id, 10)]);
+  res.json(rows);
+}));
+app.post('/api/admin/users/:id/inventory', owner, wrap(async (req, res) => {
+  const itemId = parseInt(req.body.item_id, 10), qty = Math.min(Math.max(parseInt(req.body.qty, 10) || 1, 1), 50);
+  const note = clean(req.body.note, 120);
+  const out = await tx(async (db) => {
+    const u = (await db.query('SELECT id, username FROM users WHERE id=$1', [parseInt(req.params.id, 10)])).rows[0];
+    if (!u) throw new Fail(404, 'User not found.');
+    const item = (await db.query('SELECT id, name FROM items WHERE id=$1', [itemId])).rows[0];
+    if (!item) throw new Fail(400, 'Pick an item.');
+    for (let k = 0; k < qty; k++) await db.query('INSERT INTO inventory (user_id, item_id, added_by) VALUES ($1,$2,$3)', [u.id, item.id, req.user.username]);
+    await log(db, req.user.username, 'inventory.owner_added', 'user:' + u.username, { item: item.name, qty, note: note || null });
+    return { ok: true, added: qty, item: item.name, username: u.username };
+  });
+  res.json(out);
+}));
+app.delete('/api/admin/inventory/:id', owner, wrap(async (req, res) => {
+  const out = await tx(async (db) => {
+    const r = (await db.query(
+      `SELECT inv.id, inv.status, i.name, u.username FROM inventory inv JOIN items i ON i.id=inv.item_id LEFT JOIN users u ON u.id=inv.user_id
+       WHERE inv.id=$1 FOR UPDATE OF inv`, [parseInt(req.params.id, 10)])).rows[0];
+    if (!r) throw new Fail(404, 'Item not found.');
+    if (r.status === 'listed') throw new Fail(400, 'It is listed for sale. Take the listing down in the Market tab first.');
+    if (r.status !== 'held') throw new Fail(400, 'It is being withdrawn. Fail or finish that trade first.');
+    await db.query("UPDATE inventory SET status='removed' WHERE id=$1", [r.id]);
+    await log(db, req.user.username, 'inventory.owner_removed', 'user:' + r.username, { item: r.name, inventory_id: r.id });
+    return { ok: true };
+  });
+  res.json(out);
+}));
 
 // ---------- Owner: items, trades, logs ----------
 function itemFields(b) {
