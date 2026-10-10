@@ -225,7 +225,7 @@
       cd.replaceChildren(elx('div', { className: 'hd' }, ...tabs, elx('button', { className: 'x', type: 'button', textContent: '×', 'aria-label': 'Close', onclick: close })), bd);
     }
     function codePane(bd) {
-      const url = cxInfo.codes_url || 'https://splitzmarket.mysellauth.com/products';
+      const url = cxInfo.codes_url || 'https://splitzmarket.mysellauth.com/';
       const input = elx('input', { placeholder: 'SPLITZ-XXXX-XXXX-XXXX', autocomplete: 'off', spellcheck: false, maxLength: 40, style: 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:16px;letter-spacing:.04em;text-transform:uppercase' });
       const go = elx('button', { className: 'btn go', type: 'button', textContent: 'Redeem code' });
       const err = elx('div', { className: 'err' });
