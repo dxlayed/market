@@ -64,7 +64,7 @@ input{font:inherit;color:var(--text);background:var(--surface);border:1px solid 
 // Owners log in from here and land on the normal site. Everyone else is sent back automatically when maintenance ends.
 document.getElementById('ownerLogin').onclick = () => RbxAuth.open(() => location.replace('/'));
 setInterval(() => fetch('/api/status', { cache: 'no-store' }).then((r) => r.json()).then((s) => {
-  if (!s.maintenance) location.replace(location.pathname === '/maintenance.html' ? '/' : location.href);
+  if (!s.maintenance) location.replace(location.pathname === '/maintenance' ? '/' : location.href);
 }).catch(() => {}), 30000);
 </script>
 </body>
