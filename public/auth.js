@@ -179,6 +179,7 @@
     btc: '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#f7931a"/><path fill="#fff" d="M27.6 17.6c.4-2.6-1.6-4-4.3-4.9l.9-3.5-2.1-.5-.8 3.4-1.7-.4.9-3.4-2.1-.5-.9 3.5-1.4-.3-2.9-.7-.6 2.3s1.6.4 1.5.4c.9.2 1 .8 1 1.2l-1 3.9.2.1-.2-.1-1.4 5.5c-.1.3-.4.7-1 .5l-1.5-.4-1 2.4 2.8.7 1.5.4-.9 3.6 2.1.5.9-3.5 1.7.4-.9 3.5 2.1.5.9-3.6c3.6.7 6.4.4 7.5-2.9.9-2.6 0-4.1-1.9-5.1 1.4-.3 2.4-1.2 2.7-3.1zm-4.8 6.8c-.6 2.6-5 1.2-6.4.8l1.2-4.6c1.4.4 6 1.1 5.2 3.8zm.7-6.8c-.6 2.4-4.2 1.2-5.4.9l1-4.2c1.2.3 5 .9 4.4 3.3z"/></svg>',
     ltc: '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#bfbbbb"/><path fill="#fff" d="M14.4 30h13.4l.9-3.3h-9.3l1.5-5.6 2.6-1 .6-2.3-2.6 1 2.1-7.8h-4.7l-2.7 10.1-2.3.9-.6 2.3 2.3-.9z"/></svg>',
   };
+  const CARD_ICON = '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#e8202a"/><rect x="9" y="12.5" width="22" height="15" rx="3" fill="none" stroke="#fff" stroke-width="2.2"/><path d="M9 17.5h22" stroke="#fff" stroke-width="2.6"/><path d="M13 23.5h5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>';
   const cd = document.createElement('dialog'); cd.id = 'cxDlg'; document.body.append(cd);
   let cxInfo = null, cxTimer = null;
   const usdC = (c) => money(c);
@@ -190,8 +191,9 @@
 
   async function openCrypto(mode, coinId) {
     try { cxInfo = await jget('/api/crypto'); } catch { cxInfo = null; }
-    if (!cxInfo || !cxInfo.coins.length) return openFundsTicket(mode);
-    let tab = mode === 'out' ? 'out' : 'in', coin = coinId || null;
+    if ((!cxInfo || !cxInfo.coins.length) && mode === 'out') return openFundsTicket(mode);
+    if (!cxInfo) cxInfo = { coins: [], open: true, balance: 0, withdrawable: 0 };
+    let tab = mode === 'out' ? 'out' : 'in', coin = coinId || (mode === 'out' ? null : 'code');
     const close = () => { clearInterval(cxTimer); cd.close(); };
     function draw() {
       clearInterval(cxTimer);
@@ -201,18 +203,54 @@
         elx('div', {}, elx('span', { textContent: 'Total balance' }), elx('b', { textContent: usdC(cxInfo.balance || 0) })),
         elx('div', {}, elx('span', { textContent: 'Withdrawable' }), elx('b', { textContent: usdC(cxInfo.withdrawable || 0) }))));
       const grid = elx('div', { className: 'coins' });
+      if (tab === 'in') {
+        const b = elx('button', { className: 'coin' + (coin === 'code' ? ' on' : ''), type: 'button', onclick: () => { coin = 'code'; draw(); } });
+        b.innerHTML = CARD_ICON;
+        b.append(elx('b', { textContent: 'Card / PayPal' }), elx('small', { textContent: 'Balance code' }));
+        grid.append(b);
+      } else if (coin === 'code') coin = null;
+      if (tab === 'out' && !cxInfo.coins.length) { tab = 'in'; coin = 'code'; return draw(); }
       cxInfo.coins.forEach((c) => {
         const b = elx('button', { className: 'coin' + (coin === c.id ? ' on' : ''), type: 'button', onclick: () => { coin = c.id; draw(); } });
         b.innerHTML = COIN_ICON[c.id] || '';
         b.append(elx('b', { textContent: c.name }), elx('small', { textContent: c.price ? '$' + c.price.toLocaleString(undefined, { maximumFractionDigits: 2 }) : 'Price loading' }));
         grid.append(b);
       });
-      bd.append(elx('label', { textContent: tab === 'in' ? 'Pick a coin to deposit' : 'Pick a coin to receive' }), grid);
+      bd.append(elx('label', { textContent: tab === 'in' ? 'How do you want to pay?' : 'Pick a coin to receive' }), grid);
       const c = cxInfo.coins.find((x) => x.id === coin);
-      if (!cxInfo.open) bd.append(elx('p', { className: 'note', textContent: 'Crypto deposits and withdrawals are paused right now.' }));
+      if (tab === 'in' && coin === 'code') codePane(bd);
+      else if (!cxInfo.open) bd.append(elx('p', { className: 'note', textContent: 'Crypto deposits and withdrawals are paused right now.' }));
       else if (c && tab === 'in') depositPane(bd, c);
       else if (c && tab === 'out') withdrawPane(bd, c);
       cd.replaceChildren(elx('div', { className: 'hd' }, ...tabs, elx('button', { className: 'x', type: 'button', textContent: '×', 'aria-label': 'Close', onclick: close })), bd);
+    }
+    function codePane(bd) {
+      const url = cxInfo.codes_url || 'https://splitzmarket.mysellauth.com/products';
+      const input = elx('input', { placeholder: 'SPLITZ-XXXX-XXXX-XXXX', autocomplete: 'off', spellcheck: false, maxLength: 40, style: 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:16px;letter-spacing:.04em;text-transform:uppercase' });
+      const go = elx('button', { className: 'btn go', type: 'button', textContent: 'Redeem code' });
+      const err = elx('div', { className: 'err' });
+      const done = elx('div');
+      const redeem = async () => {
+        err.textContent = ''; go.disabled = true;
+        try {
+          const r = await jpost('/api/codes/redeem', { code: input.value });
+          setBalance(r.balance); cxInfo.balance = r.balance; input.value = '';
+          done.replaceChildren(elx('div', { className: 'hr', style: 'border-color:#4ade8066;background:#4ade8012' }, elx('div', {}, elx('b', { textContent: usdC(r.amount_cents) + ' added to your balance' }), elx('small', { textContent: 'You now have ' + usdC(r.balance) + '. Go buy something nice.' })), elx('span', { className: 'pill ok', textContent: 'Done' })));
+          if (typeof toast === 'function') toast(usdC(r.amount_cents) + ' added to your balance');
+        } catch (e) { err.textContent = e.message; }
+        go.disabled = false;
+      };
+      go.onclick = redeem; input.addEventListener('keydown', (e) => { if (e.key === 'Enter') redeem(); });
+      const step = (n, title, body) => elx('div', { className: 'hr', style: 'justify-content:flex-start;align-items:flex-start' }, elx('span', { className: 'pill wait', textContent: n, style: 'min-width:26px;text-align:center' }), elx('div', {}, elx('b', { textContent: title }), body));
+      bd.append(elx('h3', { textContent: 'Pay with card, PayPal or crypto' }),
+        elx('div', { className: 'hist' },
+          step('1', 'Buy a balance code', elx('small', {}, 'Open our ', elx('a', { href: url, target: '_blank', rel: 'noopener', textContent: 'SellAuth store', style: 'color:var(--gold);font-weight:700' }), ' and pick $5, $10, $15, $20 or $25. You can pay with card, PayPal or crypto there.')),
+          step('2', 'Check your email', elx('small', { textContent: 'Your code arrives right after checkout. It looks like SPLITZ-XXXX-XXXX-XXXX.' })),
+          step('3', 'Paste it below', elx('small', { textContent: 'The money goes straight into your balance. Each code works once.' }))),
+        elx('a', { className: 'btn go', href: url, target: '_blank', rel: 'noopener', textContent: 'Open the store ↗', style: 'display:block;text-align:center;text-decoration:none;background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:10px' }),
+        elx('label', { textContent: 'Your code', style: 'margin-top:18px' }), input, go, err, done,
+        elx('p', { className: 'note', textContent: 'Balance from codes is for buying items. Money you make from selling can be withdrawn anytime. Problem with a code? Open a support ticket with your order ID.' }));
+      setTimeout(() => input.focus(), 50);
     }
     async function depositPane(bd, c) {
       const box = elx('div', {}, elx('h3', { textContent: 'Deposit ' + c.name }), elx('p', { className: 'note', textContent: 'Getting your address...' }));
