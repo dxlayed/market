@@ -511,7 +511,7 @@
     const pop = mk('div', { className: 'um-pop' }); pop.hidden = true; pops.push(pop);
     const out = mk('button', { type: 'button', textContent: 'Log out', onclick: onLogout }); out.style.color = 'var(--bad)';
     if (u.owner) { const o = mk('a', { href: '/owner.html', textContent: 'Owner panel' }); o.style.color = 'var(--gold)'; pop.append(o, mk('hr')); }
-    pop.append(mk('a', { href: '/profile.html', textContent: 'Profile' }), mk('a', { href: '/?seller=' + encodeURIComponent(u.username), textContent: 'My shop' }),
+    pop.append(mk('a', { href: '/profile.html', textContent: 'Profile' }), mk('a', { href: '/inventory.html', textContent: 'My shop' }),
       mk('a', { href: '/inventory.html', textContent: 'Inventory' }), mk('a', { href: '/profile.html#wallet', textContent: 'Transactions' }), mk('a', { href: '/support.html', textContent: 'Support' }), mk('hr'),
       mk('button', { type: 'button', textContent: 'Deposit balance', onclick: () => { closeAll(); window.openFunds('add'); } }),
       mk('button', { type: 'button', textContent: 'Deposit items', onclick: () => { closeAll(); window.openItemDeposit(); } }),
