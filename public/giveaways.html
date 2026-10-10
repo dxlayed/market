@@ -79,7 +79,7 @@ h2.sec .live{width:9px;height:9px;border-radius:99px;background:var(--gold);box-
   <div class="won" id="won"></div>
   <div class="how">
     <div><b>Free to join</b>Log in with Roblox and press Join. One entry per person.</div>
-    <div><b>Same chance for everyone</b>If 100 people join, each one has a 1 in 100 chance. Your odds update live as people join.</div>
+    <div><b>Same chance for everyone</b>Every entry has the same chance of winning. If 100 people enter, each one has a 1 in 100 chance.</div>
     <div><b>Instant delivery</b>The winner gets the item in their inventory the moment the giveaway ends.</div>
   </div>
 </div>
@@ -101,11 +101,7 @@ function left(ends) {
   const t = d ? d + 'd ' + h + 'h' : h ? h + 'h ' + String(m).padStart(2, '0') + 'm' : m + ':' + String(sec).padStart(2, '0');
   return [t, ms < 60000];
 }
-function odds(n, joined) {
-  if (!joined) return n ? '1 in ' + (n + 1) + ' if you join' : '100% if you join now';
-  const pct = 100 / Math.max(1, n);
-  return '1 in ' + n + ' (' + (pct >= 10 ? pct.toFixed(0) : pct >= 1 ? pct.toFixed(1) : pct.toFixed(2)) + '%)';
-}
+const entered = (n) => n + (n === 1 ? ' person' : ' people');
 function draw() {
   const live = $('live');
   if (!data.active.length) live.replaceChildren(el('div', { className: 'empty', style: 'grid-column:1/-1' }, 'No giveaways running right now. Join our ', el('a', { href: window.DISCORD || 'https://discord.gg/splitzmarket', target: '_blank', rel: 'noopener', textContent: 'Discord', style: 'color:var(--gold)' }), ' to hear about the next one.'));
@@ -125,8 +121,8 @@ function draw() {
     return el('div', { className: 'gw' + (g.joined ? ' in' : '') }, art,
       el('div', { className: 'bd' },
         el('b', { className: 'nm', textContent: g.name }),
-        el('div', { className: 'meta' }, el('span', { textContent: g.type + (g.value ? ' · value ' + Number(g.value).toLocaleString() : '') }), el('span', { textContent: g.entries + (g.entries === 1 ? ' entry' : ' entries') })),
-        el('div', { className: 'odds' }, el('span', { textContent: 'Your chance' }), el('b', { textContent: odds(g.entries, g.joined) })),
+        el('div', { className: 'meta' }, el('span', { textContent: g.type + (g.value ? ' · value ' + Number(g.value).toLocaleString() : '') })),
+        el('div', { className: 'odds' }, el('span', { textContent: 'Entered' }), el('b', { textContent: entered(g.entries) })),
         act));
   }));
   const won = $('won');
