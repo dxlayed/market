@@ -159,7 +159,7 @@ function armed(label, armedLabel, run, cls = 'ghost sm danger') {
 const userCell = (name, avatar) => el('span', { className: 'who' }, avEl({ username: name || '?', avatar }), name || 'deleted');
 
 let me = null, tab = 'overview', stats = null, poll = null;
-const TABS = [['overview', 'Overview'], ['analytics', 'Analytics'], ['trades', 'Trades'], ['bot', 'Bot'], ['giveaways', 'Giveaways'], ['market', 'Market'], ['crypto', 'Crypto'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
+const TABS = [['overview', 'Overview'], ['analytics', 'Analytics'], ['trades', 'Trades'], ['bot', 'Bot'], ['giveaways', 'Giveaways'], ['market', 'Market'], ['crypto', 'Crypto'], ['codes', 'Balance codes'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
 const usd = (c) => window.money ? window.money(c) : '$' + (c / 100).toFixed(2);
 
 function shell() {
@@ -173,7 +173,7 @@ function drawSide() {
 }
 async function go(k) {
   tab = k; clearInterval(poll); drawSide();
-  try { await ({ overview, analytics, users, support, chat, market, crypto: cryptoTab, items, trades, logs, bot: botTab, giveaways: giveawaysTab })[k](); }
+  try { await ({ overview, analytics, users, support, chat, market, crypto: cryptoTab, items, trades, logs, bot: botTab, giveaways: giveawaysTab, codes: codesTab })[k](); }
   catch (e) { $('main').replaceChildren(el('div', { className: 'card', textContent: e.message })); }
 }
 async function refreshStats() { stats = await api('/api/admin/stats'); drawSide(); }
@@ -602,6 +602,63 @@ async function logs() {
   await load();
 }
 
+// ---------- Balance codes (sold on SellAuth) ----------
+function saveText(name, text) {
+  const a = el('a', { href: URL.createObjectURL(new Blob([text], { type: 'text/plain' })), download: name });
+  document.body.append(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+async function codesTab() {
+  const d = await api('/api/admin/codes');
+  const amounts = el('input', { value: '5, 10, 15, 20, 25', 'aria-label': 'Amounts in dollars' });
+  const count = el('input', { type: 'number', min: 1, max: 500, value: 25, style: 'flex:0 0 90px;min-width:0;width:90px', 'aria-label': 'Codes per amount' });
+  const out = el('div');
+  const make = armed('Generate codes', 'Confirm generate', async () => {
+    const list = amounts.value.split(/[ ,]+/).filter(Boolean);
+    const r = await api('/api/admin/codes', 'POST', { amounts: list, count: count.value });
+    const keys = Object.keys(r.codes).map(Number).sort((a, b) => a - b);
+    toast('Made ' + keys.reduce((a, k) => a + r.codes[k].length, 0) + ' codes');
+    out.replaceChildren(el('section', { className: 'card', style: 'border-color:#4ade8066' },
+      el('h2', {}, 'New codes ', el('span', { className: 'mute', textContent: '· batch ' + r.batch })),
+      el('p', { className: 'mute', style: 'margin:0 0 12px', textContent: 'Download each file and paste it into the stock of the matching SellAuth product (one code per line). You can download unused codes again any time from the table below.' }),
+      el('div', { className: 'invgrid' }, ...keys.map((k) => el('div', { style: 'flex-direction:column;align-items:stretch' },
+        el('b', { textContent: usd(k) + ' · ' + r.codes[k].length + ' codes' }),
+        el('textarea', { rows: 5, readOnly: true, value: r.codes[k].join('\n'), style: 'font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px' }),
+        el('div', { style: 'display:flex;gap:6px' },
+          el('button', { className: 'btn sm', textContent: 'Download .txt', onclick: () => saveText('splitz-codes-' + k / 100 + 'usd.txt', r.codes[k].join('\n') + '\n') }),
+          el('button', { className: 'ghost sm', textContent: 'Copy', onclick: () => navigator.clipboard.writeText(r.codes[k].join('\n')).then(() => toast('Copied')) })))))));
+    loadSummary();
+  }, 'btn');
+  const sumBody = el('tbody'), recBody = el('tbody'), totals = el('p', { className: 'mute', style: 'margin:0 0 10px' });
+  async function loadSummary() {
+    const x = await api('/api/admin/codes');
+    totals.textContent = usd(x.redeemed_cents) + ' redeemed so far.';
+    sumBody.replaceChildren(...(x.summary.length ? x.summary.map((r) => el('tr', {},
+      el('td', {}, el('b', { textContent: usd(r.amount_cents) })), el('td', { textContent: r.total }),
+      el('td', {}, el('span', { className: 'pill ' + (r.unused < 5 ? 'bad' : 'ok'), textContent: r.unused + ' left' })),
+      el('td', { textContent: r.redeemed }), el('td', { className: 'mute', textContent: r.disabled || '' }),
+      el('td', {}, el('a', { className: 'ghost sm', href: '/api/admin/codes/export?amount=' + r.amount_cents, textContent: 'Download unused', style: 'border:1px solid var(--line);padding:5px 11px;border-radius:8px;text-decoration:none;color:var(--text);font-size:13px;font-weight:700' }))))
+      : [el('tr', {}, el('td', { colSpan: 6, className: 'empty', textContent: 'No codes yet. Generate some above.' }))]));
+    recBody.replaceChildren(...(x.recent.length ? x.recent.map((r) => el('tr', {},
+      el('td', { className: 'mute', textContent: when(r.redeemed_at) }), el('td', { textContent: r.username || 'deleted' }), el('td', {}, el('b', { textContent: usd(r.amount_cents) })), el('td', { className: 'mute', textContent: r.code.slice(0, 12) + '…' })))
+      : [el('tr', {}, el('td', { colSpan: 4, className: 'empty', textContent: 'Nobody has redeemed a code yet.' }))]));
+  }
+  const dis = el('input', { placeholder: 'SPLITZ-XXXX-XXXX-XXXX' });
+  const disBtn = armed('Disable code', 'Confirm disable', async () => { await api('/api/admin/codes/disable', 'POST', { code: dis.value }); toast('Code disabled'); dis.value = ''; loadSummary(); });
+  $('main').replaceChildren(el('h1', { textContent: 'Balance codes' }),
+    el('p', { className: 'mute', style: 'margin:-6px 0 16px' }, 'Players buy these on your ', el('a', { href: d.url, target: '_blank', rel: 'noopener', textContent: 'SellAuth store' }), ' and redeem them in Deposit Balance → Card / PayPal. Each code works once. Like crypto deposits, the money has to be spent on items before it can be withdrawn.'),
+    el('section', { className: 'card' }, el('h2', { textContent: 'Make codes' }),
+      el('div', { className: 'tools', style: 'margin:0;align-items:center' }, el('span', { className: 'mute', textContent: 'Amounts ($)' }), amounts, el('span', { className: 'mute', textContent: 'Codes each' }), count, make)),
+    out,
+    el('section', { className: 'card scroll' }, el('h2', { textContent: 'Stock' }), totals,
+      el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['Amount', 'Made', 'Unused', 'Redeemed', 'Disabled', ''].map((h) => el('th', { textContent: h })))), sumBody)),
+    el('section', { className: 'card scroll' }, el('h2', { textContent: 'Recent redemptions' }),
+      el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['When', 'User', 'Amount', 'Code'].map((h) => el('th', { textContent: h })))), recBody)),
+    el('section', { className: 'card' }, el('h2', { textContent: 'Disable a code' }),
+      el('p', { className: 'mute', style: 'margin:0 0 10px', textContent: 'Use this if a SellAuth order was refunded or a code leaked. Only unused codes can be disabled.' }),
+      el('div', { className: 'tools', style: 'margin:0' }, dis, disBtn)));
+  await loadSummary();
+}
+
 // ---------- Giveaways ----------
 async function giveawaysTab() {
   const picked = new Set(); let lenV = 1, unitV = '60';
@@ -671,6 +728,7 @@ async function analytics() {
       tile('Fees earned', usd(x.sale_fees + x.wd_fees), usd(x.sale_fees) + ' sales · ' + usd(x.wd_fees) + ' withdrawals', true),
       tile('Crypto deposited', usd(x.dep_cents), x.dep_n + ' deposits'),
       tile('Crypto withdrawn', usd(x.wd_cents), x.wd_n + ' paid out'),
+      tile('Codes redeemed', usd(x.code_cents), x.code_n + ' SellAuth codes'),
       tile('Balance added by owners', usd(x.added_cents), 'by hand'),
       tile('Item deposits', x.item_dep, 'trades with the bot'),
       tile('Item withdrawals', x.item_wd, 'trades with the bot'),
@@ -735,7 +793,7 @@ async function analytics() {
 
   // Period comparison table
   const rows = [['Items sold', (x) => usd(x.sales_cents)], ['Sales', (x) => x.sales_n], ['Fees from sales', (x) => usd(x.sale_fees)], ['Fees from withdrawals', (x) => usd(x.wd_fees)],
-    ['Crypto deposited', (x) => usd(x.dep_cents)], ['Crypto withdrawn', (x) => usd(x.wd_cents)], ['Balance added by owners', (x) => usd(x.added_cents)],
+    ['Crypto deposited', (x) => usd(x.dep_cents)], ['Crypto withdrawn', (x) => usd(x.wd_cents)], ['Codes redeemed', (x) => usd(x.code_cents)], ['Balance added by owners', (x) => usd(x.added_cents)],
     ['Item deposits', (x) => x.item_dep], ['Item withdrawals', (x) => x.item_wd], ['New users', (x) => x.new_users]];
   const cmp = el('table', { className: 'tbl cmp' }, el('thead', {}, el('tr', {}, el('th', { textContent: '' }), ...['Today', '7 days', '30 days', 'All time'].map((h) => el('th', { textContent: h })))),
     el('tbody', {}, ...rows.map(([l, f]) => el('tr', {}, el('td', { textContent: l }), ...['day', 'week', 'month', 'all'].map((k) => el('td', { textContent: f(d[k]) }))))));
