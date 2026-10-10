@@ -237,7 +237,7 @@
             textContent: d.status === 'credited' ? 'Added to balance' : d.status === 'pending' ? 'Confirming ' + Math.min(d.confirmations, d.needed) + '/' + d.needed : 'Below minimum' }))) : [elx('p', { className: 'note', textContent: 'Nothing yet. Deposits show up here as soon as they hit the network.' })]));
         refreshBalance();
       };
-      load(); cxTimer = setInterval(async () => { await load(); try { const i = await jget('/api/crypto'); cxInfo.balance = i.balance; cxInfo.withdrawable = i.withdrawable; } catch {} }, 8000);
+      load(); cxTimer = setInterval(async () => { await load(); try { const i = await jget('/api/crypto'); cxInfo.balance = i.balance; cxInfo.withdrawable = i.withdrawable; window.setBalance(i.balance); } catch {} }, 4000);
     }
     function withdrawPane(bd, c) {
       const addr = elx('input', { placeholder: 'Paste your ' + c.name + ' address', autocomplete: 'off', spellcheck: false });
