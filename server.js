@@ -1362,6 +1362,12 @@ app.post('/api/crypto/address', auth, wrap(async (req, res) => {
 }));
 
 app.get('/api/crypto/history', auth, wrap(async (req, res) => {
+  // While someone has the deposit window open, check their own addresses right away (at most every 4 seconds).
+  if (Object.keys(CRYPTO).length && limit('live' + req.user.id, 4000)) {
+    await refreshPrices().catch(() => {});
+    const mine = (await pool.query('SELECT * FROM crypto_addresses WHERE user_id=$1', [req.user.id])).rows.filter((r) => CRYPTO[r.coin] && CRYPTO[r.coin].keyId === r.key_id);
+    await Promise.race([Promise.all(mine.map((r) => checkAddress(r).catch(() => {}))), sleep(3500)]);
+  }
   const deposits = (await pool.query('SELECT id, coin, txid, amount_sats, usd_cents, confirmations, status, created_at FROM crypto_deposits WHERE user_id=$1 ORDER BY id DESC LIMIT 20', [req.user.id])).rows;
   const withdrawals = (await pool.query('SELECT id, coin, address, usd_cents, fee_cents, tax_cents, coin_amount, status, txid, note, created_at FROM crypto_withdrawals WHERE user_id=$1 ORDER BY id DESC LIMIT 20', [req.user.id])).rows;
   res.json({ deposits: deposits.map((d) => ({ ...d, amount_sats: Number(d.amount_sats), needed: (CRYPTO[d.coin] || cx.COINS[d.coin] || {}).confirmations })), withdrawals });
@@ -1435,7 +1441,7 @@ app.post('/api/admin/crypto/withdrawals/:id/:action', owner, wrap(async (req, re
 const tips = {};
 async function tipHeight(c) {
   const t = tips[c.id];
-  if (t && Date.now() - t.at < 15000) return t.h;
+  if (t && Date.now() - t.at < 5000) return t.h;
   const h = parseInt(await (await fetch(c.api + '/blocks/tip/height', { signal: AbortSignal.timeout(10000) })).text(), 10);
   if (!(h > 0)) throw new Error(c.id + ' tip height unavailable');
   tips[c.id] = { h, at: Date.now() };
@@ -1450,7 +1456,7 @@ async function checkAddress(row) {
   for (const t of Array.isArray(txs) ? txs : []) {
     const sats = (t.vout || []).filter((o) => o.scriptpubkey_address === row.address).reduce((a, o) => a + Number(o.value || 0), 0);
     if (!sats) continue;
-    const confs = t.status && t.status.confirmed && t.status.block_height ? Math.max(0, tip - t.status.block_height + 1) : 0;
+    const confs = t.status && t.status.confirmed && t.status.block_height ? Math.max(1, tip - t.status.block_height + 1) : 0; // a mined tx always has at least 1
     let dep = (await pool.query('SELECT * FROM crypto_deposits WHERE coin=$1 AND txid=$2 AND address=$3', [c.id, t.txid, row.address])).rows[0];
     if (!dep) {
       if (!prices[c.id]) continue; // wait until we have a price to lock in
@@ -1483,26 +1489,29 @@ async function checkAddress(row) {
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let busy = false;
-async function sweep(all) {
+async function sweep(mode) {
+  const all = mode === true;
   if (busy || !Object.keys(CRYPTO).length) return;
   busy = true;
   try {
     await refreshPrices();
     const keys = Object.values(CRYPTO).map((c) => c.id + ':' + c.keyId);
     const rows = (await pool.query(
-      `SELECT a.* FROM crypto_addresses a WHERE (a.coin || ':' || a.key_id) = ANY($1) AND ($2 OR a.last_viewed > now() - interval '24 hours'
+      `SELECT a.* FROM crypto_addresses a WHERE (a.coin || ':' || a.key_id) = ANY($1) AND ($2 OR a.last_viewed > now() - ($3 || ' minutes')::interval
          OR EXISTS (SELECT 1 FROM crypto_deposits d WHERE d.address=a.address AND d.status='pending'))
-       ORDER BY a.last_checked ASC NULLS FIRST LIMIT 500`, [keys, all])).rows;
+       ORDER BY a.last_checked ASC NULLS FIRST LIMIT 500`, [keys, all, mode === 'hot' ? '30' : '1440'])).rows;
     for (const r of rows) {
       try { await checkAddress(r); } catch (e) { watch.lastError = new Date().toISOString() + ' ' + e.message; }
-      await sleep(all ? 1000 : 350);
+      await sleep(all ? 1000 : mode === 'hot' ? 150 : 350);
     }
     watch.lastRun = new Date().toISOString();
   } catch (e) { watch.lastError = e.message; }
   busy = false;
 }
-const POLL = Math.max(5, parseInt(process.env.CRYPTO_POLL_SECONDS, 10) || 20) * 1000;
-setInterval(() => sweep(false), POLL);
+// Fast loop: addresses opened in the last 30 minutes and anything still confirming. Slow loop: the last 24 hours.
+const POLL = Math.max(3, parseInt(process.env.CRYPTO_POLL_SECONDS, 10) || 5) * 1000;
+setInterval(() => sweep('hot'), POLL);
+setInterval(() => sweep('day'), 60 * 1000);
 setInterval(() => sweep(true), 15 * 60 * 1000);
 setTimeout(() => sweep(true), 5000);
 
