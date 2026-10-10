@@ -68,6 +68,20 @@ h1{font-size:28px;margin-bottom:16px}
 .chat p{margin:2px 0 0;overflow-wrap:anywhere;flex:1}
 .chat .acts{display:flex;gap:6px;flex:none}
 .empty{text-align:center;color:var(--mute);padding:36px 16px}
+.bothd{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.bothd .bav{width:64px;height:64px;border-radius:16px;background:#2a1616 center/cover;border:1px solid var(--line);display:grid;place-items:center;font:900 26px Outfit,sans-serif;color:var(--gold);position:relative;flex:none}
+.bothd .bav i{position:absolute;right:-3px;bottom:-3px;width:15px;height:15px;border-radius:99px;background:#6b6b6b;border:3px solid var(--surface)}
+.bothd.on .bav i{background:var(--ok)}
+.bothd h2{margin:0;font-size:22px}.bothd .grow{flex:1;min-width:200px}
+.ithumb{width:38px;height:38px;border-radius:9px;background:#0d0707;object-fit:contain;flex:none}
+.irow{display:flex;align-items:center;gap:10px;font-weight:700}
+.diff{font-weight:800}.diff.ok{color:var(--ok)}.diff.bad{color:var(--bad)}
+.invgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;margin-top:12px}
+.invgrid>div{display:flex;align-items:center;gap:10px;background:var(--raise);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.invgrid>div .nm{flex:1;min-width:0}.invgrid>div b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.picklist{max-height:240px;overflow:auto;display:grid;gap:4px;margin-top:8px}
+.picklist button{display:flex;align-items:center;gap:10px;text-align:left;background:var(--raise);font-weight:600}
+.picklist button.on{border-color:var(--gold);background:#e8202a1c}
 .denied{grid-column:1/-1;text-align:center;padding:90px 20px}
 .maint{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 .maint.on{border-color:var(--gold);background:linear-gradient(90deg,#e8202a22,var(--surface) 60%)}
@@ -131,7 +145,7 @@ function armed(label, armedLabel, run, cls = 'ghost sm danger') {
 const userCell = (name, avatar) => el('span', { className: 'who' }, avEl({ username: name || '?', avatar }), name || 'deleted');
 
 let me = null, tab = 'overview', stats = null, poll = null;
-const TABS = [['overview', 'Overview'], ['trades', 'Trades'], ['market', 'Market'], ['crypto', 'Crypto'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
+const TABS = [['overview', 'Overview'], ['trades', 'Trades'], ['bot', 'Bot'], ['market', 'Market'], ['crypto', 'Crypto'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
 const usd = (c) => window.money ? window.money(c) : '$' + (c / 100).toFixed(2);
 
 function shell() {
@@ -145,7 +159,7 @@ function drawSide() {
 }
 async function go(k) {
   tab = k; clearInterval(poll); drawSide();
-  try { await ({ overview, users, support, chat, market, crypto: cryptoTab, items, trades, logs })[k](); }
+  try { await ({ overview, users, support, chat, market, crypto: cryptoTab, items, trades, logs, bot: botTab })[k](); }
   catch (e) { $('main').replaceChildren(el('div', { className: 'card', textContent: e.message })); }
 }
 async function refreshStats() { stats = await api('/api/admin/stats'); drawSide(); }
@@ -206,12 +220,12 @@ async function users() {
         el('td', {}, u.roblox_id ? el('a', { href: 'https://www.roblox.com/users/' + u.roblox_id + '/profile', target: '_blank', rel: 'noopener', textContent: u.roblox_id }) : el('span', { className: 'mute', textContent: 'Not verified' })),
         el('td', { className: 'mute', textContent: when(u.created_at) }),
         el('td', {}, el('b', { textContent: usd(u.balance_cents) })), el('td', { textContent: u.items }), el('td', { textContent: u.listings }),
-        el('td', {}, status), el('td', { style: 'white-space:nowrap' }, el('button', { className: 'ghost sm', textContent: 'Balance', onclick: () => adjust(u, load) }), ' ', act)));
+        el('td', {}, status), el('td', { style: 'white-space:nowrap' }, el('button', { className: 'ghost sm', textContent: 'Balance', onclick: () => adjust(u, load) }), ' ', el('button', { className: 'ghost sm', textContent: 'Items', onclick: () => invEditor(u, load) }), ' ', act)));
     });
   }
   let t; q.oninput = () => { clearTimeout(t); t = setTimeout(load, 250); };
   $('main').replaceChildren(el('h1', { textContent: 'Users & balances' }),
-    el('p', { className: 'mute', textContent: 'Add funds after someone pays you, and remove funds when you pay out a cash out. Every change is saved in Logs and in the user\'s transactions.' }),
+    el('p', { className: 'mute', textContent: 'Balance adds or removes funds. Items lets you add items to someone\'s inventory (for testing or fixing a missed deposit) or remove them. Every change is saved in Logs.' }),
     el('div', { className: 'tools' }, q), el('div', { id: 'adjust' }), table);
   await load();
 }
@@ -545,6 +559,130 @@ async function logs() {
     el('div', { className: 'tools' }, q, type),
     el('div', { className: 'card scroll' }, el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['When', 'Who', 'What', ''].map((h) => el('th', { textContent: h })))), body)));
   await load();
+}
+
+// ---------- Inventory editor (Users tab → Items) ----------
+const RCO = { Chroma: '#b78bff', Ancient: '#7c5cff', Godly: '#d94fd0', Unique: '#e6b422', Vintage: '#d9b98a', Legendary: '#ff4d4d', Rare: '#2fb36a', Uncommon: '#4d7cff', Common: '#8a8fa3' };
+const okImg = (u) => u && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(u);
+const thumb = (i) => okImg(i.image_url) ? el('img', { className: 'ithumb', src: i.image_url, alt: '', loading: 'lazy', referrerPolicy: 'no-referrer' }) : el('span', { className: 'ithumb' });
+let catalogCache = null;
+async function invEditor(u, done) {
+  if (!catalogCache) catalogCache = await api('/api/items');
+  const box = el('section', { className: 'card' });
+  let chosen = null;
+  const search = el('input', { placeholder: 'Search an item to add, e.g. Harvester' });
+  const list = el('div', { className: 'picklist' });
+  const qty = el('input', { type: 'number', min: 1, max: 50, value: 1, style: 'width:90px' });
+  const note = el('input', { placeholder: 'Note (optional)', maxLength: 120 });
+  const addBtn = el('button', { className: 'btn', textContent: 'Add to inventory', disabled: true });
+  const invBox = el('div', { className: 'invgrid' });
+  function drawPick() {
+    const q = search.value.trim().toLowerCase();
+    const rows = catalogCache.filter((i) => !q || i.name.toLowerCase().includes(q)).slice(0, 40);
+    list.replaceChildren(...rows.map((i) => el('button', { type: 'button', className: chosen && chosen.id === i.id ? 'on' : '', onclick: () => { chosen = i; addBtn.disabled = false; addBtn.textContent = 'Add ' + i.name; drawPick(); } },
+      thumb(i), el('span', { style: 'flex:1' }, i.name), el('span', { className: 'pill', style: 'color:' + (RCO[i.rarity] || RCO.Common), textContent: i.rarity }), el('span', { className: 'mute', textContent: 'value ' + (i.value || 0).toLocaleString() }))));
+    if (!rows.length) list.append(el('p', { className: 'mute', textContent: 'No item with that name.' }));
+  }
+  async function loadInv() {
+    const rows = await api('/api/admin/users/' + u.id + '/inventory');
+    invBox.replaceChildren(...(rows.length ? rows.map((i) => el('div', {}, thumb(i),
+      el('div', { className: 'nm' }, el('b', { textContent: i.name }), el('span', { className: 'mute', textContent: (i.status === 'held' ? i.rarity : i.status === 'listed' ? 'For sale' : 'Withdrawing') + (i.added_by ? ' · added by ' + i.added_by : '') })),
+      i.status === 'held' ? armed('Remove', 'Sure?', async () => { await api('/api/admin/inventory/' + i.id, 'DELETE'); toast('Removed ' + i.name); loadInv(); done(); }) : null))
+      : [el('p', { className: 'mute', textContent: 'Their inventory is empty.' })]));
+  }
+  addBtn.onclick = async () => {
+    if (!chosen) return;
+    addBtn.disabled = true;
+    try { const r = await api('/api/admin/users/' + u.id + '/inventory', 'POST', { item_id: chosen.id, qty: qty.value, note: note.value }); toast('Added ' + r.added + '× ' + r.item + ' to ' + r.username); note.value = ''; await loadInv(); done(); }
+    catch (e) { toast(e.message, true); }
+    addBtn.disabled = false;
+  };
+  let t; search.oninput = () => { clearTimeout(t); t = setTimeout(drawPick, 120); };
+  box.append(el('h2', {}, 'Inventory of ' + u.username),
+    el('p', { className: 'mute', style: 'margin:0 0 10px', textContent: 'Items you add show up in their inventory right away, can be sold and withdrawn, and are marked "added by" you. They are not counted in what the bot should be holding.' }),
+    search, list,
+    el('div', { className: 'tools', style: 'margin:10px 0 0;align-items:center' }, el('span', { className: 'mute', textContent: 'How many' }), qty, note, addBtn,
+      el('button', { className: 'ghost', textContent: 'Close', onclick: () => $('adjust').replaceChildren() })),
+    el('h2', { style: 'margin-top:18px' }, 'What they have'), invBox);
+  $('adjust').replaceChildren(box);
+  drawPick(); await loadInv(); search.focus(); window.scrollTo({ top: 0 });
+}
+
+// ---------- Bot tab ----------
+async function botTab() {
+  async function load() {
+    const d = await api('/api/admin/bot');
+    const b = d.bot;
+    const recC = (v) => Math.round((Number(v) || 0) * (d.rec_per_1k || 20) / 10);
+    const av = el('div', { className: 'bav' }, el('i'));
+    if (b.avatar && /^https:\/\/[\w.-]+\.rbxcdn\.com\//.test(b.avatar)) av.style.backgroundImage = 'url("' + b.avatar + '")'; else av.prepend(b.username[0].toUpperCase());
+    const seen = d.last_seen ? 'Last heard from ' + when(d.last_seen) : 'Not heard from since the site last restarted';
+    const head = el('section', { className: 'card' }, el('div', { className: 'bothd' + (b.online ? ' on' : '') }, av,
+      el('div', { className: 'grow' }, el('h2', { textContent: b.username }),
+        el('div', { className: 'mute' }, el('span', { className: 'pill ' + (b.online ? 'ok' : 'bad'), textContent: b.online ? 'Online' : 'Offline' }), '  ', seen, ' · Roblox ID ', el('a', { href: b.profile, target: '_blank', rel: 'noopener', textContent: b.id }))),
+      el('a', { className: 'ghost sm', href: b.link, target: '_blank', rel: 'noopener', textContent: 'Open private server', style: 'border:1px solid var(--line);padding:8px 12px;border-radius:10px;text-decoration:none;color:var(--text)' })),
+      !d.api_enabled ? el('p', { style: 'color:var(--bad);margin:12px 0 0', textContent: 'Trading API is off. Set BOT_API_KEY in Railway so the bot can talk to the site.' }) : null,
+      el('p', { className: 'mute', style: 'margin:12px 0 0', textContent: 'Online means the bot program called the site in the last 3 minutes. Change the bot with BOT_USERNAME, BOT_USER_ID and BOT_SERVER_LINK in Railway.' }));
+
+    // Expected vs reported stock
+    const rep = new Map(); (d.stock ? d.stock.items : []).forEach((i) => rep.set(i.name.toLowerCase(), i.qty));
+    const units = d.expected.reduce((a, i) => a + i.qty, 0);
+    const worth = d.expected.reduce((a, i) => a + i.qty * recC(i.value), 0);
+    const valueSum = d.expected.reduce((a, i) => a + i.qty * (i.value || 0), 0);
+    let mismatches = 0;
+    const body = el('tbody');
+    d.expected.forEach((i) => {
+      const has = d.stock ? rep.get(i.name.toLowerCase()) || 0 : null;
+      const diff = has == null ? null : has - i.qty;
+      if (diff) mismatches++;
+      body.append(el('tr', {},
+        el('td', {}, el('span', { className: 'irow' }, thumb(i), i.name)),
+        el('td', {}, el('span', { className: 'pill', style: 'color:' + (RCO[i.rarity] || RCO.Common), textContent: i.rarity })),
+        el('td', {}, el('b', { textContent: i.qty })),
+        el('td', { className: 'mute', textContent: [i.held && i.held + ' held', i.listed && i.listed + ' for sale', i.withdrawing && i.withdrawing + ' withdrawing'].filter(Boolean).join(' · ') }),
+        el('td', { textContent: has == null ? '—' : has }),
+        el('td', {}, diff == null ? el('span', { className: 'mute', textContent: '—' }) : el('span', { className: 'diff ' + (diff ? 'bad' : 'ok'), textContent: diff ? (diff > 0 ? '+' : '') + diff : '✓' })),
+        el('td', { className: 'mute', textContent: (i.value || 0).toLocaleString() })));
+    });
+    // Items the bot reported that the site does not expect at all
+    const extra = d.stock ? d.stock.items.filter((r) => !d.expected.some((i) => i.name.toLowerCase() === r.name.toLowerCase())) : [];
+    extra.forEach((r) => { mismatches++; body.append(el('tr', {}, el('td', { textContent: r.name }), el('td'), el('td', { textContent: '0' }), el('td', { className: 'mute', textContent: 'not owed to anyone' }), el('td', { textContent: r.qty }), el('td', {}, el('span', { className: 'diff bad', textContent: '+' + r.qty })), el('td'))); });
+    if (!body.children.length) body.append(el('tr', {}, el('td', { colSpan: 7, className: 'empty', textContent: 'No deposited items on the site yet.' })));
+
+    const stockNote = d.stock
+      ? el('p', { className: 'mute', style: 'margin:0 0 10px' }, 'Bot last reported its inventory ' + when(d.stock.at) + '. ', mismatches ? el('b', { style: 'color:var(--bad)', textContent: mismatches + ' item' + (mismatches === 1 ? '' : 's') + ' don\'t match.' }) : el('b', { style: 'color:var(--ok)', textContent: 'Everything matches.' }))
+      : el('p', { className: 'mute', style: 'margin:0 0 10px', textContent: 'The bot hasn\'t reported its in-game inventory yet. Once it sends POST /api/bot/inventory, the "Bot has" column fills in and differences are flagged.' });
+
+    // Withdraw queue
+    const qBody = el('div', { style: 'display:grid;gap:8px' });
+    if (!d.queue.length) qBody.append(el('p', { className: 'mute', textContent: 'Nobody is waiting to receive items.' }));
+    d.queue.forEach((t) => qBody.append(el('div', { className: 'tools', style: 'margin:0;align-items:center;background:var(--raise);border:1px solid var(--line);border-radius:12px;padding:10px 12px' },
+      el('b', { textContent: '#' + t.id }), userCell(t.username, null), el('span', { style: 'flex:1', textContent: t.items.map((x) => x.name).join(', ') }),
+      el('span', { className: 'pill ' + (t.status === 'in_progress' ? 'gold' : ''), textContent: t.status === 'in_progress' ? 'Trading now' : 'Waiting' }), el('span', { className: 'mute', textContent: when(t.created_at) }))));
+
+    // Recent bot activity
+    const rBody = el('tbody');
+    if (!d.recent.length) rBody.append(el('tr', {}, el('td', { colSpan: 5, className: 'empty', textContent: 'The bot hasn\'t handled any trades yet.' })));
+    d.recent.forEach((t) => rBody.append(el('tr', {},
+      el('td', { className: 'mute', textContent: when(t.updated_at) }), el('td', { textContent: (t.kind === 'deposit' ? 'Deposit' : 'Withdraw') + ' #' + t.id }), el('td', { textContent: t.username || '' }),
+      el('td', { textContent: t.items.map((x) => (x.qty > 1 ? x.qty + '× ' : '') + x.name).join(', ') }),
+      el('td', {}, el('span', { className: 'pill ' + (t.status === 'completed' ? 'ok' : t.status === 'failed' ? 'bad' : ''), textContent: t.status.replace('_', ' ') })))));
+
+    $('main').replaceChildren(el('h1', { textContent: 'Bot' }), head,
+      el('div', { className: 'stats' },
+        el('div', {}, el('span', { textContent: 'Items it should hold' }), String(units), el('em', { textContent: d.expected.length + ' different items' })),
+        el('div', {}, el('span', { textContent: 'Total value' }), valueSum.toLocaleString(), el('em', { textContent: '≈ ' + usd(worth) + ' at recommended prices' })),
+        el('div', { className: d.queue.length ? 'hot' : '' }, el('span', { textContent: 'Waiting to receive' }), String(d.queue.length), el('em', { textContent: 'withdrawals' })),
+        el('div', {}, el('span', { textContent: 'Last 24h' }), String(d.day.deposits + d.day.withdrawals), el('em', { textContent: d.day.deposits + ' deposits · ' + d.day.withdrawals + ' withdrawals' })),
+        el('div', {}, el('span', { textContent: 'Test items' }), String(d.test_items), el('em', { textContent: 'added by owners, not in the bot' }))),
+      el('section', { className: 'card' }, el('h2', { textContent: 'What the bot has' }), stockNote,
+        el('div', { className: 'scroll' }, el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['Item', 'Rarity', 'Should have', 'Where', 'Bot has', 'Diff', 'Value each'].map((h) => el('th', { textContent: h })))), body))),
+      el('section', { className: 'card' }, el('h2', { textContent: 'Waiting to receive items' }), qBody),
+      el('section', { className: 'card' }, el('h2', { textContent: 'Recent bot trades' }),
+        el('div', { className: 'scroll' }, el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['When', 'Trade', 'User', 'Items', 'Result'].map((h) => el('th', { textContent: h })))), rBody))));
+  }
+  await load();
+  poll = setInterval(() => load().catch(() => {}), 15000);
 }
 
 function denied() {
