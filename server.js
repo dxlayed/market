@@ -16,8 +16,8 @@ const smallJson = express.json({ limit: '10kb' }), bigJson = express.json({ limi
 app.use((req, res, next) => (req.path.startsWith('/api/admin/items') ? bigJson : smallJson)(req, res, next));
 app.use(cookieParser());
 
-// Buying and selling stay owner-only until LISTINGS_OPEN=true is set in Railway Variables.
-const LISTINGS_OPEN = process.env.LISTINGS_OPEN === 'true';
+// Buying and selling are open to everyone. Set LISTINGS_OPEN=false in Railway to make them owner-only again.
+const LISTINGS_OPEN = process.env.LISTINGS_OPEN !== 'false';
 
 const url = process.env.DATABASE_URL;
 const pool = new Pool({
@@ -264,7 +264,8 @@ async function log(db, actor, action, target, detail) {
 class Fail extends Error { constructor(status, msg) { super(msg); this.status = status; } }
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const makeTradeCode = () => Array.from({ length: 6 }, () => CODE_CHARS[crypto.randomInt(CODE_CHARS.length)]).join('');
-const TRADING_OPEN = process.env.TRADING_OPEN === 'true';
+// Withdrawals are open to everyone. Set TRADING_OPEN=false in Railway to make them owner-only again.
+const TRADING_OPEN = process.env.TRADING_OPEN !== 'false';
 const MM_ACCOUNTS = (process.env.MM_ACCOUNTS || '').split(',').map((s) => s.trim()).filter(Boolean);
 const TYPES = ['Knife', 'Gun', 'Pet', 'Misc'];
 const RARITIES = ['Chroma', 'Ancient', 'Godly', 'Unique', 'Vintage', 'Legendary', 'Rare', 'Uncommon', 'Common'];
@@ -361,7 +362,7 @@ app.get('/api/status', wrap(async (req, res) => {
 // ---------- Marketplace ----------
 // Sellers list items they've already deposited. The site holds the item, so a purchase
 // moves the item and the money in one database transaction and nobody can be scammed.
-const marketGate = (u) => { if (!LISTINGS_OPEN && !isOwner(u)) throw new Fail(503, 'Buying and selling are coming soon.'); };
+const marketGate = (u) => { if (!LISTINGS_OPEN && !isOwner(u)) throw new Fail(503, 'Buying and selling are paused right now.'); };
 const MIN_PRICE = 5, MAX_PRICE = 5000000; // $0.05 to $50,000
 // Recommended price shown to buyers and sellers: dollars per 1,000 value (RECOMMENDED_PER_1K in Railway, default 20).
 const REC_PER_1K = Math.max(0, parseFloat(process.env.RECOMMENDED_PER_1K) || 20);
@@ -700,7 +701,7 @@ app.get('/api/trades', authAny, wrap(async (req, res) => {
 }));
 
 function tradingGate(req) {
-  if (!TRADING_OPEN && !isOwner(req.user)) throw new Fail(503, 'Deposits and withdrawals are coming soon.');
+  if (!TRADING_OPEN && !isOwner(req.user)) throw new Fail(503, 'Withdrawals are paused right now.');
   if (!req.user.roblox_id) throw new Fail(400, 'Log in with Roblox before trading.');
 }
 
