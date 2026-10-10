@@ -46,7 +46,7 @@ button:focus-visible,input:focus,select:focus,a:focus-visible{outline:2px solid 
 .pic img{max-width:90%;max-height:90%}.pic svg{width:28px;height:28px}
 .nm b{display:block;font-size:15px;overflow-wrap:anywhere}
 .nm small{color:var(--mute);font-weight:700;font-size:12px}
-.val{font-family:Outfit,sans-serif;font-weight:800;font-size:20px}
+.val{font-family:Outfit,sans-serif;font-weight:800;font-size:20px}.val.nov{color:#6e5554}
 .dem{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
 .dem i{display:flex;gap:2px}.dem i span{width:6px;height:14px;border-radius:2px;background:#2a1414}.dem i span.f{background:var(--gold)}
 .st{font-size:12px;font-weight:800;border-radius:99px;padding:3px 10px;background:var(--raise);color:var(--mute);justify-self:start}
@@ -103,7 +103,7 @@ $('q').oninput = draw; $('type').onchange = draw;
 const stClass = (s) => (!s ? '' : /stable/i.test(s) ? 'stable' : /under/i.test(s) ? 'under' : /fluct/i.test(s) ? 'fluc' : /over/i.test(s) ? 'over' : '');
 function pic(i) {
   const p = el('div', { className: 'pic' }); p.style.setProperty('--c', RC[i.rarity] || RC.Common);
-  if (i.image_url && /^(https:\/\/|\/img\/item\/)/.test(i.image_url)) p.append(el('img', { src: i.image_url, alt: '', loading: 'lazy' }));
+  if (i.image_url && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(i.image_url)) p.append(el('img', { src: i.image_url, alt: '', loading: 'lazy', referrerPolicy: 'no-referrer', onerror: (e) => { e.target.remove(); p.innerHTML = ICON[i.type] || ICON.Misc; } }));
   else p.innerHTML = ICON[i.type] || ICON.Misc;
   return p;
 }
@@ -125,11 +125,12 @@ function draw() {
     const ch = i.value_change;
     const row = el('div', { className: 'row' }, pic(i),
       el('div', { className: 'nm' }, el('b', { textContent: i.name }), el('small', { textContent: i.rarity + ' ' + i.type })),
-      el('div', { className: 'val c-val', textContent: i.value.toLocaleString() }),
+      el('div', { className: 'val c-val' + (i.value ? '' : ' nov'), textContent: i.value ? i.value.toLocaleString() : '—' }),
       dem,
       el('div', { className: 'c-st' }, i.stability ? el('span', { className: 'st ' + stClass(i.stability), textContent: i.stability }) : el('span', { className: 'none', textContent: '—' })),
       el('div', { className: 'ch c-ch ' + (!ch ? 'none' : ch > 0 ? 'up' : 'down'), textContent: ch == null ? '—' : ch === 0 ? 'No change' : (ch > 0 ? '▲ +' : '▼ ') + ch.toLocaleString() }),
       i.for_sale ? el('a', { className: 'buy c-buy', href: '/?q=' + encodeURIComponent(i.name) }, money(i.lowest_cents), el('small', { textContent: i.for_sale + ' for sale' })) : el('span', { className: 'none c-buy', textContent: 'None for sale' }));
+    if (window.valueTip) valueTip(row, { ...i, price_cents: i.lowest_cents });
     box.append(row);
   });
 }
