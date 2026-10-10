@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Giveaways | SplitzMarket</title>
+<meta name="description" content="Free MM2 item giveaways on SplitzMarket. Join with one click, everyone gets the same chance.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0707;--surface:#140c0c;--raise:#1e1111;--line:#3a1717;--text:#f6efee;--mute:#a88a88;--gold:#e8202a;--violet:#8f0d14;--ok:#4ade80;--bad:#ff7a45}
+*{box-sizing:border-box}
+body{margin:0;font-family:Manrope,system-ui,sans-serif;color:var(--text);background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transparent 60%) fixed,var(--bg)}
+h1,h2,h3,.logo{font-family:Outfit,system-ui,sans-serif;margin:0}
+button,input,select{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+button{cursor:pointer;font-weight:700}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.btn{background:var(--gold);color:#fff;border:0}.ghost{background:transparent}.sm{padding:6px 12px;font-size:13px;border-radius:8px}
+.mute{color:var(--mute);font-size:13px}
+.bar{display:flex;align-items:center;gap:14px;padding:12px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:#0a0707cc;backdrop-filter:blur(8px);position:sticky;top:0;z-index:15}
+.logo{font-size:22px;font-weight:800;text-decoration:none;color:var(--text)}.logo b{color:var(--gold);text-shadow:0 0 18px #e8202a88}
+.bar nav{display:flex;gap:6px;margin-right:auto;flex-wrap:wrap}
+.bar nav a{padding:8px 14px;border-radius:10px;color:var(--mute);text-decoration:none;font-weight:700}
+.bar nav a.on{background:var(--surface);color:var(--text);box-shadow:inset 0 -2px 0 var(--gold)}
+.av{width:32px;height:32px;border-radius:9px;background:var(--violet);display:grid;place-items:center;font-weight:800;font-family:Outfit,sans-serif;flex:none}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 24px 80px}
+.head{margin-bottom:22px}
+.head h1{font-size:34px;letter-spacing:-.02em}
+.head p{margin:6px 0 0;color:var(--mute);max-width:62ch;line-height:1.5}
+h2.sec{font-size:20px;margin:30px 0 14px;display:flex;align-items:center;gap:10px}
+h2.sec .live{width:9px;height:9px;border-radius:99px;background:var(--gold);box-shadow:0 0 0 0 #e8202a88;animation:pulse 1.6s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px #e8202a00}100%{box-shadow:0 0 0 0 #e8202a00}}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.gw{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.gw.in{border-color:#4ade8066}
+.gw .art{position:relative;height:170px;display:grid;place-items:center;background:radial-gradient(circle at 50% 58%,color-mix(in srgb,var(--c) 45%,transparent),transparent 68%),var(--raise)}
+.gw .art img{max-width:72%;max-height:140px;filter:drop-shadow(0 10px 20px #000a)}
+.gw .rar{position:absolute;top:12px;left:12px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:7px;border:1px solid var(--c);color:#fff;background:#0009}
+.gw .clock{position:absolute;top:12px;right:12px;font-family:Outfit,sans-serif;font-weight:800;font-size:14px;background:#000b;border:1px solid var(--line);border-radius:9px;padding:3px 10px}
+.gw .clock.soon{color:#ffb4b6;border-color:var(--gold)}
+.gw .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.gw .bd b.nm{font-family:Outfit,sans-serif;font-size:20px}
+.gw .meta{display:flex;justify-content:space-between;gap:10px;color:var(--mute);font-size:13px;font-weight:700}
+.odds{background:var(--raise);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.odds span{color:var(--mute);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.odds b{font-family:Outfit,sans-serif;font-size:18px}
+.gw.in .odds{border-color:#4ade8055;background:#4ade800f}.gw.in .odds b{color:var(--ok)}
+.gw .join{margin-top:auto;padding:12px;font-size:15px;border-radius:12px}
+.gw .joined{margin-top:auto;padding:12px;font-size:15px;border-radius:12px;background:#4ade801a;color:var(--ok);border:1px solid #4ade8055;cursor:default}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--mute);padding:44px 16px}
+.won{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.won>div{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.won .pic{width:48px;height:48px;border-radius:11px;display:grid;place-items:center;background:radial-gradient(circle at 50% 58%,color-mix(in srgb,var(--c) 45%,transparent),transparent 70%),var(--raise);flex:none;overflow:hidden}
+.won .pic img{max-width:88%;max-height:88%}
+.won b{display:block}.won small{color:var(--mute);font-weight:700}
+.won .w{color:var(--ok)}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:30px}
+.how div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5;color:#d4bfbe}
+.how b{display:block;font-family:Outfit,sans-serif;color:var(--text);font-size:16px;margin-bottom:2px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#4ade80;color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="bar">
+  <a class="logo" href="/">Splitz<b>Market</b></a>
+  <nav><a href="/">Market</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a></nav>
+  <div id="who"></div>
+</div>
+<div class="wrap">
+  <div class="head">
+    <h1>Giveaways</h1>
+    <p>Free items from the SplitzMarket team. Join with one click. When the timer hits zero, one person is picked at random and the item lands in their inventory, ready to withdraw or sell.</p>
+  </div>
+  <h2 class="sec"><span class="live" aria-hidden="true"></span>Live now</h2>
+  <div class="grid" id="live"><div class="empty">Loading giveaways...</div></div>
+  <h2 class="sec">Recent winners</h2>
+  <div class="won" id="won"></div>
+  <div class="how">
+    <div><b>Free to join</b>Log in with Roblox and press Join. One entry per person.</div>
+    <div><b>Same chance for everyone</b>If 100 people join, each one has a 1 in 100 chance. Your odds update live as people join.</div>
+    <div><b>Instant delivery</b>The winner gets the item in their inventory the moment the giveaway ends.</div>
+  </div>
+</div>
+<div id="toast" role="status"></div>
+
+<script src="/auth.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const el = (t, p = {}, ...k) => { const e = document.createElement(t); for (const [a, v] of Object.entries(p)) { if (a.includes('-')) e.setAttribute(a, v); else e[a] = v; } k.forEach((x) => x != null && e.append(x)); return e; };
+const toast = (t, bad) => { const x = $('toast'); x.textContent = t; x.style.background = bad ? 'var(--bad)' : ''; x.classList.add('show'); setTimeout(() => x.classList.remove('show'), 2400); };
+const RC = { Chroma: '#c58bff', Ancient: '#8a6cff', Godly: '#e05ad8', Unique: '#e6b422', Vintage: '#d9b98a', Legendary: '#ff4d4d', Rare: '#2fb36a', Uncommon: '#4d7cff', Common: '#8a8fa3' };
+const okImg = (u) => u && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(u);
+let me = null, data = null, skew = 0;
+
+function left(ends) {
+  const ms = new Date(ends).getTime() - (Date.now() + skew);
+  if (ms <= 0) return ['Drawing...', true];
+  const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+  const t = d ? d + 'd ' + h + 'h' : h ? h + 'h ' + String(m).padStart(2, '0') + 'm' : m + ':' + String(sec).padStart(2, '0');
+  return [t, ms < 60000];
+}
+function odds(n, joined) {
+  if (!joined) return n ? '1 in ' + (n + 1) + ' if you join' : '100% if you join now';
+  const pct = 100 / Math.max(1, n);
+  return '1 in ' + n + ' (' + (pct >= 10 ? pct.toFixed(0) : pct >= 1 ? pct.toFixed(1) : pct.toFixed(2)) + '%)';
+}
+function draw() {
+  const live = $('live');
+  if (!data.active.length) live.replaceChildren(el('div', { className: 'empty', style: 'grid-column:1/-1' }, 'No giveaways running right now. Join our ', el('a', { href: window.DISCORD || 'https://discord.gg/splitzmarket', target: '_blank', rel: 'noopener', textContent: 'Discord', style: 'color:var(--gold)' }), ' to hear about the next one.'));
+  else live.replaceChildren(...data.active.map((g) => {
+    const art = el('div', { className: 'art' });
+    art.style.setProperty('--c', RC[g.rarity] || RC.Common);
+    if (okImg(g.image_url)) art.append(el('img', { src: g.image_url, alt: '', referrerPolicy: 'no-referrer' }));
+    const rar = el('span', { className: 'rar', textContent: g.rarity }); rar.style.setProperty('--c', RC[g.rarity] || RC.Common);
+    const [t, soon] = left(g.ends_at);
+    const clock = el('span', { className: 'clock' + (soon ? ' soon' : ''), textContent: t, 'data-ends': g.ends_at });
+    art.append(rar, clock);
+    if (window.valueTip) valueTip(art, g);
+    let act;
+    if (g.joined) act = el('button', { className: 'joined', type: 'button', disabled: true, textContent: "✓ You're in" });
+    else if (me && me.username === g.host) act = el('button', { className: 'joined', type: 'button', disabled: true, textContent: 'Your giveaway', style: 'color:var(--mute);background:var(--raise);border-color:var(--line)' });
+    else act = el('button', { className: 'btn join', type: 'button', textContent: me ? 'Join giveaway' : 'Log in to join', onclick: () => join(g, act) });
+    return el('div', { className: 'gw' + (g.joined ? ' in' : '') }, art,
+      el('div', { className: 'bd' },
+        el('b', { className: 'nm', textContent: g.name }),
+        el('div', { className: 'meta' }, el('span', { textContent: g.type + (g.value ? ' · value ' + Number(g.value).toLocaleString() : '') }), el('span', { textContent: g.entries + (g.entries === 1 ? ' entry' : ' entries') })),
+        el('div', { className: 'odds' }, el('span', { textContent: 'Your chance' }), el('b', { textContent: odds(g.entries, g.joined) })),
+        act));
+  }));
+  const won = $('won');
+  won.replaceChildren(...(data.ended.length ? data.ended.map((g) => {
+    const pic = el('div', { className: 'pic' }); pic.style.setProperty('--c', RC[g.rarity] || RC.Common);
+    if (okImg(g.image_url)) pic.append(el('img', { src: g.image_url, alt: '', referrerPolicy: 'no-referrer' }));
+    return el('div', {}, pic, el('div', {}, el('b', { textContent: g.name }),
+      g.winner ? el('small', {}, 'Won by ', el('span', { className: 'w', textContent: g.winner }), ' · 1 of ' + g.entries_at_draw) : el('small', { textContent: 'No one joined' })));
+  }) : [el('div', { className: 'mute', style: 'background:none;border:0;padding:0', textContent: 'No winners yet.' })]));
+}
+async function join(g, btn) {
+  if (!me) return RbxAuth.open(() => location.reload());
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/giveaways/' + g.id + '/join', { method: 'POST' });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || 'Something went wrong');
+    toast("You're in! Good luck."); await load();
+  } catch (e) { toast(e.message, true); btn.disabled = false; }
+}
+async function load() {
+  const r = await fetch('/api/giveaways'); data = await r.json();
+  skew = new Date(data.now).getTime() - Date.now();
+  draw();
+}
+setInterval(() => document.querySelectorAll('.clock[data-ends]').forEach((c) => { const [t, soon] = left(c.dataset.ends); c.textContent = t; c.classList.toggle('soon', soon); }), 1000);
+(async () => {
+  me = await fetch('/api/me').then((r) => r.json()).catch(() => null);
+  $('who').replaceChildren(me ? RbxAuth.menu(me, async () => { await fetch('/api/logout', { method: 'POST' }); location.reload(); })
+    : el('button', { className: 'btn sm', textContent: 'Log in with Roblox', onclick: () => RbxAuth.open(() => location.reload()) }));
+  await load();
+  setInterval(() => load().catch(() => {}), 5000);
+})();
+</script>
+</body>
+</html>
