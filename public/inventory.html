@@ -56,10 +56,16 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .sitem .nm button{background:none;border:0;padding:0;color:#4ade80;font-size:12px;font-weight:800;cursor:pointer}
 .sitem .nm small{color:var(--mute);font-size:12px;margin-left:6px}
 .sitem .money{width:120px;flex:none}
-.guide{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:11px;font-weight:800;color:var(--mute)}
-.guide .bar{position:relative;flex:1;height:6px;border-radius:99px;background:linear-gradient(90deg,#4ade80 0%,#4ade80 45%,#e6b422 62%,#e8202a 100%);opacity:.75}
-.guide .bar i{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:#fff;border:3px solid #0a0707;transform:translate(-50%,-50%);box-shadow:0 0 0 2px #fff3}
-.guide .gtag{min-width:118px;text-align:right}.guide .gtag.ok{color:#4ade80}.guide .gtag.hi{color:#ff8a8f}.guide .gtag.lo{color:#e6b422}
+.guide{display:flex;align-items:center;gap:12px;margin-top:10px}
+.guide input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:8px;border-radius:99px;padding:0;border:0;cursor:pointer;
+  background:linear-gradient(90deg,#22c55e 0%,#4ade80 30%,#a3e635 45%,#e6b422 62%,#ff7a45 80%,#e8202a 100%)}
+.guide input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:4px solid #0a0707;box-shadow:0 0 0 2px #ffffff55,0 2px 8px #000a}
+.guide input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:4px solid #0a0707}
+.guide input[type=range]:focus{outline:0}.guide input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px #e8202a88}
+.guide input[type=range]:disabled{opacity:.35;cursor:default}
+.deal{min-width:104px;text-align:center;font-size:12px;font-weight:800;border-radius:99px;padding:4px 10px;background:var(--raise);color:var(--mute)}
+.deal.steal{background:#22c55e26;color:#4ade80}.deal.good{background:#4ade801f;color:#86efac}.deal.fair{background:#e6b42222;color:#facc15}
+.deal.pricey{background:#ff7a4526;color:#ff9a6b}.deal.over{background:#e8202a2e;color:#ff8a8f}
 .vbox{text-align:right;display:flex;flex-direction:column;flex:none}.vbox b{font-family:Outfit,sans-serif}.vbox small{color:var(--mute);font-size:12px}
 .art{height:100px;display:grid;place-items:center;background:radial-gradient(circle at 50% 55%,color-mix(in srgb,var(--c) 40%,transparent),transparent 70%),var(--raise);color:var(--c)}
 .art img{max-width:80%;max-height:84px}.art svg{width:52px;height:52px}
@@ -292,14 +298,21 @@ $('depGo').onclick = async () => {
 const recCents = (v) => Math.round((v || 0) * (info.rec_per_1k ?? 20) / 10);
 const toC = (v) => { const t = String(v || '').trim().replace(/^\$/, ''); return /^\d+(\.\d{1,2})?$/.test(t) ? Math.round(parseFloat(t) * 100) : 0; };
 let sellRows = [];
-function sellTotal() {
+// Slider position 0..100 maps to 50%..200% of the recommended price (100% in the middle).
+const posToPrice = (rec, p) => Math.max(5, Math.round(rec * Math.pow(2, (p - 50) / 50)));
+const priceToPos = (rec, c) => (rec ? Math.max(0, Math.min(100, 50 + 50 * Math.log2(c / rec))) : 50);
+function dealOf(c, rec) {
+  if (!c || !rec) return ['', rec ? 'Set a price' : 'No value yet'];
+  const r = c / rec;
+  return r <= 0.7 ? ['steal', 'Steal'] : r <= 0.92 ? ['good', 'Good deal'] : r <= 1.1 ? ['fair', 'Fair price'] : r <= 1.4 ? ['pricey', 'Pricey'] : ['over', 'Overpriced'];
+}
+function sellTotal(skip) {
   let t = 0;
   sellRows.forEach((r) => {
     const c = toC(r.input.value); t += c;
-    const rec = r.rec || 1, pos = Math.max(2, Math.min(98, (c / rec) * 50));
-    r.dot.style.left = pos + '%';
-    r.tag.className = 'gtag ' + (!c ? '' : c > rec * 1.15 ? 'hi' : c < rec * 0.85 ? 'lo' : 'ok');
-    r.tag.textContent = !c ? 'Enter a price' : !r.rec ? '' : c > rec * 1.15 ? 'Above recommended' : c < rec * 0.85 ? 'Below recommended' : 'Recommended';
+    if (r.slider !== skip && r.rec && c) r.slider.value = priceToPos(r.rec, c);
+    const [cls, label] = dealOf(c, r.rec);
+    r.tag.className = 'deal ' + cls; r.tag.textContent = label;
   });
   $('sellTotal').textContent = usd(t); $('sellGet').textContent = usd(t);
 }
@@ -309,17 +322,19 @@ function openSell() {
   inv.filter((i) => selected.has(i.id)).forEach((i) => {
     const rec = recCents(i.value);
     const input = el('input', { inputMode: 'decimal', placeholder: '0.00', value: rec ? (rec / 100).toFixed(2) : '', 'aria-label': 'Price for ' + i.name });
-    input.oninput = sellTotal;
+    input.oninput = () => sellTotal();
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') $('sellGo').click(); });
     const ph = el('div', { className: 'ph' });
     if (i.image_url && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(i.image_url)) ph.append(el('img', { src: i.image_url, alt: '', referrerPolicy: 'no-referrer' })); else { ph.innerHTML = ICON[i.type] || ICON.Misc; ph.style.color = RC[i.rarity] || RC.Common; }
-    const dot = el('i'), tag = el('span', { className: 'gtag' });
+    const slider = el('input', { type: 'range', min: 0, max: 100, step: 1, value: 50, disabled: !rec, 'aria-label': 'Price slider for ' + i.name });
+    const tag = el('span', { className: 'deal' });
+    slider.oninput = () => { input.value = (posToPrice(rec, +slider.value) / 100).toFixed(2); sellTotal(slider); };
     const recBtn = rec ? el('button', { type: 'button', textContent: '✓ Recommended: ' + usd(rec), title: 'Use the recommended price', onclick: () => { input.value = (rec / 100).toFixed(2); sellTotal(); } }) : el('span', { className: 'mute', textContent: 'No value yet', style: 'font-size:12px' });
     box.append(el('div', { className: 'sitem' },
       el('div', { className: 'top' }, ph, el('div', { className: 'nm' }, el('b', {}, i.name, el('small', { textContent: i.rarity + ' ' + i.type + (i.value ? ' · value ' + i.value.toLocaleString() : '') })), recBtn),
         el('label', { className: 'money' }, el('span', { textContent: '$' }), input)),
-      el('div', { className: 'guide' }, el('span', { textContent: 'Price guide' }), el('div', { className: 'bar' }, dot), tag)));
-    sellRows.push({ id: i.id, rec, input, dot, tag });
+      el('div', { className: 'guide' }, slider, tag)));
+    sellRows.push({ id: i.id, rec, input, slider, tag });
   });
   $('sellErr').textContent = ''; sellTotal(); sellDlg.showModal();
 }
