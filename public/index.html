@@ -431,7 +431,7 @@ function drawCart() {
   if (me) foot.append(el('div', { className: 'sum mute' }, el('span', { textContent: 'Your balance' }), el('span', { textContent: usd(bal) })));
   const err = el('div', { className: 'err', id: 'buyErr' });
   if (!me) foot.append(el('button', { className: 'btn', type: 'button', textContent: 'Log in to buy', onclick: login }));
-  else if (!canBuy()) foot.append(el('button', { className: 'btn', type: 'button', disabled: true, textContent: 'Checkout opens soon' }));
+  else if (!canBuy()) foot.append(el('button', { className: 'btn', type: 'button', disabled: true, textContent: 'Checkout paused' }));
   else if (cart.length && short > 0) {
     foot.append(el('div', { className: 'sum' }, el('span', { textContent: 'You need' }), el('span', { className: 'short', textContent: usd(short) + ' more' })),
       el('button', { className: 'btn', type: 'button', textContent: 'Add funds', onclick: () => openFunds('add') }));
@@ -465,8 +465,8 @@ function drawWho() {
 }
 function drawNotice() {
   const n = $('notice'); n.replaceChildren();
-  if (!info.market) n.append(el('div', { className: 'notice' }, el('b', { textContent: 'Checkout opens soon. ' }),
-    me && me.owner ? 'You can test buying and selling because you are an owner. Other players can browse but not buy yet.' : 'You can browse what is for sale now. Buying opens shortly.'));
+  if (!info.market) n.append(el('div', { className: 'notice' }, el('b', { textContent: 'Checkout is paused. ' }),
+    me && me.owner ? 'Only owners can buy and sell right now (LISTINGS_OPEN is set to false).' : 'You can browse what is for sale. Buying is back shortly.'));
 }
 
 async function load() {
