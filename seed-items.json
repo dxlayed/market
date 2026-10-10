@@ -1,6432 +1,3449 @@
 [
  {
-  "name": "Travelers Gun",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/travelers-gun.webp",
-  "value": 5200,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-100) -1.9%"
- },
- {
-  "name": "Evergun",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/evergun.webp",
-  "value": 3450,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-25) -0.7%"
- },
- {
-  "name": "Evergreen",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/evergreen.webp",
-  "value": 2700,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(+25) +0.9%"
- },
- {
-  "name": "Constellation",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/constellation.webp",
-  "value": 2600,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-50) -1.9%"
- },
- {
-  "name": "Vampires Gun",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/vampires-gun.webp",
-  "value": 1900,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(+25) +1.3%"
- },
- {
-  "name": "Alienbeam",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/alienbeam.webp",
-  "value": 1875,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(+25) +1.4%"
- },
- {
-  "name": "Raygun",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/raygun.webp",
-  "value": 1850,
-  "demand": 6,
-  "stability": "Stable Item Stability",
-  "change": "(+50) +2.8%"
- },
- {
-  "name": "Turkey",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/turkey.webp",
-  "value": 1850,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-50) -2.6%"
- },
- {
-  "name": "Darkshot",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/darkshot.webp",
-  "value": 1800,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(+25) +1.4%"
- },
- {
-  "name": "Darksword",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/darksword.webp",
-  "value": 1775,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(+25) +1.4%"
- },
- {
-  "name": "Blossom",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/blossom.webp",
-  "value": 1300,
-  "demand": 5,
-  "stability": "Underpaid For Item Stability",
-  "change": "(-20) -1.5%"
- },
- {
-  "name": "Sakura",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/sakura.webp",
-  "value": 1290,
-  "demand": 5,
-  "stability": "Underpaid For Item Stability",
-  "change": "(-20) -1.5%"
- },
- {
-  "name": "Sunrise",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/sunrise.webp",
-  "value": 950,
-  "demand": 5,
-  "stability": "Underpaid For Item Stability",
-  "change": "(-50) -5.0%"
- },
- {
-  "name": "Soul",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/soul.webp",
-  "value": 680,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -0.7%"
- },
- {
-  "name": "Bauble",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/bauble.webp",
-  "value": 675,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-25) -3.6%"
- },
- {
-  "name": "Snowcannon",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/snowcannon.webp",
-  "value": 675,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-25) -3.6%"
- },
- {
-  "name": "Spirit",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/spirit.webp",
-  "value": 670,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -0.7%"
- },
- {
-  "name": "Sunset",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/sunset.webp",
-  "value": 650,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-25) -3.7%"
- },
- {
-  "name": "Rainbow Gun",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/rainbow-gun.webp",
-  "value": 405,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -1.2%"
- },
- {
-  "name": "Xenoknife",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/xenoknife.webp",
-  "value": 405,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(+15) +3.8%"
- },
- {
-  "name": "Xenoshot",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/xenoshot.webp",
-  "value": 405,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(+15) +3.8%"
- },
- {
-  "name": "Flora",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/flora.webp",
-  "value": 400,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -1.2%"
- },
- {
-  "name": "Rainbow",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/rainbow.webp",
-  "value": 400,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -1.2%"
- },
- {
-  "name": "Bloom",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/bloom.webp",
-  "value": 395,
-  "demand": 5,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -1.3%"
- },
- {
-  "name": "Heart Wand",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/heart-wand.webp",
-  "value": 340,
-  "demand": 4,
-  "stability": "Stable Item Stability",
-  "change": "(+10) +3.0%"
- },
- {
-  "name": "Blizzard",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/blizzard.webp",
-  "value": 290,
-  "demand": 4,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -1.7%"
- },
- {
-  "name": "Snowstorm",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/snowstorm.webp",
-  "value": 290,
-  "demand": 4,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -1.7%"
- },
- {
-  "name": "Ocean",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/ocean.webp",
-  "value": 245,
-  "demand": 3,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -2.0%"
- },
- {
-  "name": "Flowerwood Gun",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/flowerwood-gun.webp",
-  "value": 240,
-  "demand": 3,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -2.0%"
- },
- {
-  "name": "Waves",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/waves.webp",
-  "value": 240,
-  "demand": 3,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -2.0%"
- },
- {
-  "name": "Flowerwood",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/flowerwood.webp",
-  "value": 235,
-  "demand": 3,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -2.1%"
- },
- {
-  "name": "Snow Dagger",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/snow-dagger.webp",
-  "value": 175,
-  "demand": 3,
-  "stability": "Stable Item Stability",
-  "change": "(-10) -5.4%"
- },
- {
-  "name": "Icecream",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/icecream.webp",
-  "value": 155,
-  "demand": 3,
-  "stability": "Stable Item Stability",
-  "change": "(+5) +3.3%"
- },
- {
-  "name": "Treat",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/treat.webp",
-  "value": 155,
-  "demand": 3,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -3.1%"
- },
- {
-  "name": "Watergun",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/watergun.webp",
-  "value": 155,
-  "demand": 3,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -3.1%"
- },
- {
-  "name": "Sweet",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/sweet.webp",
-  "value": 150,
-  "demand": 3,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -3.2%"
- },
- {
-  "name": "Borealis",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/borealis.webp",
-  "value": 145,
-  "demand": 2,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -3.3%"
- },
- {
-  "name": "Australis",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/australis.webp",
-  "value": 140,
-  "demand": 2,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -3.4%"
- },
- {
-  "name": "Bat",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/bat.webp",
-  "value": 125,
-  "demand": 2,
-  "stability": "Stable Item Stability",
-  "change": "(+5) +4.2%"
- },
- {
-  "name": "Beachy",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/beachy.webp",
-  "value": 85,
-  "demand": 2,
-  "stability": "Fluctuating Item Stability",
-  "change": "(-5) -5.6%"
- },
- {
-  "name": "Sands",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/sands.webp",
-  "value": 85,
-  "demand": 2,
-  "stability": "Fluctuating Item Stability",
-  "change": "(-5) -5.6%"
- },
- {
-  "name": "Candy",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/candy.webp",
-  "value": 80,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -5.9%"
- },
- {
-  "name": "Pearlshine",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/pearlshine.webp",
-  "value": 80,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -5.9%"
- },
- {
-  "name": "Pearl",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/pearl.webp",
-  "value": 75,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -6.3%"
- },
- {
-  "name": "Heartblade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/heartblade.webp",
-  "value": 65,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -3.0%"
- },
- {
-  "name": "Ornament",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/ornament.webp",
-  "value": 65,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-5) -7.1%"
- },
- {
-  "name": "Phantom",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/phantom.webp",
-  "value": 35,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -5.4%"
- },
- {
-  "name": "Red Luger",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/red-luger.webp",
-  "value": 35,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -5.4%"
- },
- {
-  "name": "Spectre",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/spectre.webp",
-  "value": 35,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -5.4%"
- },
- {
-  "name": "Candleflame",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/candleflame.webp",
-  "value": 33,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -5.7%"
- },
- {
-  "name": "Darkbringer",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/darkbringer.webp",
-  "value": 33,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -5.7%"
- },
- {
-  "name": "Elderwood Blade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/elderwood-blade.webp",
-  "value": 33,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -5.7%"
- },
- {
-  "name": "Elderwood Revolver",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/elderwood-revolver.webp",
-  "value": 33,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -5.7%"
- },
- {
-  "name": "Iceblaster",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/iceblaster.webp",
-  "value": 33,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -5.7%"
- },
- {
-  "name": "Makeshift",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/makeshift.webp",
-  "value": 33,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -5.7%"
- },
- {
-  "name": "Lightbringer",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/lightbringer.webp",
-  "value": 32,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -3.0%"
- },
- {
-  "name": "Sugar",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/sugar.webp",
-  "value": 32,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -3.0%"
- },
- {
-  "name": "Green Luger",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/green-luger.webp",
-  "value": 23,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -8.0%"
- },
- {
-  "name": "Amerilaser",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/amerilaser.webp",
-  "value": 22,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -4.3%"
- },
- {
-  "name": "Laser",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/laser.webp",
-  "value": 22,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -4.3%"
- },
- {
-  "name": "Hallowgun",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/hallowgun.webp",
-  "value": 20,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -9.1%"
- },
- {
-  "name": "Nightblade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/nightblade.webp",
-  "value": 20,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -9.1%"
- },
- {
-  "name": "Shark",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/shark.webp",
-  "value": 20,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-3) -13.0%"
- },
- {
-  "name": "Icebeam",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/icebeam.webp",
-  "value": 18,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -10.0%"
- },
- {
-  "name": "Luger",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/luger.webp",
-  "value": 18,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -10.0%"
- },
- {
-  "name": "Plasmabeam",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/plasmabeam.webp",
-  "value": 18,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-4) -18.2%"
- },
- {
-  "name": "Swirly Gun",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/swirly-gun.webp",
-  "value": 18,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -10.0%"
- },
- {
-  "name": "BattleAxe II",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/battleaxe-ii.webp",
-  "value": 17,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -5.6%"
- },
- {
-  "name": "Blaster",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/blaster.webp",
-  "value": 17,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -5.6%"
- },
- {
-  "name": "Ginger Luger",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/ginger-luger.webp",
-  "value": 17,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-3) -15.0%"
- },
- {
-  "name": "Pixel",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/pixel.webp",
-  "value": 17,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-3) -15.0%"
- },
- {
-  "name": "Gemstone",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/gemstone.webp",
-  "value": 15,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -11.8%"
- },
- {
-  "name": "Iceflake",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/iceflake.webp",
-  "value": 15,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -11.8%"
- },
- {
-  "name": "Old Glory",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/old-glory.webp",
-  "value": 15,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -11.8%"
- },
- {
-  "name": "Plasmablade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/plasmablade.webp",
-  "value": 15,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -11.8%"
- },
- {
-  "name": "Slasher",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/slasher.webp",
-  "value": 15,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -11.8%"
- },
- {
-  "name": "Vampires Edge",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/vampires-edge.webp",
-  "value": 15,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Cookiecane",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/cookiecane.webp",
-  "value": 13,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -13.3%"
- },
- {
-  "name": "Deathshard",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/deathshard.webp",
-  "value": 13,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -13.3%"
- },
- {
-  "name": "Eternalcane",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/eternalcane.webp",
-  "value": 13,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -13.3%"
- },
- {
-  "name": "Gingerblade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/gingerblade.webp",
-  "value": 13,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -13.3%"
- },
- {
-  "name": "Jinglegun",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/jinglegun.webp",
-  "value": 13,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -13.3%"
- },
- {
-  "name": "Lugercane",
-  "rarity": "Godly",
-  "type": "Gun",
-  "image": "/items/lugercane.webp",
-  "value": 13,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -13.3%"
- },
- {
-  "name": "Minty",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/minty.webp",
-  "value": 13,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -13.3%"
- },
- {
-  "name": "Nebula",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/nebula.webp",
-  "value": 13,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -13.3%"
- },
- {
-  "name": "Virtual",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/virtual.webp",
-  "value": 13,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -13.3%"
- },
- {
-  "name": "BattleAxe",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/battleaxe.webp",
-  "value": 12,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Gingermint",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/gingermint.webp",
-  "value": 12,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -7.7%"
- },
- {
-  "name": "Swirly Blade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/swirly-blade.webp",
-  "value": 12,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -7.7%"
- },
- {
-  "name": "Chill",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/chill.webp",
-  "value": 10,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -16.7%"
- },
- {
-  "name": "Clockwork",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/clockwork.webp",
-  "value": 10,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -16.7%"
- },
- {
-  "name": "Fang",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/fang.webp",
-  "value": 10,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -16.7%"
- },
- {
-  "name": "Frostsaber",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/frostsaber.webp",
-  "value": 10,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Heat",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/heat.webp",
-  "value": 10,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -16.7%"
- },
- {
-  "name": "Spider",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/spider.webp",
-  "value": 10,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -16.7%"
- },
- {
-  "name": "Tides",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/tides.webp",
-  "value": 10,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -16.7%"
- },
- {
-  "name": "Bioblade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/bioblade.webp",
-  "value": 8,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -20.0%"
- },
- {
-  "name": "Eternal III",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/eternal-iii.webp",
-  "value": 8,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -20.0%"
- },
- {
-  "name": "Eternal IV",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/eternal-iv.webp",
-  "value": 8,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -20.0%"
- },
- {
-  "name": "Hallows Blade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/hallows-blade.webp",
-  "value": 8,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Hallows Edge",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/hallows-edge.webp",
-  "value": 8,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Handsaw",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/handsaw.webp",
-  "value": 8,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Boneblade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/boneblade.webp",
-  "value": 7,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Eternal",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/eternal.webp",
-  "value": 7,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -12.5%"
- },
- {
-  "name": "Eternal II",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/eternal-ii.webp",
-  "value": 7,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -12.5%"
- },
- {
-  "name": "Frostbite",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/frostbite.webp",
-  "value": 7,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Ghostblade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/ghostblade.webp",
-  "value": 7,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Ice Dragon",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/ice-dragon.webp",
-  "value": 7,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -12.5%"
- },
- {
-  "name": "Ice Shard",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/ice-shard.webp",
-  "value": 7,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -12.5%"
- },
- {
-  "name": "Prismatic",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/prismatic.webp",
-  "value": 7,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Pumpking",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/pumpking.webp",
-  "value": 7,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -12.5%"
- },
- {
-  "name": "Saw",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/saw.webp",
-  "value": 7,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Xmas",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/xmas.webp",
-  "value": 7,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-1) -12.5%"
- },
- {
-  "name": "Eggblade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/eggblade.webp",
-  "value": 5,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Flames",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/flames.webp",
-  "value": 5,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -28.6%"
- },
- {
-  "name": "Snowflake",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/snowflake.webp",
-  "value": 5,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Winters Edge",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/winters-edge.webp",
-  "value": 5,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(-2) -28.6%"
- },
- {
-  "name": "Peppermint",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/peppermint.webp",
-  "value": 4,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Blue Seer",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/blue-seer.webp",
-  "value": 3,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Cookieblade",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/cookieblade.webp",
-  "value": 3,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Purple Seer",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/purple-seer.webp",
-  "value": 3,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Red Seer",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/red-seer.webp",
-  "value": 3,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Seer",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/seer.webp",
-  "value": 3,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Orange Seer",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/orange-seer.webp",
-  "value": 2,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Yellow Seer",
-  "rarity": "Godly",
-  "type": "Knife",
-  "image": "/items/yellow-seer.webp",
-  "value": 2,
-  "demand": 1,
-  "stability": "Stable Item Stability",
-  "change": "(+0)"
- },
- {
-  "name": "Chroma Alienbeam",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-alienbeam.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Bauble",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-bauble.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Beachy",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-beachy.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Blizzard",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-blizzard.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Boneblade",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-boneblade.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Candleflame",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-candleflame.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Constellation",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-constellation.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Cookiecane",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-cookiecane.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Darkbringer",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-darkbringer.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Deathshard",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-deathshard.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Elderwood Blade",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-elderwood-blade.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Evergreen",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-evergreen.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Evergun",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-evergun.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Fang",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-fang.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Fire Bat",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-fire-bat.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Fire Bear",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-fire-bear.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Fire Bunny",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-fire-bunny.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Fire Cat",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-fire-cat.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Fire Dog",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-fire-dog.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Fire Fox",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-fire-fox.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Fire Pig",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-fire-pig.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Gemstone",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-gemstone.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Gingerblade",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-gingerblade.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Heart Wand",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-heart-wand.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Heat",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-heat.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Icecream",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-icecream.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Laser",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-laser.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Lightbringer",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-lightbringer.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Luger",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-luger.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Ornament",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-ornament.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Raygun",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-raygun.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Sands",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-sands.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Saw",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-saw.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Seer",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-seer.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Shark",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-shark.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Slasher",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-slasher.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Snow Dagger",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-snow-dagger.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Snowcannon",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-snowcannon.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Snowstorm",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-snowstorm.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Sunrise",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-sunrise.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Sunset",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-sunset.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Sweet",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-sweet.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Swirly Gun",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-swirly-gun.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Tides",
-  "rarity": "Chroma",
-  "type": "Knife",
-  "image": "/items/chroma-tides.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Travelers Gun",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-travelers-gun.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Treat",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-treat.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Vampires Gun",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-vampires-gun.webp",
-  "value": 0
- },
- {
-  "name": "Chroma Watergun",
-  "rarity": "Chroma",
-  "type": "Gun",
-  "image": "/items/chroma-watergun.webp",
-  "value": 0
- },
- {
-  "name": "Batwing",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/batwing.webp",
-  "value": 0
- },
- {
-  "name": "Celestial",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/celestial.webp",
-  "value": 0
- },
- {
-  "name": "Elderwood Scythe",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/elderwood-scythe.webp",
-  "value": 0
- },
- {
-  "name": "Gingerscope",
-  "rarity": "Ancient",
-  "type": "Gun",
-  "image": "/items/gingerscope.webp",
-  "value": 0
- },
- {
-  "name": "Hallowscythe",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/hallowscythe.webp",
-  "value": 0
- },
- {
-  "name": "Harvester",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/harvester.webp",
-  "value": 0
- },
- {
-  "name": "Icebreaker",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/icebreaker.webp",
-  "value": 0
- },
- {
-  "name": "Icepiercer",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/icepiercer.webp",
-  "value": 0
- },
- {
-  "name": "Icewing",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/icewing.webp",
-  "value": 0
- },
- {
-  "name": "Logchopper",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/logchopper.webp",
-  "value": 0
- },
- {
-  "name": "Nik's Scythe",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/nik-s-scythe.webp",
-  "value": 0
- },
- {
-  "name": "Swirly Axe",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/swirly-axe.webp",
-  "value": 0
- },
- {
-  "name": "Travelers Axe",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/travelers-axe.webp",
-  "value": 0
- },
- {
-  "name": "Vampires Axe",
-  "rarity": "Ancient",
-  "type": "Knife",
-  "image": "/items/vampires-axe.webp",
-  "value": 0
- },
- {
   "name": "Batwing (Godly)",
   "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/batwing-godly.webp",
-  "value": 0
+  "value": 1000000,
+  "demand": 10,
+  "stability": "Stable",
+  "image": "/items/batwing-godly.webp"
  },
  {
   "name": "Black Luger",
   "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/black-luger.webp",
-  "value": 0
+  "value": 1000000,
+  "demand": 10,
+  "stability": "Stable",
+  "image": "/items/black-luger.webp"
  },
  {
-  "name": "America (Vintage)",
-  "rarity": "Vintage",
-  "type": "Knife",
-  "image": "/items/america-vintage.webp",
-  "value": 0
- },
- {
-  "name": "Blood",
-  "rarity": "Vintage",
-  "type": "Knife",
-  "image": "/items/blood.webp",
-  "value": 0
- },
- {
-  "name": "Cowboy",
-  "rarity": "Vintage",
-  "type": "Knife",
-  "image": "/items/cowboy.webp",
-  "value": 0
- },
- {
-  "name": "Ghost",
-  "rarity": "Vintage",
-  "type": "Knife",
-  "image": "/items/ghost.webp",
-  "value": 0
- },
- {
-  "name": "Golden",
-  "rarity": "Vintage",
-  "type": "Knife",
-  "image": "/items/golden.webp",
-  "value": 0
- },
- {
-  "name": "Laser (Vintage)",
-  "rarity": "Vintage",
+  "name": "Chroma Travelers Gun",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/laser-vintage.webp",
-  "value": 0
+  "value": 140000,
+  "demand": 8,
+  "stability": "Stable",
+  "image": "/items/chroma-travelers-gun.webp"
  },
  {
-  "name": "Phaser",
-  "rarity": "Vintage",
-  "type": "Knife",
-  "image": "/items/phaser.webp",
-  "value": 0
- },
- {
-  "name": "Prince",
-  "rarity": "Vintage",
-  "type": "Knife",
-  "image": "/items/prince.webp",
-  "value": 0
- },
- {
-  "name": "Shadow",
-  "rarity": "Vintage",
-  "type": "Knife",
-  "image": "/items/shadow.webp",
-  "value": 0
- },
- {
-  "name": "Splitter",
-  "rarity": "Vintage",
-  "type": "Knife",
-  "image": "/items/splitter.webp",
-  "value": 0
- },
- {
-  "name": "Aquarium (Gun)",
-  "rarity": "Legendary",
+  "name": "Chroma Evergun",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/aquarium-gun.webp",
-  "value": 0
+  "value": 55000,
+  "demand": 7,
+  "stability": "Stable",
+  "image": "/items/chroma-evergun.webp"
  },
  {
-  "name": "Aquarium (Knife)",
-  "rarity": "Legendary",
+  "name": "Chroma Evergreen",
+  "rarity": "Chroma",
   "type": "Knife",
-  "image": "/items/aquarium-knife.webp",
-  "value": 0
+  "value": 41000,
+  "demand": 7,
+  "stability": "Stable",
+  "image": "/items/chroma-evergreen.webp"
  },
  {
-  "name": "Arctic (Knife)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/arctic-knife.webp",
-  "value": 0
- },
- {
-  "name": "Arctic Gun",
-  "rarity": "Legendary",
+  "name": "Chroma Bauble",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/arctic-gun.webp",
-  "value": 0
+  "value": 29000,
+  "demand": 7,
+  "stability": "Stable",
+  "image": "/items/chroma-bauble.webp"
  },
  {
-  "name": "Aurora Gun (2021)",
-  "rarity": "Legendary",
+  "name": "Chroma Constellation",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/aurora-gun-2021.webp",
-  "value": 0
+  "value": 27000,
+  "demand": 6,
+  "stability": "Stable",
+  "image": "/items/chroma-constellation.webp"
  },
  {
-  "name": "Aurora Knife (2021)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/aurora-knife-2021.webp",
-  "value": 0
- },
- {
-  "name": "Beach",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/beach.webp",
-  "value": 0
- },
- {
-  "name": "Blue Elite",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/blue-elite.webp",
-  "value": 0
- },
- {
-  "name": "Broken",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/broken.webp",
-  "value": 0
- },
- {
-  "name": "Bubbles",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/bubbles.webp",
-  "value": 0
- },
- {
-  "name": "Bunnies",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/bunnies.webp",
-  "value": 0
- },
- {
-  "name": "Cavern (Gun)",
-  "rarity": "Legendary",
+  "name": "Chroma Vampires Gun",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/cavern-gun.webp",
-  "value": 0
+  "value": 25000,
+  "demand": 6,
+  "stability": "Underpaid For",
+  "image": "/items/chroma-vampires-gun.webp"
  },
  {
-  "name": "Cavern (Knife)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/cavern-knife.webp",
-  "value": 0
- },
- {
-  "name": "Chromatic (Gun)",
-  "rarity": "Legendary",
+  "name": "Chroma Alienbeam",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/chromatic-gun.webp",
-  "value": 0
+  "value": 24000,
+  "demand": 6,
+  "stability": "Stable",
+  "image": "/items/chroma-alienbeam.webp"
  },
  {
-  "name": "Chromatic (Knife)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/chromatic-knife.webp",
-  "value": 0
- },
- {
-  "name": "Cotton Candy",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/cotton-candy.webp",
-  "value": 0
- },
- {
-  "name": "Cupid",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/cupid.webp",
-  "value": 0
- },
- {
-  "name": "Cursed (Gun)",
-  "rarity": "Legendary",
+  "name": "Gingerscope",
+  "rarity": "Ancient",
   "type": "Gun",
-  "image": "/items/cursed-gun.webp",
-  "value": 0
+  "value": 15250,
+  "demand": 6,
+  "stability": "Stable",
+  "image": "/items/gingerscope.webp"
  },
  {
-  "name": "Cursed (Knife)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/cursed-knife.webp",
-  "value": 0
- },
- {
-  "name": "Elite",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/elite.webp",
-  "value": 0
- },
- {
-  "name": "Emerald",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/emerald.webp",
-  "value": 0
- },
- {
-  "name": "Energized (Gun)",
-  "rarity": "Legendary",
+  "name": "Chroma Raygun",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/energized-gun.webp",
-  "value": 0
+  "value": 15000,
+  "demand": 6,
+  "stability": "Stable",
+  "image": "/items/chroma-raygun.webp"
  },
  {
-  "name": "Energized (Knife)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/energized-knife.webp",
-  "value": 0
- },
- {
-  "name": "Fade",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/fade.webp",
-  "value": 0
- },
- {
-  "name": "Frostfade (Gun)",
-  "rarity": "Legendary",
+  "name": "Chroma Sunrise",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/frostfade-gun.webp",
-  "value": 0
+  "value": 10750,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-sunrise.webp"
  },
  {
-  "name": "Frostfade (Knife)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/frostfade-knife.webp",
-  "value": 0
- },
- {
-  "name": "Frozen (Gun)",
-  "rarity": "Legendary",
+  "name": "Chroma Snowcannon",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/frozen-gun.webp",
-  "value": 0
+  "value": 7750,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-snowcannon.webp"
  },
  {
-  "name": "Frozen Knife (2025)",
-  "rarity": "Legendary",
+  "name": "Traveler's Axe",
+  "rarity": "Ancient",
   "type": "Knife",
-  "image": "/items/frozen-knife-2025.webp",
-  "value": 0
+  "value": 7500,
+  "demand": 5,
+  "stability": "Underpaid For",
+  "image": "/items/travelers-axe.webp"
  },
  {
-  "name": "Fusion",
-  "rarity": "Legendary",
+  "name": "Chroma Sunset",
+  "rarity": "Chroma",
   "type": "Knife",
-  "image": "/items/fusion.webp",
-  "value": 0
+  "value": 7000,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-sunset.webp"
  },
  {
-  "name": "Ghost (Knife)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/ghost-knife.webp",
-  "value": 0
- },
- {
-  "name": "Ghost Gun",
-  "rarity": "Legendary",
+  "name": "Chroma Blizzard",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/ghost-gun.webp",
-  "value": 0
+  "value": 5500,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-blizzard.webp"
  },
  {
-  "name": "Ginger (Knife)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/ginger-knife.webp",
-  "value": 0
- },
- {
-  "name": "Ginger Gun (2018)",
-  "rarity": "Legendary",
+  "name": "Traveler's Gun",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/ginger-gun-2018.webp",
-  "value": 0
+  "value": 5200,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/travelers-gun.webp"
  },
  {
-  "name": "Golden (Knife)",
-  "rarity": "Legendary",
+  "name": "Chroma Snowstorm",
+  "rarity": "Chroma",
   "type": "Knife",
-  "image": "/items/golden-knife.webp",
-  "value": 0
+  "value": 4250,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-snowstorm.webp"
  },
  {
-  "name": "Green Elite",
-  "rarity": "Legendary",
+  "name": "Chroma Heart Wand",
+  "rarity": "Chroma",
   "type": "Knife",
-  "image": "/items/green-elite.webp",
-  "value": 0
+  "value": 3500,
+  "demand": 5,
+  "stability": "Underpaid For",
+  "image": "/items/chroma-heart-wand.webp"
  },
  {
-  "name": "Green Fire",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/green-fire.webp",
-  "value": 0
- },
- {
-  "name": "Icecracker",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/icecracker.webp",
-  "value": 0
- },
- {
-  "name": "Icedriller",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/icedriller.webp",
-  "value": 0
- },
- {
-  "name": "JD",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/jd.webp",
-  "value": 0
- },
- {
-  "name": "Latte (Gun)",
-  "rarity": "Legendary",
+  "name": "Evergun",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/latte-gun.webp",
-  "value": 0
+  "value": 3450,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/evergun.webp"
  },
  {
-  "name": "Latte (Knife)",
-  "rarity": "Legendary",
+  "name": "Evergreen",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/latte-knife.webp",
-  "value": 0
+  "value": 2700,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/evergreen.webp"
  },
  {
-  "name": "Midnight",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/midnight.webp",
-  "value": 0
- },
- {
-  "name": "Nightsky",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/nightsky.webp",
-  "value": 0
- },
- {
-  "name": "Nightstar",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/nightstar.webp",
-  "value": 0
- },
- {
-  "name": "Overseer (Gun)",
-  "rarity": "Legendary",
+  "name": "Constellation",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/overseer-gun.webp",
-  "value": 0
+  "value": 2600,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/constellation.webp"
  },
  {
-  "name": "Overseer (Knife)",
-  "rarity": "Legendary",
+  "name": "Chroma Snow Dagger",
+  "rarity": "Chroma",
   "type": "Knife",
-  "image": "/items/overseer-knife.webp",
-  "value": 0
+  "value": 2350,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-snow-dagger.webp"
  },
  {
-  "name": "Palms (Gun)",
-  "rarity": "Legendary",
+  "name": "Chroma Watergun",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/palms-gun.webp",
-  "value": 0
+  "value": 2300,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-watergun.webp"
  },
  {
-  "name": "Palms (Knife)",
-  "rarity": "Legendary",
+  "name": "Celestial",
+  "rarity": "Ancient",
   "type": "Knife",
-  "image": "/items/palms-knife.webp",
-  "value": 0
+  "value": 2200,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/celestial.webp"
  },
  {
-  "name": "Plasmite",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/plasmite.webp",
-  "value": 0
- },
- {
-  "name": "Predator (Gun)",
-  "rarity": "Legendary",
+  "name": "Vampire's Gun",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/predator-gun.webp",
-  "value": 0
+  "value": 1900,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/vampires-gun.webp"
  },
  {
-  "name": "Predator (Knife)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/predator-knife.webp",
-  "value": 0
- },
- {
-  "name": "Red Fire",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/red-fire.webp",
-  "value": 0
- },
- {
-  "name": "Ripper (Gun)",
-  "rarity": "Legendary",
+  "name": "Alienbeam",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/ripper-gun.webp",
-  "value": 0
+  "value": 1875,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/alienbeam.webp"
  },
  {
-  "name": "Ripper (Knife)",
-  "rarity": "Legendary",
+  "name": "Chroma Icecream",
+  "rarity": "Chroma",
   "type": "Knife",
-  "image": "/items/ripper-knife.webp",
-  "value": 0
+  "value": 1850,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-icecream.webp"
  },
  {
-  "name": "Rune",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/rune.webp",
-  "value": 0
- },
- {
-  "name": "Rupture",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/rupture.webp",
-  "value": 0
- },
- {
-  "name": "Santas Magic",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/santas-magic.webp",
-  "value": 0
- },
- {
-  "name": "Santas Spirit",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/santas-spirit.webp",
-  "value": 0
- },
- {
-  "name": "Scratch (2016)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/scratch-2016.webp",
-  "value": 0
- },
- {
-  "name": "Scratch (2017)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/scratch-2017.webp",
-  "value": 0
- },
- {
-  "name": "Shadow (Gun)",
-  "rarity": "Legendary",
+  "name": "Raygun",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/shadow-gun.webp",
-  "value": 0
+  "value": 1850,
+  "demand": 6,
+  "stability": "Stable",
+  "image": "/items/raygun.webp"
  },
  {
-  "name": "Shiny",
-  "rarity": "Legendary",
+  "name": "Turkey",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/shiny.webp",
-  "value": 0
+  "value": 1850,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/turkey.webp"
  },
  {
-  "name": "Skulls",
-  "rarity": "Legendary",
+  "name": "Chroma Ornament",
+  "rarity": "Chroma",
   "type": "Knife",
-  "image": "/items/skulls.webp",
-  "value": 0
+  "value": 1825,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-ornament.webp"
  },
  {
-  "name": "Sparkle",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/sparkle.webp",
-  "value": 0
- },
- {
-  "name": "Spectral (Gun)",
-  "rarity": "Legendary",
+  "name": "Darkshot",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/spectral-gun.webp",
-  "value": 0
+  "value": 1800,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/darkshot.webp"
  },
  {
-  "name": "Spectral (Knife)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/spectral-knife.webp",
-  "value": 0
- },
- {
-  "name": "Splash (Gun)",
-  "rarity": "Legendary",
+  "name": "Chroma Treat",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/splash-gun.webp",
-  "value": 0
+  "value": 1775,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-treat.webp"
  },
  {
-  "name": "Splash (Knife)",
-  "rarity": "Legendary",
+  "name": "Darksword",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/splash-knife.webp",
-  "value": 0
+  "value": 1775,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/darksword.webp"
  },
  {
-  "name": "Traveler (Gun)",
-  "rarity": "Legendary",
+  "name": "Chroma Sweet",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 1725,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-sweet.webp"
+ },
+ {
+  "name": "Vampire's Axe",
+  "rarity": "Ancient",
+  "type": "Knife",
+  "value": 1575,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/vampires-axe.webp"
+ },
+ {
+  "name": "Blossom",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/traveler-gun.webp",
-  "value": 0
+  "value": 1300,
+  "demand": 5,
+  "stability": "Underpaid For",
+  "image": "/items/blossom.webp"
  },
  {
-  "name": "Traveler (Knife)",
-  "rarity": "Legendary",
+  "name": "Sakura",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/traveler-knife.webp",
-  "value": 0
+  "value": 1290,
+  "demand": 5,
+  "stability": "Underpaid For",
+  "image": "/items/sakura.webp"
  },
  {
-  "name": "Tree (Gun)",
-  "rarity": "Legendary",
+  "name": "Chroma Sands",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 1200,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-sands.webp"
+ },
+ {
+  "name": "Chroma Beachy",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 1150,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/chroma-beachy.webp"
+ },
+ {
+  "name": "Sunrise",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/tree-gun.webp",
-  "value": 0
+  "value": 950,
+  "demand": 5,
+  "stability": "Underpaid For",
+  "image": "/items/sunrise.webp"
  },
  {
-  "name": "Tree (Knife)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/tree-knife.webp",
-  "value": 0
- },
- {
-  "name": "Universe",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/universe.webp",
-  "value": 0
- },
- {
-  "name": "Vampire Gun (2022)",
-  "rarity": "Legendary",
+  "name": "Soul",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/vampire-gun-2022.webp",
-  "value": 0
+  "value": 680,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/soul.webp"
  },
  {
-  "name": "Vampire Knife (2022)",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/vampire-knife-2022.webp",
-  "value": 0
- },
- {
-  "name": "Viper",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/viper.webp",
-  "value": 0
- },
- {
-  "name": "Web",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/web.webp",
-  "value": 0
- },
- {
-  "name": "Witched",
-  "rarity": "Legendary",
-  "type": "Knife",
-  "image": "/items/witched.webp",
-  "value": 0
- },
- {
-  "name": "Abstract",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/abstract.webp",
-  "value": 0
- },
- {
-  "name": "Ace",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/ace.webp",
-  "value": 0
- },
- {
-  "name": "Aurora Gun (2019)",
-  "rarity": "Rare",
+  "name": "Bauble",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/aurora-gun-2019.webp",
-  "value": 0
+  "value": 675,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/bauble.webp"
  },
  {
-  "name": "Aurora Knife (2019)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/aurora-knife-2019.webp",
-  "value": 0
- },
- {
-  "name": "Bacon",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/bacon.webp",
-  "value": 0
- },
- {
-  "name": "Bats",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/bats.webp",
-  "value": 0
- },
- {
-  "name": "Bio",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/bio.webp",
-  "value": 0
- },
- {
-  "name": "Black",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/black.webp",
-  "value": 0
- },
- {
-  "name": "Bones (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/bones-knife.webp",
-  "value": 0
- },
- {
-  "name": "Butterflies",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/butterflies.webp",
-  "value": 0
- },
- {
-  "name": "Candleflame (Gun)",
-  "rarity": "Rare",
+  "name": "Snowcannon",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/candleflame-gun.webp",
-  "value": 0
+  "value": 675,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/snowcannon.webp"
  },
  {
-  "name": "Candy Swirl (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/candy-swirl-gun.webp",
-  "value": 0
- },
- {
-  "name": "Candy Swirl (Knife)",
-  "rarity": "Rare",
+  "name": "Spirit",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/candy-swirl-knife.webp",
-  "value": 0
+  "value": 670,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/spirit.webp"
  },
  {
-  "name": "Cane (Gun) [XMAS2015]",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/cane-gun-xmas2015.webp",
-  "value": 0
- },
- {
-  "name": "Cane (Gun) [XMAS2018]",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/cane-gun-xmas2018.webp",
-  "value": 0
- },
- {
-  "name": "Cane (Knife) [XMAS2015]",
-  "rarity": "Rare",
+  "name": "Sunset",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/cane-knife-xmas2015.webp",
-  "value": 0
+  "value": 650,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/sunset.webp"
  },
  {
   "name": "Cane Knife (2018)",
   "rarity": "Rare",
   "type": "Knife",
-  "image": "/items/cane-knife-2018.webp",
-  "value": 0
+  "value": 525,
+  "demand": 4,
+  "stability": "Stable",
+  "image": "/items/cane-knife-2018.webp"
  },
  {
-  "name": "Cowboy (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/cowboy-knife.webp",
-  "value": 0
- },
- {
-  "name": "Curse",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/curse.webp",
-  "value": 0
- },
- {
-  "name": "Damp",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/damp.webp",
-  "value": 0
- },
- {
-  "name": "Darkgun",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/darkgun.webp",
-  "value": 0
- },
- {
-  "name": "Darkknife",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/darkknife.webp",
-  "value": 0
- },
- {
-  "name": "Deep Sea",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/deep-sea.webp",
-  "value": 0
- },
- {
-  "name": "Dungeon",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/dungeon.webp",
-  "value": 0
- },
- {
-  "name": "Floral (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/floral-gun.webp",
-  "value": 0
- },
- {
-  "name": "Floral (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/floral-knife.webp",
-  "value": 0
- },
- {
-  "name": "Frostflame (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/frostflame-gun.webp",
-  "value": 0
- },
- {
-  "name": "Frostflame (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/frostflame-knife.webp",
-  "value": 0
- },
- {
-  "name": "Galactic",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/galactic.webp",
-  "value": 0
- },
- {
-  "name": "Galaxy",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/galaxy.webp",
-  "value": 0
- },
- {
-  "name": "Ghastly (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/ghastly-gun.webp",
-  "value": 0
- },
- {
-  "name": "Ghastly (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/ghastly-knife.webp",
-  "value": 0
- },
- {
-  "name": "Ghostfire (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/ghostfire-gun.webp",
-  "value": 0
- },
- {
-  "name": "Ghosts (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/ghosts-gun.webp",
-  "value": 0
- },
- {
-  "name": "Ginger (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/ginger-gun.webp",
-  "value": 0
- },
- {
-  "name": "Ginger (Knife) (Rare)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/ginger-knife-rare.webp",
-  "value": 0
- },
- {
-  "name": "Gingerbread (2017)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/gingerbread-2017.webp",
-  "value": 0
- },
- {
-  "name": "Gingerbread (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/gingerbread-gun.webp",
-  "value": 0
- },
- {
-  "name": "Gingerbread (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/gingerbread-knife.webp",
-  "value": 0
- },
- {
-  "name": "Gingercookie (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/gingercookie-gun.webp",
-  "value": 0
- },
- {
-  "name": "Gingercookie (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/gingercookie-knife.webp",
-  "value": 0
- },
- {
-  "name": "Green Marble",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/green-marble.webp",
-  "value": 0
- },
- {
-  "name": "Hacker",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/hacker.webp",
-  "value": 0
- },
- {
-  "name": "Heart",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/heart.webp",
-  "value": 0
- },
- {
-  "name": "Heartbreak",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/heartbreak.webp",
-  "value": 0
- },
- {
-  "name": "Hologram (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/hologram-gun.webp",
-  "value": 0
- },
- {
-  "name": "Hologram (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/hologram-knife.webp",
-  "value": 0
- },
- {
-  "name": "Ice Camo",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/ice-camo.webp",
-  "value": 0
- },
- {
-  "name": "Icicles (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/icicles-gun.webp",
-  "value": 0
- },
- {
-  "name": "Icicles (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/icicles-knife.webp",
-  "value": 0
- },
- {
-  "name": "Imbued",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/imbued.webp",
-  "value": 0
- },
- {
-  "name": "Jack",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/jack.webp",
-  "value": 0
- },
- {
-  "name": "Korblox",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/korblox.webp",
-  "value": 0
- },
- {
-  "name": "Kraken",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/kraken.webp",
-  "value": 0
- },
- {
-  "name": "Krypto",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/krypto.webp",
-  "value": 0
- },
- {
-  "name": "Laser (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/laser-knife.webp",
-  "value": 0
- },
- {
-  "name": "Logcutter",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/logcutter.webp",
-  "value": 0
- },
- {
-  "name": "Magma",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/magma.webp",
-  "value": 0
- },
- {
-  "name": "Magma (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/magma-gun.webp",
-  "value": 0
- },
- {
-  "name": "Magma (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/magma-knife.webp",
-  "value": 0
- },
- {
-  "name": "Makeshift (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/makeshift-knife.webp",
-  "value": 0
- },
- {
-  "name": "Molten (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/molten-gun.webp",
-  "value": 0
- },
- {
-  "name": "Molten (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/molten-knife.webp",
-  "value": 0
- },
- {
-  "name": "Monster",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/monster.webp",
-  "value": 0
- },
- {
-  "name": "Mummy",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/mummy.webp",
-  "value": 0
- },
- {
-  "name": "Musical",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/musical.webp",
-  "value": 0
- },
- {
-  "name": "Neon [SUMMER2025]",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/neon-summer2025.webp",
-  "value": 0
- },
- {
-  "name": "Neon [XMAS2023]",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/neon-xmas2023.webp",
-  "value": 0
- },
- {
-  "name": "Nether",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/nether.webp",
-  "value": 0
- },
- {
-  "name": "Nightfire",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/nightfire.webp",
-  "value": 0
- },
- {
-  "name": "Nova",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/nova.webp",
-  "value": 0
- },
- {
-  "name": "Nuke",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/nuke.webp",
-  "value": 0
- },
- {
-  "name": "Orangle Marble",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/orangle-marble.webp",
-  "value": 0
- },
- {
-  "name": "Painted (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/painted-knife.webp",
-  "value": 0
- },
- {
-  "name": "Phaser (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/phaser-knife.webp",
-  "value": 0
- },
- {
-  "name": "Pier",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/pier.webp",
-  "value": 0
- },
- {
-  "name": "Pop Art (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/pop-art-gun.webp",
-  "value": 0
- },
- {
-  "name": "Pop Art (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/pop-art-knife.webp",
-  "value": 0
- },
- {
-  "name": "Portal (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/portal-knife.webp",
-  "value": 0
- },
- {
-  "name": "Prince (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/prince-gun.webp",
-  "value": 0
- },
- {
-  "name": "Purple",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/purple.webp",
-  "value": 0
- },
- {
-  "name": "Rainbow (Gun) (Rare)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/rainbow-gun-rare.webp",
-  "value": 0
- },
- {
-  "name": "Rainbow (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/rainbow-knife.webp",
-  "value": 0
- },
- {
-  "name": "Ritual",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/ritual.webp",
-  "value": 0
- },
- {
-  "name": "Robot",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/robot.webp",
-  "value": 0
- },
- {
-  "name": "Sharky",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/sharky.webp",
-  "value": 0
- },
- {
-  "name": "Silent Night (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/silent-night-gun.webp",
-  "value": 0
- },
- {
-  "name": "Silent Night (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/silent-night-knife.webp",
-  "value": 0
- },
- {
-  "name": "Sleigh",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/sleigh.webp",
-  "value": 0
- },
- {
-  "name": "Snakebite (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/snakebite-gun.webp",
-  "value": 0
- },
- {
-  "name": "Snakebite (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/snakebite-knife.webp",
-  "value": 0
- },
- {
-  "name": "Snowflake (Rare)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/snowflake-rare.webp",
-  "value": 0
- },
- {
-  "name": "Snowflakes (2020)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/snowflakes-2020.webp",
-  "value": 0
- },
- {
-  "name": "Snowglobe",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/snowglobe.webp",
-  "value": 0
- },
- {
-  "name": "Snowy",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/snowy.webp",
-  "value": 0
- },
- {
-  "name": "Space",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/space.webp",
-  "value": 0
- },
- {
-  "name": "Spearmint (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/spearmint-gun.webp",
-  "value": 0
- },
- {
-  "name": "Spearmint (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/spearmint-knife.webp",
-  "value": 0
- },
- {
-  "name": "Spectrum",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/spectrum.webp",
-  "value": 0
- },
- {
-  "name": "Spitfire",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/spitfire.webp",
-  "value": 0
- },
- {
-  "name": "Spring",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/spring.webp",
-  "value": 0
- },
- {
-  "name": "Squire",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/squire.webp",
-  "value": 0
- },
- {
-  "name": "Starry (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/starry-knife.webp",
-  "value": 0
- },
- {
-  "name": "Starry Gun (2021)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/starry-gun-2021.webp",
-  "value": 0
- },
- {
-  "name": "Storm",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/storm.webp",
-  "value": 0
- },
- {
-  "name": "Sunny",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/sunny.webp",
-  "value": 0
- },
- {
-  "name": "Sunset (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/sunset-gun.webp",
-  "value": 0
- },
- {
-  "name": "Sunset (Rare)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/sunset-rare.webp",
-  "value": 0
- },
- {
-  "name": "Swirl",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/swirl.webp",
-  "value": 0
- },
- {
-  "name": "Toxic (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/toxic-gun.webp",
-  "value": 0
- },
- {
-  "name": "Toxic (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/toxic-knife.webp",
-  "value": 0
- },
- {
-  "name": "Tree (2023)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/tree-2023.webp",
-  "value": 0
- },
- {
-  "name": "Tree (Gun) (Rare)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/tree-gun-rare.webp",
-  "value": 0
- },
- {
-  "name": "Tree (Knife) (Rare)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/tree-knife-rare.webp",
-  "value": 0
- },
- {
-  "name": "Tropical",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/tropical.webp",
-  "value": 0
- },
- {
-  "name": "Vampire Gun (2018)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/vampire-gun-2018.webp",
-  "value": 0
- },
- {
-  "name": "Vampire Knife (2018)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/vampire-knife-2018.webp",
-  "value": 0
- },
- {
-  "name": "Vortex",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/vortex.webp",
-  "value": 0
- },
- {
-  "name": "Watcher (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/watcher-knife.webp",
-  "value": 0
- },
- {
-  "name": "Watcher Gun (2021)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/watcher-gun-2021.webp",
-  "value": 0
- },
- {
-  "name": "Waves (Rare)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/waves-rare.webp",
-  "value": 0
- },
- {
-  "name": "Wraith (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/wraith-gun.webp",
-  "value": 0
- },
- {
-  "name": "Wraith (Knife)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/wraith-knife.webp",
-  "value": 0
- },
- {
-  "name": "Xeno (Gun)",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/xeno-gun.webp",
-  "value": 0
- },
- {
-  "name": "Xeno (Knife) (Rare)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/xeno-knife-rare.webp",
-  "value": 0
- },
- {
-  "name": "Yummy",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/yummy.webp",
-  "value": 0
- },
- {
-  "name": "Zombified Knife (2022)",
-  "rarity": "Rare",
-  "type": "Knife",
-  "image": "/items/zombified-knife-2022.webp",
-  "value": 0
- },
- {
-  "name": "iRevolver",
-  "rarity": "Rare",
-  "type": "Gun",
-  "image": "/items/irevolver.webp",
-  "value": 0
- },
- {
-  "name": "Abduction",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/abduction.webp",
-  "value": 0
- },
- {
-  "name": "Adurite (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/adurite-gun.webp",
-  "value": 0
- },
- {
-  "name": "Adurite (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/adurite-knife.webp",
-  "value": 0
- },
- {
-  "name": "Biogun",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/biogun.webp",
-  "value": 0
- },
- {
-  "name": "Blossom (Uncommon)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/blossom-uncommon.webp",
-  "value": 0
- },
- {
-  "name": "Blue",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/blue.webp",
-  "value": 0
- },
- {
-  "name": "Bluesteel (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/bluesteel-gun.webp",
-  "value": 0
- },
- {
-  "name": "Bluesteel (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/bluesteel-knife.webp",
-  "value": 0
- },
- {
-  "name": "Bones (2019)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/bones-2019.webp",
-  "value": 0
- },
- {
-  "name": "Bones (Knife) (Uncommon)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/bones-knife-uncommon.webp",
-  "value": 0
- },
- {
-  "name": "Brains (2019)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/brains-2019.webp",
-  "value": 0
- },
- {
-  "name": "Brains (2022)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/brains-2022.webp",
-  "value": 0
- },
- {
-  "name": "Branches",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/branches.webp",
-  "value": 0
- },
- {
-  "name": "Brush",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/brush.webp",
-  "value": 0
- },
- {
-  "name": "Camo (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/camo-gun.webp",
-  "value": 0
- },
- {
-  "name": "Camo (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/camo-knife.webp",
-  "value": 0
- },
- {
-  "name": "Canes (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/canes-gun.webp",
-  "value": 0
- },
- {
-  "name": "Canes (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/canes-knife.webp",
-  "value": 0
- },
- {
-  "name": "Carrot",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/carrot.webp",
-  "value": 0
- },
- {
-  "name": "Carrot (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/carrot-gun.webp",
-  "value": 0
- },
- {
-  "name": "Carrot (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/carrot-knife.webp",
-  "value": 0
- },
- {
-  "name": "Caution",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/caution.webp",
-  "value": 0
- },
- {
-  "name": "Checkers",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/checkers.webp",
-  "value": 0
- },
- {
-  "name": "Cheddar",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/cheddar.webp",
-  "value": 0
- },
- {
-  "name": "Cheesy",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/cheesy.webp",
-  "value": 0
- },
- {
-  "name": "Circuit",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/circuit.webp",
-  "value": 0
- },
- {
-  "name": "Clown (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/clown-gun.webp",
-  "value": 0
- },
- {
-  "name": "Cookie (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/cookie-gun.webp",
-  "value": 0
- },
- {
-  "name": "Cookie (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/cookie-knife.webp",
-  "value": 0
- },
- {
-  "name": "Decorated",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/decorated.webp",
-  "value": 0
- },
- {
-  "name": "Doge",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/doge.webp",
-  "value": 0
- },
- {
-  "name": "Donut",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/donut.webp",
-  "value": 0
- },
- {
-  "name": "Eclipse",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/eclipse.webp",
-  "value": 0
- },
- {
-  "name": "Eyes",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/eyes.webp",
-  "value": 0
- },
- {
-  "name": "Fall Camo",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/fall-camo.webp",
-  "value": 0
- },
- {
-  "name": "Fireplace",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/fireplace.webp",
-  "value": 0
- },
- {
-  "name": "Floatie",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/floatie.webp",
-  "value": 0
- },
- {
-  "name": "Floral",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/floral.webp",
-  "value": 0
- },
- {
-  "name": "Forest",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/forest.webp",
-  "value": 0
- },
- {
-  "name": "Frosty",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/frosty.webp",
-  "value": 0
- },
- {
-  "name": "Frozen (Gun) (Uncommon)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/frozen-gun-uncommon.webp",
-  "value": 0
- },
- {
-  "name": "Frozen (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/frozen-knife.webp",
-  "value": 0
- },
- {
-  "name": "Future",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/future.webp",
-  "value": 0
- },
- {
-  "name": "Ghost Gun (Uncommon)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/ghost-gun-uncommon.webp",
-  "value": 0
- },
- {
-  "name": "Ghostly",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/ghostly.webp",
-  "value": 0
- },
- {
-  "name": "Ghosts (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/ghosts-knife.webp",
-  "value": 0
- },
- {
-  "name": "Gifted",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/gifted.webp",
-  "value": 0
- },
- {
-  "name": "Gingerbread (Gun) [XMAS2021]",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/gingerbread-gun-xmas2021.webp",
-  "value": 0
- },
- {
-  "name": "Gingerbread (Gun) [XMAS2025]",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/gingerbread-gun-xmas2025.webp",
-  "value": 0
- },
- {
-  "name": "Gingerbread (Knife) [XMAS2025]",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/gingerbread-knife-xmas2025.webp",
-  "value": 0
- },
- {
-  "name": "Gingerbread Gun (2019)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/gingerbread-gun-2019.webp",
-  "value": 0
- },
- {
-  "name": "Gingerbread Gun (2020)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/gingerbread-gun-2020.webp",
-  "value": 0
- },
- {
-  "name": "Gingerbread Knife (2019)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/gingerbread-knife-2019.webp",
-  "value": 0
- },
- {
-  "name": "Gingerbread Knife (2020)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/gingerbread-knife-2020.webp",
-  "value": 0
- },
- {
-  "name": "Gingerheart",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/gingerheart.webp",
-  "value": 0
- },
- {
-  "name": "Glowy",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/glowy.webp",
-  "value": 0
- },
- {
-  "name": "Gothic (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/gothic-gun.webp",
-  "value": 0
- },
- {
-  "name": "Gothic (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/gothic-knife.webp",
-  "value": 0
- },
- {
-  "name": "Graffiti",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/graffiti.webp",
-  "value": 0
- },
- {
-  "name": "Hazard (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/hazard-gun.webp",
-  "value": 0
- },
- {
-  "name": "Hazard (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/hazard-knife.webp",
-  "value": 0
- },
- {
-  "name": "Hazmat",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/hazmat.webp",
-  "value": 0
- },
- {
-  "name": "High Tech",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/high-tech.webp",
-  "value": 0
- },
- {
-  "name": "Hive",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/hive.webp",
-  "value": 0
- },
- {
-  "name": "Holly (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/holly-knife.webp",
-  "value": 0
- },
- {
-  "name": "Holly Gun (2018)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/holly-gun-2018.webp",
-  "value": 0
- },
- {
-  "name": "Jellyfish",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/jellyfish.webp",
-  "value": 0
- },
- {
-  "name": "Jigsaw",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/jigsaw.webp",
-  "value": 0
- },
- {
-  "name": "Lantern (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/lantern-knife.webp",
-  "value": 0
- },
- {
-  "name": "Lava (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/lava-gun.webp",
-  "value": 0
- },
- {
-  "name": "Lava (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/lava-knife.webp",
-  "value": 0
- },
- {
-  "name": "Leaves",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/leaves.webp",
-  "value": 0
- },
- {
-  "name": "Lights (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/lights-gun.webp",
-  "value": 0
- },
- {
-  "name": "Lights (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/lights-knife.webp",
-  "value": 0
- },
- {
-  "name": "Love (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/love-gun.webp",
-  "value": 0
- },
- {
-  "name": "Lucky",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/lucky.webp",
-  "value": 0
- },
- {
-  "name": "Marble",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/marble.webp",
-  "value": 0
- },
- {
-  "name": "Marina",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/marina.webp",
-  "value": 0
- },
- {
-  "name": "Meadow",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/meadow.webp",
-  "value": 0
- },
- {
-  "name": "Melon",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/melon.webp",
-  "value": 0
- },
- {
-  "name": "Melon [SUMMER2023]",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/melon-summer2023.webp",
-  "value": 0
- },
- {
-  "name": "Meltdown",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/meltdown.webp",
-  "value": 0
- },
- {
-  "name": "Missing",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/missing.webp",
-  "value": 0
- },
- {
-  "name": "Mistletoe (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/mistletoe-gun.webp",
-  "value": 0
- },
- {
-  "name": "Mistletoe (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/mistletoe-knife.webp",
-  "value": 0
- },
- {
-  "name": "Monster (Uncommon)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/monster-uncommon.webp",
-  "value": 0
- },
- {
-  "name": "Moonlight (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/moonlight-gun.webp",
-  "value": 0
- },
- {
-  "name": "Moons",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/moons.webp",
-  "value": 0
- },
- {
-  "name": "Moons (2024)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/moons-2024.webp",
-  "value": 0
- },
- {
-  "name": "Mummy (2017)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/mummy-2017.webp",
-  "value": 0
- },
- {
-  "name": "Mummy (Gun) [HALLOWS2020]",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/mummy-gun-hallows2020.webp",
-  "value": 0
- },
- {
-  "name": "Mummy (Knife) [HALLOWS2020]",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/mummy-knife-hallows2020.webp",
-  "value": 0
- },
- {
-  "name": "Mummy Gun (2018)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/mummy-gun-2018.webp",
-  "value": 0
- },
- {
-  "name": "Mummy Knife (2018)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/mummy-knife-2018.webp",
-  "value": 0
- },
- {
-  "name": "Neopolitan",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/neopolitan.webp",
-  "value": 0
- },
- {
-  "name": "Night",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/night.webp",
-  "value": 0
- },
- {
-  "name": "Nutcracker",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/nutcracker.webp",
-  "value": 0
- },
- {
-  "name": "Ornaments",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/ornaments.webp",
-  "value": 0
- },
- {
-  "name": "Painted (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/painted-gun.webp",
-  "value": 0
- },
- {
-  "name": "Paper",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/paper.webp",
-  "value": 0
- },
- {
-  "name": "Paws",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/paws.webp",
-  "value": 0
- },
- {
-  "name": "Pink",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/pink.webp",
-  "value": 0
- },
- {
-  "name": "Pirate",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/pirate.webp",
-  "value": 0
- },
- {
-  "name": "Polar Bear",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/polar-bear.webp",
-  "value": 0
- },
- {
-  "name": "Pool",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/pool.webp",
-  "value": 0
- },
- {
-  "name": "Pool Noodle",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/pool-noodle.webp",
-  "value": 0
- },
- {
-  "name": "Popsicle",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/popsicle.webp",
-  "value": 0
- },
- {
-  "name": "Popsicle (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/popsicle-gun.webp",
-  "value": 0
- },
- {
-  "name": "Portal (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/portal-gun.webp",
-  "value": 0
- },
- {
-  "name": "Potion (2017)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/potion-2017.webp",
-  "value": 0
- },
- {
-  "name": "Potion Gun (2018)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/potion-gun-2018.webp",
-  "value": 0
- },
- {
-  "name": "Potion Knife (2018)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/potion-knife-2018.webp",
-  "value": 0
- },
- {
-  "name": "Pumpkin (2025)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/pumpkin-2025.webp",
-  "value": 0
- },
- {
-  "name": "Pumpkin (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/pumpkin-knife.webp",
-  "value": 0
- },
- {
-  "name": "Pumpkin Patch",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/pumpkin-patch.webp",
-  "value": 0
- },
- {
-  "name": "Pumpkin Pie",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/pumpkin-pie.webp",
-  "value": 0
- },
- {
-  "name": "Red",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/red.webp",
-  "value": 0
- },
- {
-  "name": "Retro",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/retro.webp",
-  "value": 0
- },
- {
-  "name": "Rose",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/rose.webp",
-  "value": 0
- },
- {
-  "name": "Sketch",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/sketch.webp",
-  "value": 0
- },
- {
-  "name": "Skulls (2021)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/skulls-2021.webp",
-  "value": 0
- },
- {
-  "name": "Snowflake (Gun) [XMAS2018]",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/snowflake-gun-xmas2018.webp",
-  "value": 0
- },
- {
-  "name": "Snowflake (Gun) [XMAS2022]",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/snowflake-gun-xmas2022.webp",
-  "value": 0
- },
- {
-  "name": "Snowflake (Knife) [XMAS2022]",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/snowflake-knife-xmas2022.webp",
-  "value": 0
- },
- {
-  "name": "Snowflake Knife (2018)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/snowflake-knife-2018.webp",
-  "value": 0
- },
- {
-  "name": "Snowman (2023)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/snowman-2023.webp",
-  "value": 0
- },
- {
-  "name": "Snowman (2024)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/snowman-2024.webp",
-  "value": 0
- },
- {
-  "name": "Snowman (Gun) [XMAS2015]",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/snowman-gun-xmas2015.webp",
-  "value": 0
- },
- {
-  "name": "Snowman (Knife) [XMAS2015]",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/snowman-knife-xmas2015.webp",
-  "value": 0
- },
- {
-  "name": "Snowman (Knife) [XMAS2021]",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/snowman-knife-xmas2021.webp",
-  "value": 0
- },
- {
-  "name": "SnowmanGun(2021)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/snowmangun-2021.webp",
-  "value": 0
- },
- {
-  "name": "Snowy (Uncommon)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/snowy-uncommon.webp",
-  "value": 0
- },
- {
-  "name": "Soda",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/soda.webp",
-  "value": 0
- },
- {
-  "name": "Soda (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/soda-gun.webp",
-  "value": 0
- },
- {
-  "name": "Soda (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/soda-knife.webp",
-  "value": 0
- },
- {
-  "name": "Stalker",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/stalker.webp",
-  "value": 0
- },
- {
-  "name": "Starry",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/starry.webp",
-  "value": 0
- },
- {
-  "name": "Stars (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/stars-gun.webp",
-  "value": 0
- },
- {
-  "name": "Stars (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/stars-knife.webp",
-  "value": 0
- },
- {
-  "name": "Steel (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/steel-gun.webp",
-  "value": 0
- },
- {
-  "name": "Steel (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/steel-knife.webp",
-  "value": 0
- },
- {
-  "name": "Stockings (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/stockings-gun.webp",
-  "value": 0
- },
- {
-  "name": "Stockings (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/stockings-knife.webp",
-  "value": 0
- },
- {
-  "name": "Sweater",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/sweater.webp",
-  "value": 0
- },
- {
-  "name": "Sweater (Gun) [XMAS2018]",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/sweater-gun-xmas2018.webp",
-  "value": 0
- },
- {
-  "name": "Sweater (Gun) [XMAS2025]",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/sweater-gun-xmas2025.webp",
-  "value": 0
- },
- {
-  "name": "Sweater (Knife) [XMAS2025]",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/sweater-knife-xmas2025.webp",
-  "value": 0
- },
- {
-  "name": "Sweater Knife (2018)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/sweater-knife-2018.webp",
-  "value": 0
- },
- {
-  "name": "Tiger",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/tiger.webp",
-  "value": 0
- },
- {
-  "name": "Treats (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/treats-gun.webp",
-  "value": 0
- },
- {
-  "name": "Treats (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/treats-knife.webp",
-  "value": 0
- },
- {
-  "name": "Tree (2017)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/tree-2017.webp",
-  "value": 0
- },
- {
-  "name": "Tree Knife (2021)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/tree-knife-2021.webp",
-  "value": 0
- },
- {
-  "name": "Turtle",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/turtle.webp",
-  "value": 0
- },
- {
-  "name": "Turtles",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/turtles.webp",
-  "value": 0
- },
- {
-  "name": "Vampire (2016)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/vampire-2016.webp",
-  "value": 0
- },
- {
-  "name": "Void",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/void.webp",
-  "value": 0
- },
- {
-  "name": "Wanwood",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/wanwood.webp",
-  "value": 0
- },
- {
-  "name": "Webs",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/webs.webp",
-  "value": 0
- },
- {
-  "name": "Witchbrew",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/witchbrew.webp",
-  "value": 0
- },
- {
-  "name": "Witchs Brew",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/witchs-brew.webp",
-  "value": 0
- },
- {
-  "name": "Wolf",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/wolf.webp",
-  "value": 0
- },
- {
-  "name": "Wooden",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/wooden.webp",
-  "value": 0
- },
- {
-  "name": "Wraiths (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/wraiths-gun.webp",
-  "value": 0
- },
- {
-  "name": "Wraiths (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/wraiths-knife.webp",
-  "value": 0
- },
- {
-  "name": "Wrap (Gun)",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/wrap-gun.webp",
-  "value": 0
- },
- {
-  "name": "Wrap (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/wrap-knife.webp",
-  "value": 0
- },
- {
-  "name": "Wrapped (Gun) [XMAS2015]",
-  "rarity": "Uncommon",
-  "type": "Gun",
-  "image": "/items/wrapped-gun-xmas2015.webp",
-  "value": 0
- },
- {
-  "name": "Wrapped (Gun) [XMAS2024]",
-  "rarity": "Uncommon",
+  "name": "Rainbow (Gun)",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/wrapped-gun-xmas2024.webp",
-  "value": 0
+  "value": 405,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/rainbow-gun.webp"
  },
  {
-  "name": "Wrapped (Knife) [XMAS2015]",
-  "rarity": "Uncommon",
+  "name": "Xeno (Knife)",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/wrapped-knife-xmas2015.webp",
-  "value": 0
+  "value": 405,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/xenoknife.webp"
  },
  {
-  "name": "Wrapped (Knife) [XMAS2024]",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/wrapped-knife-xmas2024.webp",
-  "value": 0
- },
- {
-  "name": "Wreaths",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/wreaths.webp",
-  "value": 0
- },
- {
-  "name": "Zombie Gun (2018)",
-  "rarity": "Uncommon",
+  "name": "Xenoshot",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/zombie-gun-2018.webp",
-  "value": 0
- },
- {
-  "name": "Zombie Knife (2018)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/zombie-knife-2018.webp",
-  "value": 0
- },
- {
-  "name": "Zombie Knife (2021)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/zombie-knife-2021.webp",
-  "value": 0
+  "value": 405,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/xenoshot.webp"
  },
  {
-  "name": "Zombie Knife (2023)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/zombie-knife-2023.webp",
-  "value": 0
- },
- {
-  "name": "Zombified (Gun)",
-  "rarity": "Uncommon",
+  "name": "Flora",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/zombified-gun.webp",
-  "value": 0
- },
- {
-  "name": "Zombified (Knife)",
-  "rarity": "Uncommon",
-  "type": "Knife",
-  "image": "/items/zombified-knife.webp",
-  "value": 0
- },
- {
-  "name": "2015",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/2015.webp",
-  "value": 0
+  "value": 400,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/flora.webp"
  },
  {
-  "name": "8Bit",
-  "rarity": "Common",
+  "name": "Rainbow",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/8bit.webp",
-  "value": 0
+  "value": 400,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/rainbow.webp"
  },
  {
-  "name": "Alex",
-  "rarity": "Common",
+  "name": "Bloom",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/alex.webp",
-  "value": 0
+  "value": 395,
+  "demand": 5,
+  "stability": "Stable",
+  "image": "/items/bloom.webp"
  },
  {
-  "name": "Aliens",
-  "rarity": "Common",
+  "name": "Heart Wand",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/aliens.webp",
-  "value": 0
+  "value": 340,
+  "demand": 4,
+  "stability": "Stable",
+  "image": "/items/heart-wand.webp"
  },
  {
-  "name": "Apocalypse (Gun)",
-  "rarity": "Common",
+  "name": "Blizzard",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/apocalypse-gun.webp",
-  "value": 0
- },
- {
-  "name": "Apocalypse (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/apocalypse-knife.webp",
-  "value": 0
+  "value": 290,
+  "demand": 4,
+  "stability": "Stable",
+  "image": "/items/blizzard.webp"
  },
  {
-  "name": "Aqua",
-  "rarity": "Common",
+  "name": "Snowstorm",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/aqua.webp",
-  "value": 0
- },
- {
-  "name": "Asteroid",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/asteroid.webp",
-  "value": 0
- },
- {
-  "name": "Balloons",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/balloons.webp",
-  "value": 0
- },
- {
-  "name": "Bats (Gun) [HALLOWS2024]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/bats-gun-hallows2024.webp",
-  "value": 0
+  "value": 290,
+  "demand": 4,
+  "stability": "Stable",
+  "image": "/items/snowstorm.webp"
  },
  {
-  "name": "Bats (Knife) [HALLOWS2024]",
-  "rarity": "Common",
+  "name": "Harvester",
+  "rarity": "Ancient",
   "type": "Knife",
-  "image": "/items/bats-knife-hallows2024.webp",
-  "value": 0
+  "value": 250,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/harvester.webp"
  },
  {
-  "name": "Bats Gun (2018)",
-  "rarity": "Common",
+  "name": "Ocean",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/bats-gun-2018.webp",
-  "value": 0
+  "value": 245,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/ocean.webp"
  },
  {
   "name": "Bats Knife (2018)",
   "rarity": "Common",
   "type": "Knife",
-  "image": "/items/bats-knife-2018.webp",
-  "value": 0
+  "value": 240,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/bats-knife-2018.webp"
  },
  {
-  "name": "Bats Knife (2020)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/bats-knife-2020.webp",
-  "value": 0
- },
- {
-  "name": "Bells",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/bells.webp",
-  "value": 0
- },
- {
-  "name": "Big Kill",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/big-kill.webp",
-  "value": 0
- },
- {
-  "name": "Bit",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/bit.webp",
-  "value": 0
- },
- {
-  "name": "Bleached",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/bleached.webp",
-  "value": 0
- },
- {
-  "name": "Blossom (Common)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/blossom-common.webp",
-  "value": 0
- },
- {
-  "name": "Bones (2016)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/bones-2016.webp",
-  "value": 0
- },
- {
-  "name": "Borders",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/borders.webp",
-  "value": 0
- },
- {
-  "name": "Brains (2016)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/brains-2016.webp",
-  "value": 0
- },
- {
-  "name": "Brown",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/brown.webp",
-  "value": 0
- },
- {
-  "name": "Bunny",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/bunny.webp",
-  "value": 0
- },
- {
-  "name": "Candied (Gun)",
-  "rarity": "Common",
+  "name": "Flowerwood Gun",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/candied-gun.webp",
-  "value": 0
+  "value": 240,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/flowerwood-gun.webp"
  },
  {
-  "name": "Candied (Knife)",
-  "rarity": "Common",
+  "name": "Waves",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/candied-knife.webp",
-  "value": 0
+  "value": 240,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/waves.webp"
  },
  {
-  "name": "Candle",
-  "rarity": "Common",
+  "name": "Flowerwood",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/candle.webp",
-  "value": 0
+  "value": 235,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/flowerwood.webp"
  },
  {
-  "name": "Candles",
-  "rarity": "Common",
+  "name": "Bones (2019)",
+  "rarity": "Uncommon",
   "type": "Knife",
-  "image": "/items/candles.webp",
-  "value": 0
+  "value": 210,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/bones-2019.webp"
  },
  {
-  "name": "Candy Corn (2017)",
-  "rarity": "Common",
+  "name": "Snow Dagger",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/candy-corn-2017.webp",
-  "value": 0
+  "value": 175,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/snow-dagger.webp"
  },
  {
-  "name": "Candy Corn (2019)",
-  "rarity": "Common",
+  "name": "Icepiercer",
+  "rarity": "Ancient",
   "type": "Knife",
-  "image": "/items/candy-corn-2019.webp",
-  "value": 0
+  "value": 160,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/icepiercer.webp"
  },
  {
-  "name": "Candy Corn (Gun) [HALLOWS2020]",
-  "rarity": "Common",
+  "name": "Icecream",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 155,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/icecream.webp"
+ },
+ {
+  "name": "Treat",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/candy-corn-gun-hallows2020.webp",
-  "value": 0
+  "value": 155,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/treat.webp"
  },
  {
-  "name": "Candy Corn (Gun) [HALLOWS2022]",
-  "rarity": "Common",
+  "name": "Watergun",
+  "rarity": "Godly",
   "type": "Gun",
-  "image": "/items/candy-corn-gun-hallows2022.webp",
-  "value": 0
+  "value": 155,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/watergun.webp"
  },
  {
-  "name": "Candy Corn (Gun) [HALLOWS2024]",
-  "rarity": "Common",
+  "name": "Sweet",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 150,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/sweet.webp"
+ },
+ {
+  "name": "Borealis",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 145,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/borealis.webp"
+ },
+ {
+  "name": "Australis",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 140,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/australis.webp"
+ },
+ {
+  "name": "Latte (Gun)",
+  "rarity": "Legendary",
   "type": "Gun",
-  "image": "/items/candy-corn-gun-hallows2024.webp",
-  "value": 0
+  "value": 140,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/latte-gun.webp"
  },
  {
-  "name": "Candy Corn (Gun) [HALLOWS2025]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/candy-corn-gun-hallows2025.webp",
-  "value": 0
- },
- {
-  "name": "Candy Corn (Knife) [HALLOWS2020]",
-  "rarity": "Common",
+  "name": "Latte (Knife)",
+  "rarity": "Legendary",
   "type": "Knife",
-  "image": "/items/candy-corn-knife-hallows2020.webp",
-  "value": 0
+  "value": 140,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/latte-knife.webp"
  },
  {
-  "name": "Candy Corn (Knife) [HALLOWS2022]",
-  "rarity": "Common",
+  "name": "Brains (2019)",
+  "rarity": "Uncommon",
   "type": "Knife",
-  "image": "/items/candy-corn-knife-hallows2022.webp",
-  "value": 0
+  "value": 135,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/brains-2019.webp"
  },
  {
-  "name": "Candy Corn (Knife) [HALLOWS2024]",
-  "rarity": "Common",
+  "name": "Bat",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/candy-corn-knife-hallows2024.webp",
-  "value": 0
+  "value": 125,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/bat.webp"
  },
  {
-  "name": "Candy Corn (Knife) [HALLOWS2025]",
-  "rarity": "Common",
+  "name": "Dungeon",
+  "rarity": "Rare",
   "type": "Knife",
-  "image": "/items/candy-corn-knife-hallows2025.webp",
-  "value": 0
+  "value": 120,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/dungeon.webp"
  },
  {
-  "name": "Cane (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/cane-gun.webp",
-  "value": 0
- },
- {
-  "name": "Cane (Knife)",
-  "rarity": "Common",
+  "name": "Zombified (Knife)",
+  "rarity": "Uncommon",
   "type": "Knife",
-  "image": "/items/cane-knife.webp",
-  "value": 0
- },
- {
-  "name": "Cardboard",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/cardboard.webp",
-  "value": 0
- },
- {
-  "name": "Carrot (Common)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/carrot-common.webp",
-  "value": 0
- },
- {
-  "name": "Carrots",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/carrots.webp",
-  "value": 0
- },
- {
-  "name": "Carved (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/carved-gun.webp",
-  "value": 0
- },
- {
-  "name": "Carved (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/carved-knife.webp",
-  "value": 0
- },
- {
-  "name": "Cat",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/cat.webp",
-  "value": 0
- },
- {
-  "name": "Cats",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/cats.webp",
-  "value": 0
- },
- {
-  "name": "Cherries",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/cherries.webp",
-  "value": 0
- },
- {
-  "name": "Cherry",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/cherry.webp",
-  "value": 0
- },
- {
-  "name": "Chick",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/chick.webp",
-  "value": 0
- },
- {
-  "name": "Choco",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/choco.webp",
-  "value": 0
- },
- {
-  "name": "Clan",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/clan.webp",
-  "value": 0
- },
- {
-  "name": "Clown (Gun) (Common)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/clown-gun-common.webp",
-  "value": 0
- },
- {
-  "name": "Clown (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/clown-knife.webp",
-  "value": 0
- },
- {
-  "name": "Clownfish (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/clownfish-gun.webp",
-  "value": 0
- },
- {
-  "name": "Clownfish (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/clownfish-knife.webp",
-  "value": 0
- },
- {
-  "name": "Coal",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/coal.webp",
-  "value": 0
- },
- {
-  "name": "Coal (Gun) [XMAS2018]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/coal-gun-xmas2018.webp",
-  "value": 0
- },
- {
-  "name": "Coal (Gun) [XMAS2021]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/coal-gun-xmas2021.webp",
-  "value": 0
- },
- {
-  "name": "Coal (Gun) [XMAS2022]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/coal-gun-xmas2022.webp",
-  "value": 0
- },
- {
-  "name": "Coal (Knife) [XMAS2021]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/coal-knife-xmas2021.webp",
-  "value": 0
- },
- {
-  "name": "Coal (Knife) [XMAS2022]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/coal-knife-xmas2022.webp",
-  "value": 0
- },
- {
-  "name": "Coal Knife (2018)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/coal-knife-2018.webp",
-  "value": 0
- },
- {
-  "name": "Coconut",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/coconut.webp",
-  "value": 0
- },
- {
-  "name": "Cold",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/cold.webp",
-  "value": 0
- },
- {
-  "name": "Combat",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/combat.webp",
-  "value": 0
- },
- {
-  "name": "Combat II",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/combat-ii.webp",
-  "value": 0
- },
- {
-  "name": "Copper",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/copper.webp",
-  "value": 0
- },
- {
-  "name": "Corl",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/corl.webp",
-  "value": 0
- },
- {
-  "name": "Cracks (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/cracks-gun.webp",
-  "value": 0
- },
- {
-  "name": "Cracks (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/cracks-knife.webp",
-  "value": 0
- },
- {
-  "name": "Darkness (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/darkness-gun.webp",
-  "value": 0
- },
- {
-  "name": "Darkness (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/darkness-knife.webp",
-  "value": 0
- },
- {
-  "name": "Default Gun",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/default-gun.webp",
-  "value": 0
- },
- {
-  "name": "Default Knife",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/default-knife.webp",
-  "value": 0
- },
- {
-  "name": "Denis",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/denis.webp",
-  "value": 0
- },
- {
-  "name": "Dolphins",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/dolphins.webp",
-  "value": 0
- },
- {
-  "name": "Duckies",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/duckies.webp",
-  "value": 0
- },
- {
-  "name": "Eco",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/eco.webp",
-  "value": 0
- },
- {
-  "name": "Ecto",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ecto.webp",
-  "value": 0
- },
- {
-  "name": "Egg",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/egg.webp",
-  "value": 0
- },
- {
-  "name": "Elf (2017)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/elf-2017.webp",
-  "value": 0
- },
- {
-  "name": "Elf (2018)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/elf-2018.webp",
-  "value": 0
- },
- {
-  "name": "Elf (2023)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/elf-2023.webp",
-  "value": 0
- },
- {
-  "name": "Elf (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/elf-gun.webp",
-  "value": 0
- },
- {
-  "name": "Elf Knife (2015)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/elf-knife-2015.webp",
-  "value": 0
- },
- {
-  "name": "Engraved",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/engraved.webp",
-  "value": 0
- },
- {
-  "name": "Etched",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/etched.webp",
-  "value": 0
- },
- {
-  "name": "Euro",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/euro.webp",
-  "value": 0
- },
- {
-  "name": "Eyeball",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/eyeball.webp",
-  "value": 0
- },
- {
-  "name": "Fall",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/fall.webp",
-  "value": 0
- },
- {
-  "name": "Fallout",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/fallout.webp",
-  "value": 0
- },
- {
-  "name": "Fragile (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/fragile-gun.webp",
-  "value": 0
- },
- {
-  "name": "Fragile (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/fragile-knife.webp",
-  "value": 0
- },
- {
-  "name": "Frosted (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/frosted-gun.webp",
-  "value": 0
- },
- {
-  "name": "Frosted (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/frosted-knife.webp",
-  "value": 0
- },
- {
-  "name": "Frozen (Gun) (Common)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/frozen-gun-common.webp",
-  "value": 0
- },
- {
-  "name": "Frozen (Knife) (Common)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/frozen-knife-common.webp",
-  "value": 0
- },
- {
-  "name": "Ghosts (2023)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ghosts-2023.webp",
-  "value": 0
- },
- {
-  "name": "Ghosts (2024)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ghosts-2024.webp",
-  "value": 0
- },
- {
-  "name": "Ghosty (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ghosty-knife.webp",
-  "value": 0
- },
- {
-  "name": "Ghoulish",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ghoulish.webp",
-  "value": 0
- },
- {
-  "name": "Gift Bag (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/gift-bag-gun.webp",
-  "value": 0
- },
- {
-  "name": "Gift Bag (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/gift-bag-knife.webp",
-  "value": 0
- },
- {
-  "name": "Gifts (2024)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/gifts-2024.webp",
-  "value": 0
- },
- {
-  "name": "Gifts (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/gifts-gun.webp",
-  "value": 0
+  "value": 120,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/zombified-knife.webp"
  },
  {
   "name": "Gifts (Knife)",
   "rarity": "Common",
   "type": "Knife",
-  "image": "/items/gifts-knife.webp",
-  "value": 0
+  "value": 95,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/gifts-knife.webp"
  },
  {
-  "name": "Giftwrap",
+  "name": "Ghoulish",
   "rarity": "Common",
   "type": "Knife",
-  "image": "/items/giftwrap.webp",
-  "value": 0
- },
- {
-  "name": "Glitch1",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/glitch1.webp",
-  "value": 0
- },
- {
-  "name": "Glitch2",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/glitch2.webp",
-  "value": 0
- },
- {
-  "name": "Goo",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/goo.webp",
-  "value": 0
- },
- {
-  "name": "Grave (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/grave-gun.webp",
-  "value": 0
- },
- {
-  "name": "Grave (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/grave-knife.webp",
-  "value": 0
- },
- {
-  "name": "Green",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/green.webp",
-  "value": 0
- },
- {
-  "name": "Grind",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/grind.webp",
-  "value": 0
- },
- {
-  "name": "HL2",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/hl2.webp",
-  "value": 0
- },
- {
-  "name": "Hardened",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/hardened.webp",
-  "value": 0
- },
- {
-  "name": "Haunted",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/haunted.webp",
-  "value": 0
- },
- {
-  "name": "Haunted (2025)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/haunted-2025.webp",
-  "value": 0
- },
- {
-  "name": "Haunted (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/haunted-gun.webp",
-  "value": 0
- },
- {
-  "name": "Haunted (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/haunted-knife.webp",
-  "value": 0
- },
- {
-  "name": "Hearts",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/hearts.webp",
-  "value": 0
- },
- {
-  "name": "Hearts (2026)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/hearts-2026.webp",
-  "value": 0
- },
- {
-  "name": "Hot Chocolate",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/hot-chocolate.webp",
-  "value": 0
- },
- {
-  "name": "Hunter",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/hunter.webp",
-  "value": 0
- },
- {
-  "name": "Ice",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ice.webp",
-  "value": 0
- },
- {
-  "name": "Igloo (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/igloo-gun.webp",
-  "value": 0
- },
- {
-  "name": "Igloo (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/igloo-knife.webp",
-  "value": 0
- },
- {
-  "name": "Indy",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/indy.webp",
-  "value": 0
- },
- {
-  "name": "Infected",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/infected.webp",
-  "value": 0
- },
- {
-  "name": "Infected (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/infected-knife.webp",
-  "value": 0
- },
- {
-  "name": "Infected Gun (2022)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/infected-gun-2022.webp",
-  "value": 0
- },
- {
-  "name": "Infiltrator",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/infiltrator.webp",
-  "value": 0
- },
- {
-  "name": "Iron",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/iron.webp",
-  "value": 0
- },
- {
-  "name": "Juice",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/juice.webp",
-  "value": 0
- },
- {
-  "name": "Leaf",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/leaf.webp",
-  "value": 0
- },
- {
-  "name": "Leaves [HALLOWS2023]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/leaves-hallows2023.webp",
-  "value": 0
- },
- {
-  "name": "Leaves [SUMMER2025]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/leaves-summer2025.webp",
-  "value": 0
- },
- {
-  "name": "Lights (Gun) (Common)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/lights-gun-common.webp",
-  "value": 0
- },
- {
-  "name": "Lights (Knife) (Common)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/lights-knife-common.webp",
-  "value": 0
- },
- {
-  "name": "Linked",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/linked.webp",
-  "value": 0
- },
- {
-  "name": "Log",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/log.webp",
-  "value": 0
- },
- {
-  "name": "Love (2023)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/love-2023.webp",
-  "value": 0
- },
- {
-  "name": "Love (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/love-knife.webp",
-  "value": 0
- },
- {
-  "name": "Lovely",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/lovely.webp",
-  "value": 0
- },
- {
-  "name": "Moon",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/moon.webp",
-  "value": 0
- },
- {
-  "name": "Mummified",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/mummified.webp",
-  "value": 0
- },
- {
-  "name": "Neon",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/neon.webp",
-  "value": 0
- },
- {
-  "name": "News",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/news.webp",
-  "value": 0
- },
- {
-  "name": "Oily",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/oily.webp",
-  "value": 0
- },
- {
-  "name": "Ollie",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ollie.webp",
-  "value": 0
- },
- {
-  "name": "Orange",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/orange.webp",
-  "value": 0
- },
- {
-  "name": "Ornament (Common)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ornament-common.webp",
-  "value": 0
- },
- {
-  "name": "Ornament1",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ornament1.webp",
-  "value": 0
- },
- {
-  "name": "Ornament2 (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/ornament2-gun.webp",
-  "value": 0
- },
- {
-  "name": "Ornament2 (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ornament2-knife.webp",
-  "value": 0
- },
- {
-  "name": "Ornaments (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/ornaments-gun.webp",
-  "value": 0
- },
- {
-  "name": "Ornaments (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ornaments-knife.webp",
-  "value": 0
- },
- {
-  "name": "Passion",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/passion.webp",
-  "value": 0
- },
- {
-  "name": "Patrick",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/patrick.webp",
-  "value": 0
- },
- {
-  "name": "Pea",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/pea.webp",
-  "value": 0
- },
- {
-  "name": "Penguin Common",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/penguin-common.webp",
-  "value": 0
- },
- {
-  "name": "Peppermint (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/peppermint-gun.webp",
-  "value": 0
- },
- {
-  "name": "Peppermint (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/peppermint-knife.webp",
-  "value": 0
- },
- {
-  "name": "Phantom (Common)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/phantom-common.webp",
-  "value": 0
- },
- {
-  "name": "Pine (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/pine-gun.webp",
-  "value": 0
+  "value": 90,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/ghoulish.webp"
  },
  {
   "name": "Pine (Knife)",
   "rarity": "Common",
   "type": "Knife",
-  "image": "/items/pine-knife.webp",
-  "value": 0
+  "value": 85,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/pine-knife.webp"
  },
  {
-  "name": "Plaid",
+  "name": "Beachy",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 85,
+  "demand": 2,
+  "stability": "Fluctuating",
+  "image": "/items/beachy.webp"
+ },
+ {
+  "name": "Sands",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 85,
+  "demand": 2,
+  "stability": "Fluctuating",
+  "image": "/items/sands.webp"
+ },
+ {
+  "name": "Gingerbread Knife (2019)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 85,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/gingerbread-knife-2019.webp"
+ },
+ {
+  "name": "Pearlshine",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 80,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/pearlshine.webp"
+ },
+ {
+  "name": "Candy",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 80,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/candy.webp"
+ },
+ {
+  "name": "Pearl",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 75,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/pearl.webp"
+ },
+ {
+  "name": "Darkknife",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 70,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/darkknife.webp"
+ },
+ {
+  "name": "Icebreaker",
+  "rarity": "Ancient",
+  "type": "Knife",
+  "value": 65,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/icebreaker.webp"
+ },
+ {
+  "name": "Chroma Darkbringer",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 65,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-darkbringer.webp"
+ },
+ {
+  "name": "Glitch1",
   "rarity": "Common",
   "type": "Knife",
-  "image": "/items/plaid.webp",
-  "value": 0
+  "value": 65,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/glitch1.webp"
  },
  {
-  "name": "Present",
-  "rarity": "Common",
+  "name": "Heartblade",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/present.webp",
-  "value": 0
+  "value": 65,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/heartblade.webp"
  },
  {
-  "name": "Present (2023)",
-  "rarity": "Common",
+  "name": "Ornament",
+  "rarity": "Godly",
   "type": "Knife",
-  "image": "/items/present-2023.webp",
-  "value": 0
+  "value": 65,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/ornament.webp"
  },
  {
-  "name": "Prism",
-  "rarity": "Common",
+  "name": "Chroma Lightbringer",
+  "rarity": "Chroma",
   "type": "Knife",
-  "image": "/items/prism.webp",
-  "value": 0
+  "value": 60,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-lightbringer.webp"
  },
  {
-  "name": "Pumpkin (2023)",
-  "rarity": "Common",
+  "name": "Sweater Knife (2018)",
+  "rarity": "Uncommon",
   "type": "Knife",
-  "image": "/items/pumpkin-2023.webp",
-  "value": 0
+  "value": 60,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/sweater-knife-2018.webp"
  },
  {
-  "name": "Pumpkin Patch (Common)",
-  "rarity": "Common",
+  "name": "Snowflake Knife (2018)",
+  "rarity": "Uncommon",
   "type": "Knife",
-  "image": "/items/pumpkin-patch-common.webp",
-  "value": 0
+  "value": 55,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/snowflake-knife-2018.webp"
  },
  {
-  "name": "RB Knife",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/rb-knife.webp",
-  "value": 0
- },
- {
-  "name": "RIP Gun",
-  "rarity": "Common",
+  "name": "Chroma Luger",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/rip-gun.webp",
-  "value": 0
+  "value": 50,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-luger.webp"
  },
  {
-  "name": "Reindeer",
-  "rarity": "Common",
+  "name": "Spectral (Knife)",
+  "rarity": "Legendary",
   "type": "Knife",
-  "image": "/items/reindeer.webp",
-  "value": 0
+  "value": 50,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/spectral-knife.webp"
  },
  {
-  "name": "Reindeer (2025)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/reindeer-2025.webp",
-  "value": 0
- },
- {
-  "name": "Reptile",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/reptile.webp",
-  "value": 0
- },
- {
-  "name": "Ribbon",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ribbon.webp",
-  "value": 0
- },
- {
-  "name": "Ribbons",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ribbons.webp",
-  "value": 0
- },
- {
-  "name": "Roses",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/roses.webp",
-  "value": 0
- },
- {
-  "name": "Sand",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sand.webp",
-  "value": 0
- },
- {
-  "name": "Sandy",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sandy.webp",
-  "value": 0
- },
- {
-  "name": "Sandy (Gun)",
-  "rarity": "Common",
+  "name": "Traveler (Gun)",
+  "rarity": "Legendary",
   "type": "Gun",
-  "image": "/items/sandy-gun.webp",
-  "value": 0
+  "value": 50,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/traveler-gun.webp"
  },
  {
-  "name": "Santa",
-  "rarity": "Common",
+  "name": "Silent Night (Knife)",
+  "rarity": "Rare",
   "type": "Knife",
-  "image": "/items/santa.webp",
-  "value": 0
+  "value": 50,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/silent-night-knife.webp"
  },
  {
-  "name": "Santa (2018)",
-  "rarity": "Common",
+  "name": "Branches",
+  "rarity": "Uncommon",
   "type": "Knife",
-  "image": "/items/santa-2018.webp",
-  "value": 0
+  "value": 50,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/branches.webp"
  },
  {
-  "name": "Santa (2023)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/santa-2023.webp",
-  "value": 0
- },
- {
-  "name": "Santa (Gun)",
-  "rarity": "Common",
+  "name": "Aurora Gun (2021)",
+  "rarity": "Legendary",
   "type": "Gun",
-  "image": "/items/santa-gun.webp",
-  "value": 0
+  "value": 45,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/aurora-gun-2021.webp"
  },
  {
-  "name": "Santa (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/santa-knife.webp",
-  "value": 0
- },
- {
-  "name": "Scarf",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/scarf.webp",
-  "value": 0
- },
- {
-  "name": "Shaded",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/shaded.webp",
-  "value": 0
- },
- {
-  "name": "Sidewinder",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sidewinder.webp",
-  "value": 0
- },
- {
-  "name": "Sketchy",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sketchy.webp",
-  "value": 0
- },
- {
-  "name": "Skool",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/skool.webp",
-  "value": 0
- },
- {
-  "name": "Skyline",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/skyline.webp",
-  "value": 0
- },
- {
-  "name": "Slashed",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/slashed.webp",
-  "value": 0
- },
- {
-  "name": "Slate",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/slate.webp",
-  "value": 0
- },
- {
-  "name": "Slime (Gun)",
-  "rarity": "Common",
+  "name": "Vampire Gun (2022)",
+  "rarity": "Legendary",
   "type": "Gun",
-  "image": "/items/slime-gun.webp",
-  "value": 0
+  "value": 45,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/vampire-gun-2022.webp"
  },
  {
-  "name": "Slime (Knife)",
-  "rarity": "Common",
+  "name": "Batwing",
+  "rarity": "Ancient",
   "type": "Knife",
-  "image": "/items/slime-knife.webp",
-  "value": 0
+  "value": 42,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/batwing.webp"
  },
  {
-  "name": "Slimy",
-  "rarity": "Common",
+  "name": "Chroma Candleflame",
+  "rarity": "Chroma",
   "type": "Knife",
-  "image": "/items/slimy.webp",
-  "value": 0
+  "value": 40,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-candleflame.webp"
  },
  {
-  "name": "Snowball (Gun)",
-  "rarity": "Common",
+  "name": "Chroma Laser",
+  "rarity": "Chroma",
   "type": "Gun",
-  "image": "/items/snowball-gun.webp",
-  "value": 0
+  "value": 40,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-laser.webp"
  },
  {
-  "name": "Snowball (Knife)",
-  "rarity": "Common",
+  "name": "Elderwood Scythe",
+  "rarity": "Ancient",
   "type": "Knife",
-  "image": "/items/snowball-knife.webp",
-  "value": 0
+  "value": 38,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/elderwood-scythe.webp"
  },
  {
-  "name": "Snowfall",
+  "name": "Swirly Axe",
+  "rarity": "Ancient",
+  "type": "Knife",
+  "value": 38,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/swirly-axe.webp"
+ },
+ {
+  "name": "Chroma Elderwood Blade",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 37,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-elderwood-blade.webp"
+ },
+ {
+  "name": "Chroma Deathshard",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 35,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-deathshard.webp"
+ },
+ {
+  "name": "Chroma Swirly Gun",
+  "rarity": "Chroma",
+  "type": "Gun",
+  "value": 35,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-swirly-gun.webp"
+ },
+ {
+  "name": "Glitch2",
   "rarity": "Common",
   "type": "Knife",
-  "image": "/items/snowfall.webp",
-  "value": 0
+  "value": 35,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/glitch2.webp"
+ },
+ {
+  "name": "Mummified",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 35,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/mummified.webp"
+ },
+ {
+  "name": "Phantom",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 35,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/phantom.webp"
+ },
+ {
+  "name": "Red Luger",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 35,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/red-luger.webp"
+ },
+ {
+  "name": "Spectre",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 35,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/spectre.webp"
+ },
+ {
+  "name": "Beach",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 35,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/beach.webp"
+ },
+ {
+  "name": "Cotton Candy",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 35,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/cotton-candy.webp"
+ },
+ {
+  "name": "Makeshift (Knife)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 35,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/makeshift-knife.webp"
+ },
+ {
+  "name": "Candleflame",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 33,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/candleflame.webp"
+ },
+ {
+  "name": "Darkbringer",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 33,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/darkbringer.webp"
+ },
+ {
+  "name": "Elderwood Blade",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 33,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/elderwood-blade.webp"
+ },
+ {
+  "name": "Elderwood Revolver",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 33,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/elderwood-revolver.webp"
+ },
+ {
+  "name": "Iceblaster",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 33,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/iceblaster.webp"
+ },
+ {
+  "name": "Makeshift",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 33,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/makeshift.webp"
+ },
+ {
+  "name": "Chroma Cookiecane",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 32,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-cookiecane.webp"
+ },
+ {
+  "name": "Chroma Fang",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 32,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-fang.webp"
+ },
+ {
+  "name": "Chroma Gemstone",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 32,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-gemstone.webp"
+ },
+ {
+  "name": "Chroma Shark",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 32,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-shark.webp"
+ },
+ {
+  "name": "Chroma Slasher",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 32,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-slasher.webp"
+ },
+ {
+  "name": "Lightbringer",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 32,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/lightbringer.webp"
+ },
+ {
+  "name": "Sugar",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 32,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/sugar.webp"
+ },
+ {
+  "name": "Hallowscythe",
+  "rarity": "Ancient",
+  "type": "Knife",
+  "value": 30,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/hallowscythe.webp"
+ },
+ {
+  "name": "Frosted (Knife)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 30,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/frosted-knife.webp"
  },
  {
   "name": "Snowflakes (Gun)",
   "rarity": "Common",
   "type": "Gun",
-  "image": "/items/snowflakes-gun.webp",
-  "value": 0
- },
- {
-  "name": "Snowflakes (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/snowflakes-knife.webp",
-  "value": 0
- },
- {
-  "name": "Snowman (Gun) [XMAS2022]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/snowman-gun-xmas2022.webp",
-  "value": 0
- },
- {
-  "name": "Snowman (Knife) [XMAS2018]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/snowman-knife-xmas2018.webp",
-  "value": 0
- },
- {
-  "name": "Snowman (Knife) [XMAS2022]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/snowman-knife-xmas2022.webp",
-  "value": 0
- },
- {
-  "name": "Snowman Gun (2018)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/snowman-gun-2018.webp",
-  "value": 0
- },
- {
-  "name": "Sparkle1",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sparkle1.webp",
-  "value": 0
- },
- {
-  "name": "Sparkle10",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sparkle10.webp",
-  "value": 0
- },
- {
-  "name": "Sparkle2",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sparkle2.webp",
-  "value": 0
- },
- {
-  "name": "Sparkle3",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sparkle3.webp",
-  "value": 0
- },
- {
-  "name": "Sparkle4",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sparkle4.webp",
-  "value": 0
- },
- {
-  "name": "Sparkle5",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sparkle5.webp",
-  "value": 0
- },
- {
-  "name": "Sparkle6",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sparkle6.webp",
-  "value": 0
- },
- {
-  "name": "Sparkle7",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sparkle7.webp",
-  "value": 0
- },
- {
-  "name": "Sparkle8",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sparkle8.webp",
-  "value": 0
- },
- {
-  "name": "Sparkle9",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sparkle9.webp",
-  "value": 0
- },
- {
-  "name": "Spider (2023)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/spider-2023.webp",
-  "value": 0
- },
- {
-  "name": "Splat",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/splat.webp",
-  "value": 0
- },
- {
-  "name": "Splatter",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/splatter.webp",
-  "value": 0
- },
- {
-  "name": "Stainless",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stainless.webp",
-  "value": 0
- },
- {
-  "name": "Star",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/star.webp",
-  "value": 0
- },
- {
-  "name": "Starfish (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/starfish-gun.webp",
-  "value": 0
- },
- {
-  "name": "Starfish (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/starfish-knife.webp",
-  "value": 0
- },
- {
-  "name": "Starry (Common)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/starry-common.webp",
-  "value": 0
- },
- {
-  "name": "Static",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/static.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Gun) [HALLOWS2021]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/stickers-gun-hallows2021.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Gun) [HALLOWS2024]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/stickers-gun-hallows2024.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Gun) [SUMMER2023]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/stickers-gun-summer2023.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Gun) [SUMMER2025]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/stickers-gun-summer2025.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Gun) [XMAS2021]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/stickers-gun-xmas2021.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Gun) [XMAS2022]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/stickers-gun-xmas2022.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Gun) [XMAS2024]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/stickers-gun-xmas2024.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Gun) [XMAS2025]",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/stickers-gun-xmas2025.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Knife) [HALLOWS2021]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stickers-knife-hallows2021.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Knife) [HALLOWS2024]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stickers-knife-hallows2024.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Knife) [SUMMER2023]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stickers-knife-summer2023.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Knife) [SUMMER2025]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stickers-knife-summer2025.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Knife) [XMAS2021]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stickers-knife-xmas2021.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Knife) [XMAS2022]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stickers-knife-xmas2022.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Knife) [XMAS2024]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stickers-knife-xmas2024.webp",
-  "value": 0
- },
- {
-  "name": "Stickers (Knife) [XMAS2025]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stickers-knife-xmas2025.webp",
-  "value": 0
- },
- {
-  "name": "Stickers [HALLOWS2022]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stickers-hallows2022.webp",
-  "value": 0
- },
- {
-  "name": "Stickers [HALLOWS2025]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stickers-hallows2025.webp",
-  "value": 0
- },
- {
-  "name": "Stickers [THANKSGIVING2025]",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stickers-thanksgiving2025.webp",
-  "value": 0
- },
- {
-  "name": "Stockings",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stockings.webp",
-  "value": 0
- },
- {
-  "name": "Stockings (2024)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/stockings-2024.webp",
-  "value": 0
- },
- {
-  "name": "Strawberries (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/strawberries-gun.webp",
-  "value": 0
- },
- {
-  "name": "Strawberries (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/strawberries-knife.webp",
-  "value": 0
- },
- {
-  "name": "Striped (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/striped-gun.webp",
-  "value": 0
- },
- {
-  "name": "Striped (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/striped-knife.webp",
-  "value": 0
- },
- {
-  "name": "Sub",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sub.webp",
-  "value": 0
- },
- {
-  "name": "Sweetheart",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/sweetheart.webp",
-  "value": 0
- },
- {
-  "name": "TNL",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/tnl.webp",
-  "value": 0
- },
- {
-  "name": "Tailslide",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/tailslide.webp",
-  "value": 0
- },
- {
-  "name": "Tourist",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/tourist.webp",
-  "value": 0
- },
- {
-  "name": "Toy (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/toy-gun.webp",
-  "value": 0
- },
- {
-  "name": "Toy (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/toy-knife.webp",
-  "value": 0
- },
- {
-  "name": "Trees",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/trees.webp",
-  "value": 0
- },
- {
-  "name": "Tulip",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/tulip.webp",
-  "value": 0
- },
- {
-  "name": "UFOs (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/ufos-gun.webp",
-  "value": 0
- },
- {
-  "name": "UFOs (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/ufos-knife.webp",
-  "value": 0
- },
- {
-  "name": "Valentine",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/valentine.webp",
-  "value": 0
- },
- {
-  "name": "Vines (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/vines-gun.webp",
-  "value": 0
- },
- {
-  "name": "Vines (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/vines-knife.webp",
-  "value": 0
- },
- {
-  "name": "Watcher (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/watcher-gun.webp",
-  "value": 0
- },
- {
-  "name": "Watcher (Knife) (Common)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/watcher-knife-common.webp",
-  "value": 0
- },
- {
-  "name": "Wavy (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/wavy-gun.webp",
-  "value": 0
- },
- {
-  "name": "Wavy (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/wavy-knife.webp",
-  "value": 0
- },
- {
-  "name": "Webbed (Gun)",
-  "rarity": "Common",
-  "type": "Gun",
-  "image": "/items/webbed-gun.webp",
-  "value": 0
- },
- {
-  "name": "Webbed (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/webbed-knife.webp",
-  "value": 0
- },
- {
-  "name": "Webs (Common)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/webs-common.webp",
-  "value": 0
- },
- {
-  "name": "Whiteout",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/whiteout.webp",
-  "value": 0
- },
- {
-  "name": "Witch",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/witch.webp",
-  "value": 0
- },
- {
-  "name": "Wood",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/wood.webp",
-  "value": 0
- },
- {
-  "name": "Wrapped (Knife)",
-  "rarity": "Common",
-  "type": "Knife",
-  "image": "/items/wrapped-knife.webp",
-  "value": 0
+  "value": 30,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/snowflakes-gun.webp"
  },
  {
   "name": "Wrapped Gun (2018)",
   "rarity": "Common",
   "type": "Gun",
-  "image": "/items/wrapped-gun-2018.webp",
-  "value": 0
+  "value": 30,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/wrapped-gun-2018.webp"
  },
  {
-  "name": "Xbox",
+  "name": "Sparkle9",
   "rarity": "Common",
   "type": "Knife",
-  "image": "/items/xbox.webp",
-  "value": 0
+  "value": 30,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sparkle9.webp"
  },
  {
-  "name": "Yellow",
+  "name": "Zombified Knife (2022)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 30,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/zombified-knife-2022.webp"
+ },
+ {
+  "name": "Chroma Heat",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 28,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-heat.webp"
+ },
+ {
+  "name": "Chroma Seer",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 28,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-seer.webp"
+ },
+ {
+  "name": "JD",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 28,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/jd.webp"
+ },
+ {
+  "name": "Chroma Gingerblade",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 27,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-gingerblade.webp"
+ },
+ {
+  "name": "Chroma Tides",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 27,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-tides.webp"
+ },
+ {
+  "name": "Snowman Gun (2018)",
+  "rarity": "Common",
+  "type": "Gun",
+  "value": 25,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/snowman-gun-2018.webp"
+ },
+ {
+  "name": "Webbed (Gun)",
+  "rarity": "Common",
+  "type": "Gun",
+  "value": 25,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/webbed-gun.webp"
+ },
+ {
+  "name": "CandyCorn (2017)",
   "rarity": "Common",
   "type": "Knife",
-  "image": "/items/yellow.webp",
-  "value": 0
+  "value": 25,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/candy-corn-2017.webp"
+ },
+ {
+  "name": "Ecto",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 25,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/ecto.webp"
+ },
+ {
+  "name": "Mummy (2017)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 25,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/mummy-2017.webp"
+ },
+ {
+  "name": "Chroma Saw",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 23,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-saw.webp"
+ },
+ {
+  "name": "Green Luger",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 23,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/green-luger.webp"
+ },
+ {
+  "name": "Chroma Boneblade",
+  "rarity": "Chroma",
+  "type": "Knife",
+  "value": 22,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chroma-boneblade.webp"
+ },
+ {
+  "name": "Amerilaser",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 22,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/amerilaser.webp"
+ },
+ {
+  "name": "Laser",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 22,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/laser.webp"
+ },
+ {
+  "name": "Starry Gun (2021)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 22,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/starry-gun-2021.webp"
+ },
+ {
+  "name": "Elf (2018)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 20,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/elf-2018.webp"
+ },
+ {
+  "name": "Slimy",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 20,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/slimy.webp"
+ },
+ {
+  "name": "Sparkle10",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 20,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sparkle10.webp"
+ },
+ {
+  "name": "Sparkle8",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 20,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sparkle8.webp"
+ },
+ {
+  "name": "Hallowgun",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 20,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/hallowgun.webp"
+ },
+ {
+  "name": "Nightblade",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 20,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/nightblade.webp"
+ },
+ {
+  "name": "Shark",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 20,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/shark.webp"
+ },
+ {
+  "name": "Swirl",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 20,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/swirl.webp"
+ },
+ {
+  "name": "Watcher Gun (2021)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 20,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/watcher-gun-2021.webp"
+ },
+ {
+  "name": "Logchopper",
+  "rarity": "Ancient",
+  "type": "Knife",
+  "value": 18,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/logchopper.webp"
+ },
+ {
+  "name": "Sparkle7",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 18,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sparkle7.webp"
+ },
+ {
+  "name": "Icebeam",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 18,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/icebeam.webp"
+ },
+ {
+  "name": "Luger",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 18,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/luger.webp"
+ },
+ {
+  "name": "Plasmabeam",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 18,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/plasmabeam.webp"
+ },
+ {
+  "name": "Swirly Gun",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 18,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/swirly-gun.webp"
+ },
+ {
+  "name": "RIP Gun",
+  "rarity": "Common",
+  "type": "Gun",
+  "value": 17,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/rip-gun.webp"
+ },
+ {
+  "name": "Battleaxe II",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 17,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/battleaxe-ii.webp"
+ },
+ {
+  "name": "Blaster",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 17,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/blaster.webp"
+ },
+ {
+  "name": "Ginger Luger",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 17,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/ginger-luger.webp"
+ },
+ {
+  "name": "Pixel",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 17,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/pixel.webp"
+ },
+ {
+  "name": "Coal Knife (2018)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 15,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/coal-knife-2018.webp"
+ },
+ {
+  "name": "Elf Knife (2015)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 15,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/elf-knife-2015.webp"
+ },
+ {
+  "name": "Gemstone",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 15,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/gemstone.webp"
+ },
+ {
+  "name": "Iceflake",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 15,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/iceflake.webp"
+ },
+ {
+  "name": "Old Glory",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 15,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/old-glory.webp"
+ },
+ {
+  "name": "Plasmablade",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 15,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/plasmablade.webp"
+ },
+ {
+  "name": "Slasher",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 15,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/slasher.webp"
+ },
+ {
+  "name": "Vampire's Edge",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 15,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/vampires-edge.webp"
+ },
+ {
+  "name": "Bunnies",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 15,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/bunnies.webp"
+ },
+ {
+  "name": "Skulls (2021)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 15,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/skulls-2021.webp"
+ },
+ {
+  "name": "Zombified (Gun)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 15,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/zombified-gun.webp"
+ },
+ {
+  "name": "Icewing",
+  "rarity": "Ancient",
+  "type": "Knife",
+  "value": 13,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/icewing.webp"
+ },
+ {
+  "name": "Cookiecane",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 13,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/cookiecane.webp"
+ },
+ {
+  "name": "Deathshard",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 13,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/deathshard.webp"
+ },
+ {
+  "name": "Eternalcane",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 13,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/eternalcane.webp"
+ },
+ {
+  "name": "Gingerblade",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 13,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/gingerblade.webp"
+ },
+ {
+  "name": "Jinglegun",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 13,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/jinglegun.webp"
+ },
+ {
+  "name": "Lugercane",
+  "rarity": "Godly",
+  "type": "Gun",
+  "value": 13,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/lugercane.webp"
+ },
+ {
+  "name": "Minty",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 13,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/minty.webp"
+ },
+ {
+  "name": "Nebula",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 13,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/nebula.webp"
+ },
+ {
+  "name": "Virtual",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 13,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/virtual.webp"
+ },
+ {
+  "name": "Magma (Gun)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 13,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/magma-gun.webp"
+ },
+ {
+  "name": "Candy Corn (2019)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 12,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/candy-corn-2019.webp"
+ },
+ {
+  "name": "Pumpkin Patch (Common)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 12,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/pumpkin-patch-common.webp"
+ },
+ {
+  "name": "Prism",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 12,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/prism.webp"
+ },
+ {
+  "name": "Sparkle6",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 12,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sparkle6.webp"
+ },
+ {
+  "name": "Battleaxe",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 12,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/battleaxe.webp"
+ },
+ {
+  "name": "Gingermint",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 12,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/gingermint.webp"
+ },
+ {
+  "name": "Swirly Blade",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 12,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/swirly-blade.webp"
+ },
+ {
+  "name": "Silent Night (Gun)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 12,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/silent-night-gun.webp"
+ },
+ {
+  "name": "Snowflakes (2020)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 12,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/snowflakes-2020.webp"
+ },
+ {
+  "name": "Void",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 12,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/void.webp"
+ },
+ {
+  "name": "Wrap (Gun)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 12,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/wrap-gun.webp"
+ },
+ {
+  "name": "Wrap (Knife)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 12,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/wrap-knife.webp"
+ },
+ {
+  "name": "Combat II",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 10,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/combat-ii.webp"
+ },
+ {
+  "name": "Phantom (Common)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 10,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/phantom-common.webp"
  },
  {
   "name": "Zombie Knife (2017)",
   "rarity": "Common",
   "type": "Knife",
-  "image": "/items/zombie-knife-2017.webp",
-  "value": 0
+  "value": 10,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/zombie-knife-2017.webp"
+ },
+ {
+  "name": "Sparkle4",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 10,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sparkle4.webp"
+ },
+ {
+  "name": "Chill",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 10,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/chill.webp"
+ },
+ {
+  "name": "Clockwork",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 10,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/clockwork.webp"
+ },
+ {
+  "name": "Fang",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 10,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/fang.webp"
+ },
+ {
+  "name": "Frostsaber",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 10,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/frostsaber.webp"
+ },
+ {
+  "name": "Heat",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 10,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/heat.webp"
+ },
+ {
+  "name": "Spider",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 10,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/spider.webp"
+ },
+ {
+  "name": "Tides",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 10,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/tides.webp"
+ },
+ {
+  "name": "Golden (Knife)",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 10,
+  "demand": 3,
+  "stability": "Fluctuating",
+  "image": "/items/golden-knife.webp"
+ },
+ {
+  "name": "Shadow (Gun)",
+  "rarity": "Legendary",
+  "type": "Gun",
+  "value": 10,
+  "demand": 3,
+  "stability": "Fluctuating",
+  "image": "/items/shadow-gun.webp"
+ },
+ {
+  "name": "Arctic (Gun)",
+  "rarity": "Legendary",
+  "type": "Gun",
+  "value": 10,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/arctic-gun.webp"
+ },
+ {
+  "name": "Cowboy (Knife)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 10,
+  "demand": 3,
+  "stability": "Fluctuating",
+  "image": "/items/cowboy-knife.webp"
+ },
+ {
+  "name": "Laser (Knife)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 10,
+  "demand": 3,
+  "stability": "Fluctuating",
+  "image": "/items/laser-knife.webp"
+ },
+ {
+  "name": "Phaser (Knife)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 10,
+  "demand": 3,
+  "stability": "Fluctuating",
+  "image": "/items/phaser-knife.webp"
+ },
+ {
+  "name": "Prince (Gun)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 10,
+  "demand": 3,
+  "stability": "Fluctuating",
+  "image": "/items/prince-gun.webp"
+ },
+ {
+  "name": "Floral (Knife)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 10,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/floral-knife.webp"
+ },
+ {
+  "name": "Ghostfire (Gun)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 10,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/ghostfire-gun.webp"
+ },
+ {
+  "name": "Ghost Gun (Uncommon)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 10,
+  "demand": 3,
+  "stability": "Fluctuating",
+  "image": "/items/ghost-gun-uncommon.webp"
+ },
+ {
+  "name": "Gingerbread Knife (2020)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 10,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/gingerbread-knife-2020.webp"
+ },
+ {
+  "name": "Skool",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 8,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/skool.webp"
+ },
+ {
+  "name": "Sparkle5",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 8,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sparkle5.webp"
+ },
+ {
+  "name": "Bioblade",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 8,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/bioblade.webp"
+ },
+ {
+  "name": "Eternal III",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 8,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/eternal-iii.webp"
+ },
+ {
+  "name": "Eternal IV",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 8,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/eternal-iv.webp"
+ },
+ {
+  "name": "Hallow's Blade",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 8,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/hallows-blade.webp"
+ },
+ {
+  "name": "Hallow's Edge",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 8,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/hallows-edge.webp"
+ },
+ {
+  "name": "Handsaw",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 8,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/handsaw.webp"
+ },
+ {
+  "name": "Steel (Gun)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 8,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/steel-gun.webp"
+ },
+ {
+  "name": "Blood",
+  "rarity": "Vintage",
+  "type": "Knife",
+  "value": 8,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/blood.webp"
+ },
+ {
+  "name": "Ghost",
+  "rarity": "Vintage",
+  "type": "Knife",
+  "value": 8,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/ghost.webp"
+ },
+ {
+  "name": "Laser (Vintage)",
+  "rarity": "Vintage",
+  "type": "Gun",
+  "value": 8,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/laser-vintage.webp"
+ },
+ {
+  "name": "Tailslide",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 7,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/tailslide.webp"
+ },
+ {
+  "name": "Boneblade",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/boneblade.webp"
+ },
+ {
+  "name": "Eternal",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/eternal.webp"
+ },
+ {
+  "name": "Eternal II",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/eternal-ii.webp"
+ },
+ {
+  "name": "Frostbite",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/frostbite.webp"
+ },
+ {
+  "name": "Ghostblade",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/ghostblade.webp"
+ },
+ {
+  "name": "Ice Dragon",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/ice-dragon.webp"
+ },
+ {
+  "name": "Ice Shard",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/ice-shard.webp"
+ },
+ {
+  "name": "Prismatic",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/prismatic.webp"
+ },
+ {
+  "name": "Pumpking",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/pumpking.webp"
+ },
+ {
+  "name": "Saw",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/saw.webp"
+ },
+ {
+  "name": "Xmas",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/xmas.webp"
+ },
+ {
+  "name": "Cavern (Knife)",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 7,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/cavern-knife.webp"
+ },
+ {
+  "name": "Broken",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 7,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/broken.webp"
+ },
+ {
+  "name": "Ghastly (Gun)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 7,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/ghastly-gun.webp"
+ },
+ {
+  "name": "Aurora Knife (2019)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 7,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/aurora-knife-2019.webp"
+ },
+ {
+  "name": "Gothic (Gun)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 7,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/gothic-gun.webp"
+ },
+ {
+  "name": "Zombie Knife (2021)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 7,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/zombie-knife-2021.webp"
+ },
+ {
+  "name": "America (Vintage)",
+  "rarity": "Vintage",
+  "type": "Knife",
+  "value": 7,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/america-vintage.webp"
+ },
+ {
+  "name": "Prince",
+  "rarity": "Vintage",
+  "type": "Knife",
+  "value": 6,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/prince.webp"
+ },
+ {
+  "name": "Shadow",
+  "rarity": "Vintage",
+  "type": "Knife",
+  "value": 6,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/shadow.webp"
+ },
+ {
+  "name": "Starry (Common)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 5,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/starry-common.webp"
+ },
+ {
+  "name": "Eggblade",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 5,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/eggblade.webp"
+ },
+ {
+  "name": "Flames",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 5,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/flames.webp"
+ },
+ {
+  "name": "Snowflake",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 5,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/snowflake.webp"
+ },
+ {
+  "name": "Winter's Edge",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 5,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/winters-edge.webp"
+ },
+ {
+  "name": "Icedriller",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 5,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/icedriller.webp"
+ },
+ {
+  "name": "Nightsky",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 5,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/nightsky.webp"
+ },
+ {
+  "name": "Ghost (Knife)",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 5,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/ghost-knife.webp"
+ },
+ {
+  "name": "Ginger Gun (2018)",
+  "rarity": "Legendary",
+  "type": "Gun",
+  "value": 5,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/ginger-gun-2018.webp"
+ },
+ {
+  "name": "Toxic (Knife)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 5,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/toxic-knife.webp"
+ },
+ {
+  "name": "Wraith (Knife)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 5,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/wraith-knife.webp"
+ },
+ {
+  "name": "SnowmanGun(2021)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 5,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/snowmangun-2021.webp"
+ },
+ {
+  "name": "Hazard (Gun)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 5,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/hazard-gun.webp"
+ },
+ {
+  "name": "Zombie Gun (2018)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 5,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/zombie-gun-2018.webp"
+ },
+ {
+  "name": "Phaser",
+  "rarity": "Vintage",
+  "type": "Knife",
+  "value": 5,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/phaser.webp"
+ },
+ {
+  "name": "Alex",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 4,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/alex.webp"
+ },
+ {
+  "name": "Corl",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 4,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/corl.webp"
+ },
+ {
+  "name": "Denis",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 4,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/denis.webp"
+ },
+ {
+  "name": "Euro",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 4,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/euro.webp"
+ },
+ {
+  "name": "Ollie",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 4,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/ollie.webp"
+ },
+ {
+  "name": "Sidewinder",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 4,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sidewinder.webp"
+ },
+ {
+  "name": "Sketchy",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 4,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sketchy.webp"
+ },
+ {
+  "name": "Sub",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 4,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sub.webp"
+ },
+ {
+  "name": "Peppermint",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 4,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/peppermint.webp"
+ },
+ {
+  "name": "Scratch (2016)",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 4,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/scratch-2016.webp"
+ },
+ {
+  "name": "Skulls",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 4,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/skulls.webp"
+ },
+ {
+  "name": "Cowboy",
+  "rarity": "Vintage",
+  "type": "Knife",
+  "value": 4,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/cowboy.webp"
+ },
+ {
+  "name": "Golden",
+  "rarity": "Vintage",
+  "type": "Knife",
+  "value": 4,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/golden.webp"
+ },
+ {
+  "name": "Chroma Fire Bat",
+  "rarity": "Chroma",
+  "type": "Pet",
+  "value": 3,
+  "demand": 1,
+  "stability": "Underpaid For",
+  "image": "/items/chroma-fire-bat.webp"
+ },
+ {
+  "name": "Chroma Fire Bear",
+  "rarity": "Chroma",
+  "type": "Pet",
+  "value": 3,
+  "demand": 1,
+  "stability": "Underpaid For",
+  "image": "/items/chroma-fire-bear.webp"
+ },
+ {
+  "name": "Chroma Fire Bunny",
+  "rarity": "Chroma",
+  "type": "Pet",
+  "value": 3,
+  "demand": 1,
+  "stability": "Underpaid For",
+  "image": "/items/chroma-fire-bunny.webp"
+ },
+ {
+  "name": "Chroma Fire Cat",
+  "rarity": "Chroma",
+  "type": "Pet",
+  "value": 3,
+  "demand": 1,
+  "stability": "Underpaid For",
+  "image": "/items/chroma-fire-cat.webp"
+ },
+ {
+  "name": "Chroma Fire Dog",
+  "rarity": "Chroma",
+  "type": "Pet",
+  "value": 3,
+  "demand": 1,
+  "stability": "Underpaid For",
+  "image": "/items/chroma-fire-dog.webp"
+ },
+ {
+  "name": "Chroma Fire Fox",
+  "rarity": "Chroma",
+  "type": "Pet",
+  "value": 3,
+  "demand": 1,
+  "stability": "Underpaid For",
+  "image": "/items/chroma-fire-fox.webp"
+ },
+ {
+  "name": "Chroma Fire Pig",
+  "rarity": "Chroma",
+  "type": "Pet",
+  "value": 3,
+  "demand": 1,
+  "stability": "Underpaid For",
+  "image": "/items/chroma-fire-pig.webp"
+ },
+ {
+  "name": "Apocalypse (Gun)",
+  "rarity": "Common",
+  "type": "Gun",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/apocalypse-gun.webp"
+ },
+ {
+  "name": "Bats Knife (2020)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/bats-knife-2020.webp"
+ },
+ {
+  "name": "Infected Gun (2022)",
+  "rarity": "Common",
+  "type": "Gun",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/infected-gun-2022.webp"
+ },
+ {
+  "name": "Ghosty (Knife)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/ghosty-knife.webp"
+ },
+ {
+  "name": "Sparkle1",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sparkle1.webp"
+ },
+ {
+  "name": "Sparkle2",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sparkle2.webp"
+ },
+ {
+  "name": "Sparkle3",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sparkle3.webp"
+ },
+ {
+  "name": "Cookieblade",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/cookieblade.webp"
+ },
+ {
+  "name": "Blue Seer",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/blue-seer.webp"
+ },
+ {
+  "name": "Purple Seer",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/purple-seer.webp"
+ },
+ {
+  "name": "Red Seer",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/red-seer.webp"
+ },
+ {
+  "name": "Seer",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/seer.webp"
+ },
+ {
+  "name": "Aurora Knife (2021)",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/aurora-knife-2021.webp"
+ },
+ {
+  "name": "Spectral (Gun)",
+  "rarity": "Legendary",
+  "type": "Gun",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/spectral-gun.webp"
+ },
+ {
+  "name": "Traveler (Knife)",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/traveler-knife.webp"
+ },
+ {
+  "name": "Vampire Knife (2022)",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/vampire-knife-2022.webp"
+ },
+ {
+  "name": "Witched",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/witched.webp"
+ },
+ {
+  "name": "Blue Elite",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/blue-elite.webp"
+ },
+ {
+  "name": "Green Elite",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/green-elite.webp"
+ },
+ {
+  "name": "Santa's Magic",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/santas-magic.webp"
+ },
+ {
+  "name": "Santa's Spirit",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/santas-spirit.webp"
+ },
+ {
+  "name": "Icicles (Gun)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/icicles-gun.webp"
+ },
+ {
+  "name": "Jack",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/jack.webp"
+ },
+ {
+  "name": "Snakebite (Knife)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/snakebite-knife.webp"
+ },
+ {
+  "name": "Vampire Gun (2018)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/vampire-gun-2018.webp"
+ },
+ {
+  "name": "Magma",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/magma.webp"
+ },
+ {
+  "name": "Gingerbread Gun (2020)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/gingerbread-gun-2020.webp"
+ },
+ {
+  "name": "Lantern (Knife)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/lantern-knife.webp"
+ },
+ {
+  "name": "Webs",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/webs.webp"
+ },
+ {
+  "name": "Zombie Knife (2023)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 3,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/zombie-knife-2023.webp"
+ },
+ {
+  "name": "Frozen (Gun) (Uncommon)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/frozen-gun-uncommon.webp"
+ },
+ {
+  "name": "Potion (2017)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/potion-2017.webp"
+ },
+ {
+  "name": "Splitter",
+  "rarity": "Vintage",
+  "type": "Knife",
+  "value": 3,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/splitter.webp"
+ },
+ {
+  "name": "Asteroid",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/asteroid.webp"
+ },
+ {
+  "name": "Grind",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/grind.webp"
+ },
+ {
+  "name": "Indy",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/indy.webp"
+ },
+ {
+  "name": "Orange Seer",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/orange-seer.webp"
+ },
+ {
+  "name": "Yellow Seer",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/yellow-seer.webp"
+ },
+ {
+  "name": "Energized (Gun)",
+  "rarity": "Legendary",
+  "type": "Gun",
+  "value": 2,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/energized-gun.webp"
+ },
+ {
+  "name": "Frostfade (Knife)",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 2,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/frostfade-knife.webp"
+ },
+ {
+  "name": "Scratch (2017)",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/scratch-2017.webp"
+ },
+ {
+  "name": "Ghost (Gun)",
+  "rarity": "Legendary",
+  "type": "Gun",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/ghost-gun.webp"
+ },
+ {
+  "name": "Candy Swirl (Gun)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 2,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/candy-swirl-gun.webp"
+ },
+ {
+  "name": "Sunset (Gun)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 2,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/sunset-gun.webp"
+ },
+ {
+  "name": "Bats",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/bats.webp"
+ },
+ {
+  "name": "Green Marble",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/green-marble.webp"
+ },
+ {
+  "name": "Orangle Marble",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/orangle-marble.webp"
+ },
+ {
+  "name": "Toxic (Gun)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/toxic-gun.webp"
+ },
+ {
+  "name": "Tree Knife (2021)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 2,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/tree-knife-2021.webp"
+ },
+ {
+  "name": "Meltdown",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 2,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/meltdown.webp"
+ },
+ {
+  "name": "Moonlight (Gun)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 2,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/moonlight-gun.webp"
+ },
+ {
+  "name": "Stars (Knife)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 2,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/stars-knife.webp"
+ },
+ {
+  "name": "Pumpkin Pie",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 2,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/pumpkin-pie.webp"
+ },
+ {
+  "name": "Lights (Gun)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/lights-gun.webp"
+ },
+ {
+  "name": "Mummy Gun (2018)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/mummy-gun-2018.webp"
+ },
+ {
+  "name": "Potion Gun (2018)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/potion-gun-2018.webp"
+ },
+ {
+  "name": "Potion Knife (2018)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 2,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/potion-knife-2018.webp"
+ },
+ {
+  "name": "Slashed",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 1,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/slashed.webp"
+ },
+ {
+  "name": "Bats Gun (2018)",
+  "rarity": "Common",
+  "type": "Gun",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/bats-gun-2018.webp"
+ },
+ {
+  "name": "Grave (Gun)",
+  "rarity": "Common",
+  "type": "Gun",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/grave-gun.webp"
+ },
+ {
+  "name": "Grave (Knife)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/grave-knife.webp"
+ },
+ {
+  "name": "Haunted (Gun)",
+  "rarity": "Common",
+  "type": "Gun",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/haunted-gun.webp"
+ },
+ {
+  "name": "Haunted (Knife)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/haunted-knife.webp"
+ },
+ {
+  "name": "Slime (Gun)",
+  "rarity": "Common",
+  "type": "Gun",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/slime-gun.webp"
+ },
+ {
+  "name": "Slime (Knife)",
+  "rarity": "Common",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/slime-knife.webp"
+ },
+ {
+  "name": "Chromatic (Knife)",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 1,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/chromatic-knife.webp"
+ },
+ {
+  "name": "Icecracker",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 1,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/icecracker.webp"
+ },
+ {
+  "name": "Red Fire",
+  "rarity": "Legendary",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/red-fire.webp"
+ },
+ {
+  "name": "Cavern (Gun)",
+  "rarity": "Legendary",
+  "type": "Gun",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/cavern-gun.webp"
+ },
+ {
+  "name": "Darkgun",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 1,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/darkgun.webp"
+ },
+ {
+  "name": "Gingerbread (2017)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/gingerbread-2017.webp"
+ },
+ {
+  "name": "Monster",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/monster.webp"
+ },
+ {
+  "name": "Aurora Gun (2019)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/aurora-gun-2019.webp"
+ },
+ {
+  "name": "Candy Swirl (Knife)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/candy-swirl-knife.webp"
+ },
+ {
+  "name": "Snakebite (Gun)",
+  "rarity": "Rare",
+  "type": "Gun",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/snakebite-gun.webp"
+ },
+ {
+  "name": "Vampire Knife (2018)",
+  "rarity": "Rare",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/vampire-knife-2018.webp"
+ },
+ {
+  "name": "Cookie (Knife)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 1,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/cookie-knife.webp"
+ },
+ {
+  "name": "Gingerbread Gun (2019)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 1,
+  "demand": 2,
+  "stability": "Stable",
+  "image": "/items/gingerbread-gun-2019.webp"
+ },
+ {
+  "name": "Frozen (Knife)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/frozen-knife.webp"
+ },
+ {
+  "name": "Holly Gun (2018)",
+  "rarity": "Uncommon",
+  "type": "Gun",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/holly-gun-2018.webp"
+ },
+ {
+  "name": "Lights (Knife)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/lights-knife.webp"
+ },
+ {
+  "name": "Mummy Knife (2018)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/mummy-knife-2018.webp"
+ },
+ {
+  "name": "Zombie Knife (2018)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/zombie-knife-2018.webp"
+ },
+ {
+  "name": "Moons",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/moons.webp"
+ },
+ {
+  "name": "Vampire (2016)",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/vampire-2016.webp"
+ },
+ {
+  "name": "Wolf",
+  "rarity": "Uncommon",
+  "type": "Knife",
+  "value": 1,
+  "demand": 1,
+  "stability": "Stable",
+  "image": "/items/wolf.webp"
  }
 ]
