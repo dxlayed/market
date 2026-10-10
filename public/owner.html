@@ -68,6 +68,11 @@ h1{font-size:28px;margin-bottom:16px}
 .chat p{margin:2px 0 0;overflow-wrap:anywhere;flex:1}
 .chat .acts{display:flex;gap:6px;flex:none}
 .empty{text-align:center;color:var(--mute);padding:36px 16px}
+.feerow{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line)}.feerow:first-of-type{border-top:0}
+.feerow .grow{flex:1;min-width:0}.feerow b{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.sw{position:relative;width:48px;height:28px;border-radius:99px;padding:0;background:var(--raise);border:1px solid var(--line);flex:none}
+.sw i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:99px;background:#8a7a7a;transition:transform .18s,background .18s}
+.sw.on{background:#e8202a55;border-color:var(--gold)}.sw.on i{transform:translateX(20px);background:#fff}
 .bothd{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .bothd .bav{width:64px;height:64px;border-radius:16px;background:#2a1616 center/cover;border:1px solid var(--line);display:grid;place-items:center;font:900 26px Outfit,sans-serif;color:var(--gold);position:relative;flex:none}
 .bothd .bav i{position:absolute;right:-3px;bottom:-3px;width:15px;height:15px;border-radius:99px;background:#6b6b6b;border:3px solid var(--surface)}
@@ -186,19 +191,46 @@ async function overview() {
         ? 'Regular players see the maintenance page with the Discord link. Owners still see everything, so you can check updates before opening up.'
         : 'Turn on maintenance to hide the site from regular players while you work on it. Owners keep full access.' })),
     mBtn);
-  $('main').replaceChildren(el('h1', { textContent: 'Overview' }), maint,
+  $('main').replaceChildren(el('h1', { textContent: 'Overview' }), maint, feesCard(set),
     el('div', { className: 'stats' },
       tile('Users', s.users, s.newUsers + ' joined in the last 24h'),
       tile('Waiting on reply', s.waiting, s.openTickets + ' open tickets', s.waiting > 0),
       tile('Chat messages', s.messages, s.messagesToday + ' in the last 24h'),
       tile('Active trades', s.activeTrades, s.itemsHeld + ' items held on site', s.activeTrades > 0),
       tile('Sales (24h)', usd(s.volume24), s.sales24 + ' items sold'),
+      tile('Fees earned (24h)', usd(s.fees24), usd(s.feesAll) + ' all time'),
       tile('For sale', s.listings, 'active listings'),
       tile('Balances owed', usd(s.balances), 'total of everyone\'s balance'),
       tile('Withdrawals to send', s.withdrawalsPending, 'in the Crypto tab', s.withdrawalsPending > 0),
       tile('Banned users', s.banned, '')),
     el('section', { className: 'card' }, el('h2', { textContent: 'Tickets waiting on you' }), list),
     el('p', { className: 'mute', textContent: 'Owners: ' + s.owners.join(', ') + '. Change this with the OWNERS variable in Railway. Trading API: ' + (s.apiEnabled ? 'on' : 'off (set BOT_API_KEY in Railway)') + '.' }));
+}
+
+// Site fees: two switches, each with its own percent.
+function feesCard(set) {
+  const row = (key, title, desc) => {
+    const cur = set[key] || { on: false, pct: 5 };
+    const pct = el('input', { type: 'number', min: 0, max: 50, step: 0.5, value: cur.pct, style: 'width:80px', 'aria-label': title + ' percent' });
+    const sw = el('button', { type: 'button', className: 'sw' + (cur.on ? ' on' : ''), role: 'switch', 'aria-checked': String(cur.on), 'aria-label': title }, el('i'));
+    const state = el('span', { className: 'pill ' + (cur.on ? 'ok' : ''), textContent: cur.on ? 'On' : 'Off' });
+    const save = async (on) => {
+      sw.disabled = true;
+      try {
+        const r = await api('/api/admin/settings', 'POST', { [key]: { on, pct: pct.value } });
+        Object.assign(set, r); const n = r[key];
+        sw.classList.toggle('on', n.on); sw.setAttribute('aria-checked', String(n.on)); state.className = 'pill ' + (n.on ? 'ok' : ''); state.textContent = n.on ? 'On' : 'Off'; pct.value = n.pct;
+        toast(title + (n.on ? ' on at ' + n.pct + '%' : ' off'));
+      } catch (e) { toast(e.message, true); }
+      sw.disabled = false;
+    };
+    sw.onclick = () => save(!sw.classList.contains('on'));
+    pct.onchange = () => save(sw.classList.contains('on'));
+    return el('div', { className: 'feerow' }, sw, el('div', { className: 'grow' }, el('b', {}, title, ' ', state), el('div', { className: 'mute', textContent: desc })), el('label', { className: 'mute', style: 'display:flex;align-items:center;gap:6px' }, pct, '%'));
+  };
+  return el('section', { className: 'card' }, el('h2', { textContent: 'Site fees' }),
+    row('sale_tax', 'Fee on item sales', 'Taken from the seller when an item sells. Buyers pay the listed price; sellers get the rest.'),
+    row('withdraw_tax', 'Fee on withdrawals', 'Taken from crypto withdrawals of balance, on top of the network fee.'));
 }
 
 async function users() {
@@ -335,7 +367,7 @@ async function cryptoTab() {
       const copy = (t, label) => el('button', { className: 'ghost sm', textContent: label, onclick: () => navigator.clipboard.writeText(t).then(() => toast('Copied')) });
       q.append(el('div', { className: 'card', style: 'background:var(--bg);margin:0 0 10px' },
         el('div', { className: 'row', style: 'justify-content:space-between' },
-          el('b', { textContent: '#' + w.id + ' · ' + (w.username || 'deleted') + ' · ' + usd(w.usd_cents) + ' (fee ' + usd(w.fee_cents) + ')' }),
+          el('b', { textContent: '#' + w.id + ' · ' + (w.username || 'deleted') + ' · ' + usd(w.usd_cents) + ' (network fee ' + usd(w.fee_cents) + (w.tax_cents ? ', site fee ' + usd(w.tax_cents) : '') + ')' }),
           el('span', { className: 'mute', textContent: when(w.created_at) })),
         el('div', { className: 'row', style: 'margin:10px 0' },
           el('span', { className: 'code', textContent: (w.send_now || w.coin_amount || '?') + ' ' + sym(w.coin) }), copy(w.send_now || w.coin_amount || '', 'Copy amount')),
