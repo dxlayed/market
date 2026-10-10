@@ -33,7 +33,8 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
 
 .layout{display:grid;grid-template-columns:230px minmax(0,1fr) 300px;gap:20px;padding:20px 24px;max-width:1600px;margin:0 auto;align-items:start}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
-.side{position:sticky;top:76px}
+:root{--stick:78px}
+.side{position:sticky;top:var(--stick)}
 .panel h3{font-size:17px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .panel h4{margin:16px 0 8px;font-size:12px;color:var(--mute);letter-spacing:.06em;text-transform:uppercase}
 .fhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -49,6 +50,7 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
 .game.off{opacity:.45}
 .game .gi{width:32px;height:32px;border-radius:9px;background:#0a0707;display:grid;place-items:center;flex:none;color:var(--text)}
 .game .gi svg{width:20px;height:20px}
+.game .gi img{width:30px;height:30px;object-fit:contain;transform:rotate(-8deg)}
 .game b{display:block;font-size:13.5px;line-height:1.25}
 .game small{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--mute)}
 .game.on small{color:#ff8a8f}
@@ -81,8 +83,8 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
 .tile.on{border-color:var(--gold);background:linear-gradient(100deg,#e8202a2e,var(--raise) 65%)}
 .tile b{font-size:14px;z-index:1}
 .tile b small{display:block;font-size:11px;color:var(--mute);font-weight:700}
-.tile svg{width:58px;height:58px;color:#ffffff22;transform:translate(8px,4px) rotate(-14deg);flex:none}
-.tile.on svg{color:#e8202a66}
+.tile img{width:62px;height:62px;object-fit:contain;transform:translate(10px,2px) rotate(-12deg);flex:none;opacity:.45;filter:grayscale(.6);transition:opacity .15s,filter .15s}
+.tile:hover img,.tile.on img{opacity:1;filter:none}
 
 .banner{border-radius:18px;padding:30px;background:radial-gradient(circle at 88% 10%,#e8202a50,transparent 45%),linear-gradient(120deg,#3a0a0d,#120707 70%);border:1px solid var(--line);display:flex;gap:24px;justify-content:space-between;align-items:center;flex-wrap:wrap}
 .banner h1{font-size:clamp(26px,3.6vw,42px);font-weight:800;letter-spacing:-1px;line-height:1.05}
@@ -93,13 +95,14 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
 .steps i{font-style:normal;width:24px;height:24px;border-radius:7px;background:var(--gold);display:grid;place-items:center;font-size:12px;flex:none}
 
 .ticker{margin:14px 0;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:var(--surface);display:flex;align-items:center}
-.live{background:#4ade8022;color:#4ade80;font-weight:800;font-size:12px;padding:6px 12px;margin:6px;border-radius:99px;flex:none}
+.live{position:relative;z-index:1;background:#0f2a18;color:#4ade80;font-weight:800;font-size:12px;padding:6px 12px;margin:6px;border-radius:99px;flex:none;box-shadow:8px 0 12px 4px var(--surface)}
 .track{display:flex;gap:28px;white-space:nowrap;animation:slide 45s linear infinite;padding:10px 0;font-size:14px;font-weight:700}
 .track em{font-style:normal;color:#4ade80;margin-left:6px}
 @keyframes slide{to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.track{animation:none}}
 
 .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}.tools input{flex:1;min-width:180px}
+.tools{position:sticky;top:calc(var(--stick) - 10px);z-index:12;background:var(--bg);padding:10px 0 8px;margin:-10px 0 6px;box-shadow:0 10px 18px -12px #000}
 .views{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
 .views button{border:0;background:transparent;color:var(--mute);padding:7px 14px;border-radius:9px;font-size:14px}
 .views button.on{background:var(--gold);color:#fff}
@@ -107,6 +110,7 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
 .card.unlisted .price{color:#b89b9a}
 .rec{font-size:12px;font-weight:700;color:var(--mute);display:flex;align-items:center;gap:6px}
 .rec b{color:#4ade80;font-weight:800}
+.price.est{font-size:21px}
 .lc{position:absolute;bottom:10px;left:10px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;background:#4ade8026;color:#4ade80}
 .lc.off{background:#000b;color:var(--mute)}
 .notice{background:#e8202a14;border:1px solid #e8202a55;border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:14px}
@@ -125,7 +129,7 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
 .acts{margin-top:auto;padding-top:8px;display:flex;gap:6px}.acts>*{flex:1}
 .empty{grid-column:1/-1;text-align:center;padding:56px 16px;border:1px dashed var(--line);border-radius:14px;color:var(--mute)}
 
-.cart{position:sticky;top:76px;display:flex;flex-direction:column;min-height:380px}
+.cart{position:sticky;top:var(--stick);display:flex;flex-direction:column;min-height:380px}
 .lines{flex:1;display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:46vh}
 .none{margin:auto;text-align:center;color:var(--mute);font-size:14px;padding:36px 0}
 .line{display:flex;align-items:center;gap:8px;background:var(--raise);border-radius:10px;padding:8px 10px;font-size:14px;font-weight:700}
@@ -152,8 +156,8 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
   <aside class="panel side">
     <div class="fhead"><h3>Filters</h3><button class="sm" id="reset" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.5V5h-2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Reset</button></div>
     <div class="fsec"><h4>Game</h4>
-      <div class="game on" aria-current="true"><span class="gi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20 17 4l2.5 1.6L8.2 21.4z" fill="currentColor"/><path d="M3 18.5 7 21" stroke="#e8202a" stroke-width="2.6" stroke-linecap="round"/></svg></span>
-        <span><b>Murder Mystery 2</b><small><svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M9 1 3 9h4l-1 6 6-8H8z" fill="currentColor"/></svg>Sent by our bot</small></span><span class="gdot" aria-hidden="true"></span></div>
+      <div class="game on" aria-current="true"><span class="gi"><img src="/items/laser.webp" alt="" width="30" height="30"></span>
+        <span><b>Murder Mystery 2</b><small><svg width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M9 1 3 9h4l-1 6 6-8H8z" fill="currentColor"/></svg>Instant</small></span><span class="gdot" aria-hidden="true"></span></div>
       <div class="game off" aria-disabled="true"><span class="gi"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="11" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10.5v4M6 12.5h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="11.5" r="1.2" fill="currentColor"/><circle cx="17.5" cy="14" r="1.2" fill="currentColor"/></svg></span>
         <span><b>More games</b><small>On the way</small></span></div>
     </div>
@@ -183,7 +187,7 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
     <div id="notice"></div>
     <div class="tools">
       <div class="views" role="tablist" aria-label="What to show"><button type="button" role="tab" data-v="all" class="on">All items</button><button type="button" role="tab" data-v="listed">Listings only</button></div>
-      <input id="q" placeholder="Search items, like Harvester" aria-label="Search items">
+      <input id="q" placeholder="Search" aria-label="Search items">
       <select id="sort" aria-label="Sort"><option value="value">Highest value</option><option value="high">Price: high to low</option><option value="low">Price: low to high</option><option value="new">Newest listings</option></select>
       <span class="mute" id="count"></span>
     </div>
@@ -228,6 +232,7 @@ function art(i) {
 const seller = new URLSearchParams(location.search).get('seller');
 let view = seller ? 'listed' : 'all', catalog = [];
 const recCents = (v) => Math.round((v || 0) * (info.rec_per_1k ?? 20) / 10); // dollars per 1k value -> cents
+const estText = (v) => (window.estRange ? estRange(recCents(v)) : usd(recCents(v)));
 document.querySelectorAll('.views button').forEach((b) => {
   b.classList.toggle('on', b.dataset.v === view);
   b.onclick = () => { view = b.dataset.v; document.querySelectorAll('.views button').forEach((x) => x.classList.toggle('on', x === b)); draw(); };
@@ -248,13 +253,8 @@ try { cart = JSON.parse(localStorage.getItem('cart') || '[]').filter(Number.isIn
 const saveCart = () => { try { localStorage.setItem('cart', JSON.stringify(cart)); } catch {} };
 const canBuy = () => info.market || (me && me.owner);
 
-const TYPE_ICON = {
-  Knife: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 54 44 8l9 6-30 44z" fill="currentColor"/><path d="M6 50l14 10" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></svg>',
-  Gun: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M4 20h48v12H34l-5 20H15l4-20H4z" fill="currentColor"/><rect x="50" y="22" width="10" height="5" rx="2" fill="currentColor"/></svg>',
-  Pet: '<svg viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="40" rx="15" ry="13" fill="currentColor"/><circle cx="16" cy="22" r="6" fill="currentColor"/><circle cx="27" cy="13" r="6" fill="currentColor"/><circle cx="39" cy="13" r="6" fill="currentColor"/><circle cx="50" cy="22" r="6" fill="currentColor"/></svg>',
-  Misc: '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4l7 16 17 2-13 12 4 17-15-9-15 9 4-17L8 22l17-2z" fill="currentColor"/></svg>',
-};
-const TYPE_SUB = { Knife: 'Blades & scythes', Gun: 'Guns & bows', Pet: 'Companions', Misc: 'Sets & extras' };
+const TYPE_PIC = { Knife: '/items/darksword.webp', Gun: '/items/luger.webp' };
+const TYPE_SUB = { Knife: 'Blades & scythes', Gun: 'Guns & bows' };
 const types = new Set();
 let priceTop = 500000; // slider top in cents, set from the most expensive listing
 // The slider is curved so low prices get most of the track, where most items are.
@@ -286,10 +286,10 @@ function buildFacets() {
     const b = el('button', { type: 'button', className: 'rrow', 'aria-pressed': 'false', onclick: () => { rars.has(r) ? rars.delete(r) : rars.add(r); draw(); } }, dot, r, el('i'));
     b.dataset.k = r; b.style.setProperty('--c', RC[r]); return b;
   }));
-  $('types').replaceChildren(...['Knife', 'Gun', 'Pet', 'Misc'].map((t) => {
+  $('types').replaceChildren(...['Knife', 'Gun'].map((t) => {
     const b = el('button', { type: 'button', className: 'tile', 'aria-pressed': 'false', onclick: () => { types.has(t) ? types.delete(t) : types.add(t); draw(); } },
       el('b', {}, t, el('small', { textContent: TYPE_SUB[t] })));
-    b.insertAdjacentHTML('beforeend', TYPE_ICON[t]); b.dataset.k = t; return b;
+    b.append(el('img', { src: TYPE_PIC[t], alt: '', loading: 'lazy' })); b.dataset.k = t; return b;
   }));
 }
 buildFacets();
@@ -367,8 +367,8 @@ function drawAll() {
         onclick: () => { if (!me) return login(); cart.push(free.id); saveCart(); draw(); drawCart(); } }));
     } else acts.append(el('button', { className: 'btn sm', type: 'button', disabled: true, textContent: 'No listings yet' }));
     const priceRow = x.lst.length
-      ? [el('div', { className: 'price', textContent: usd(x.price_cents) }), el('div', { className: 'rec' }, 'Recommended ', el('b', { textContent: usd(x.rec) }))]
-      : [el('div', { className: 'price', textContent: usd(x.rec) }), el('div', { className: 'rec', textContent: 'Recommended price' })];
+      ? [el('div', { className: 'price', textContent: usd(x.price_cents) }), el('div', { className: 'rec' }, 'Est. ', el('b', { textContent: estText(x.value) }))]
+      : [el('div', { className: 'price est', textContent: estText(x.value) }), el('div', { className: 'rec', textContent: 'Estimated price' })];
     const card = el('article', { className: 'card' + (x.lst.length ? '' : ' unlisted') }, a, el('div', { className: 'info' },
       el('h3', { textContent: x.name }),
       el('div', { className: 'mute', textContent: x.type + ' · value ' + x.value.toLocaleString() }),
@@ -403,7 +403,7 @@ function draw() {
     const card = el('article', { className: 'card' }, a, el('div', { className: 'info' },
       el('h3', { textContent: x.name }),
       el('div', { className: 'mute' }, x.type + ' · value ' + x.value.toLocaleString() + ' · by ', el('a', { href: '/?seller=' + encodeURIComponent(x.seller), textContent: x.seller, style: 'color:inherit' })),
-      el('div', { className: 'price', textContent: usd(x.price_cents) }), x.value ? el('div', { className: 'rec' }, 'Recommended ', el('b', { textContent: usd(recCents(x.value)) })) : null, acts));
+      el('div', { className: 'price', textContent: usd(x.price_cents) }), x.value ? el('div', { className: 'rec' }, 'Est. ', el('b', { textContent: estText(x.value) })) : null, acts));
     card.style.setProperty('--c', c);
     if (window.valueTip) valueTip(a, { ...x, rec_cents: recCents(x.value) });
     g.append(card);
