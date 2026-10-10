@@ -159,7 +159,7 @@ function armed(label, armedLabel, run, cls = 'ghost sm danger') {
 const userCell = (name, avatar) => el('span', { className: 'who' }, avEl({ username: name || '?', avatar }), name || 'deleted');
 
 let me = null, tab = 'overview', stats = null, poll = null;
-const TABS = [['overview', 'Overview'], ['analytics', 'Analytics'], ['trades', 'Trades'], ['bot', 'Bot'], ['market', 'Market'], ['crypto', 'Crypto'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
+const TABS = [['overview', 'Overview'], ['analytics', 'Analytics'], ['trades', 'Trades'], ['bot', 'Bot'], ['giveaways', 'Giveaways'], ['market', 'Market'], ['crypto', 'Crypto'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
 const usd = (c) => window.money ? window.money(c) : '$' + (c / 100).toFixed(2);
 
 function shell() {
@@ -173,7 +173,7 @@ function drawSide() {
 }
 async function go(k) {
   tab = k; clearInterval(poll); drawSide();
-  try { await ({ overview, analytics, users, support, chat, market, crypto: cryptoTab, items, trades, logs, bot: botTab })[k](); }
+  try { await ({ overview, analytics, users, support, chat, market, crypto: cryptoTab, items, trades, logs, bot: botTab, giveaways: giveawaysTab })[k](); }
   catch (e) { $('main').replaceChildren(el('div', { className: 'card', textContent: e.message })); }
 }
 async function refreshStats() { stats = await api('/api/admin/stats'); drawSide(); }
@@ -602,6 +602,60 @@ async function logs() {
   await load();
 }
 
+// ---------- Giveaways ----------
+async function giveawaysTab() {
+  const picked = new Set(); let lenV = 1, unitV = '60';
+  async function load() {
+    const d = await api('/api/admin/giveaways');
+    const grid = el('div', { className: 'invgrid' });
+    const go = el('button', { className: 'btn', textContent: 'Start giveaway', disabled: true });
+    const len = el('input', { type: 'number', min: 1, value: 60, style: 'flex:0 0 90px;min-width:0;width:90px', 'aria-label': 'Length' });
+    const unit = el('select', { 'aria-label': 'Unit' }, el('option', { value: '1', textContent: 'minutes' }), el('option', { value: '60', textContent: 'hours', selected: true }), el('option', { value: '1440', textContent: 'days' }));
+    unit.value = unitV; len.value = lenV; len.oninput = () => (lenV = len.value); unit.onchange = () => (unitV = unit.value);
+    const upd = () => { go.disabled = !picked.size; go.textContent = picked.size > 1 ? 'Start ' + picked.size + ' giveaways' : 'Start giveaway'; };
+    for (const id of [...picked]) if (!d.items.some((i) => i.id === id)) picked.delete(id);
+    if (!d.items.length) grid.append(el('p', { className: 'mute', textContent: 'Your inventory is empty. Deposit items, or add some to yourself in Users & balances → Items, then come back.' }));
+    d.items.forEach((i) => {
+      const card = el('div', { style: 'cursor:pointer' + (picked.has(i.id) ? ';border-color:var(--gold);background:#e8202a1c' : '') }, thumb(i),
+        el('div', { className: 'nm' }, el('b', { textContent: i.name }), el('span', { className: 'mute', textContent: i.rarity + (i.value ? ' · value ' + i.value.toLocaleString() : '') })),
+        el('span', { className: 'pill ' + (picked.has(i.id) ? 'gold' : ''), textContent: picked.has(i.id) ? 'Picked' : 'Pick' }));
+      card.onclick = () => { picked.has(i.id) ? picked.delete(i.id) : picked.add(i.id); load(); };
+      grid.append(card);
+    });
+    upd();
+    go.onclick = async () => {
+      go.disabled = true;
+      try { const r = await api('/api/admin/giveaways', 'POST', { inventory_ids: [...picked], minutes: Number(len.value) * Number(unit.value) }); toast('Started ' + r.created + ' giveaway' + (r.created === 1 ? '' : 's')); picked.clear(); load(); }
+      catch (e) { toast(e.message, true); upd(); }
+    };
+    const body = el('tbody');
+    if (!d.giveaways.length) body.append(el('tr', {}, el('td', { colSpan: 6, className: 'empty', textContent: 'No giveaways yet.' })));
+    d.giveaways.forEach((g) => {
+      const status = g.status === 'active' ? el('span', { className: 'pill gold', textContent: 'Live · ends ' + when(g.ends_at) })
+        : g.status === 'cancelled' ? el('span', { className: 'pill', textContent: 'Cancelled' })
+        : g.winner ? el('span', { className: 'pill ok', textContent: 'Won by ' + g.winner }) : el('span', { className: 'pill', textContent: 'No entries, item returned' });
+      body.append(el('tr', {},
+        el('td', {}, el('span', { className: 'irow' }, thumb(g), g.name)),
+        el('td', { textContent: g.status === 'active' ? g.entries : (g.entries_at_draw ?? g.entries) }),
+        el('td', { textContent: g.status === 'active' && g.entries ? (100 / g.entries).toFixed(g.entries > 100 ? 2 : 1) + '% each' : '' }),
+        el('td', {}, status),
+        el('td', { className: 'mute', textContent: 'by ' + (g.host || '?') + ' · ' + when(g.created_at) }),
+        el('td', { style: 'white-space:nowrap' }, g.status === 'active' ? armed('Draw now', 'Confirm draw', async () => { const r = await api('/api/admin/giveaways/' + g.id + '/draw', 'POST'); toast(r.winner ? r.winner + ' won ' + r.item + '!' : 'No one joined. Item returned.'); load(); }, 'btn sm') : '',
+          ' ', g.status === 'active' ? armed('Cancel', 'Confirm cancel', async () => { await api('/api/admin/giveaways/' + g.id + '/cancel', 'POST'); toast('Cancelled. Item is back in your inventory.'); load(); }) : '')));
+    });
+    $('main').replaceChildren(el('h1', { textContent: 'Giveaways' }),
+      el('section', { className: 'card' }, el('h2', { textContent: 'Start a giveaway' }),
+        el('p', { className: 'mute', style: 'margin:0 0 10px', textContent: 'Pick one or more items from your own inventory (each becomes its own giveaway). Anyone logged in with Roblox can join once for free; every entry has the same chance. When time is up a winner is picked at random and the item moves to their inventory. If nobody joins, it comes back to you.' }),
+        grid,
+        el('div', { className: 'tools', style: 'margin:14px 0 0;align-items:center' }, el('span', { className: 'mute', textContent: 'Runs for' }), len, unit, go,
+          el('a', { href: '/giveaways.html', target: '_blank', textContent: 'Open the public page →', style: 'margin-left:auto' }))),
+      el('section', { className: 'card scroll' }, el('h2', { textContent: 'All giveaways' }),
+        el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['Item', 'Entries', 'Chance', 'Status', 'Started', ''].map((h) => el('th', { textContent: h })))), body)));
+  }
+  await load();
+  poll = setInterval(() => { if (!document.querySelector('#main .arm') && !document.querySelector('#main input:focus, #main select:focus')) load().catch(() => {}); }, 10000);
+}
+
 // ---------- Analytics ----------
 let anaPeriod = 'week';
 async function analytics() {
@@ -774,7 +828,7 @@ async function botTab() {
         el('td', {}, el('span', { className: 'irow' }, thumb(i), i.name)),
         el('td', {}, el('span', { className: 'pill', style: 'color:' + (RCO[i.rarity] || RCO.Common), textContent: i.rarity })),
         el('td', {}, el('b', { textContent: i.qty })),
-        el('td', { className: 'mute', textContent: [i.held && i.held + ' held', i.listed && i.listed + ' for sale', i.withdrawing && i.withdrawing + ' withdrawing'].filter(Boolean).join(' · ') }),
+        el('td', { className: 'mute', textContent: [i.held && i.held + ' held', i.listed && i.listed + ' for sale', i.withdrawing && i.withdrawing + ' withdrawing', i.giveaway && i.giveaway + ' in giveaways'].filter(Boolean).join(' · ') }),
         el('td', { textContent: has == null ? '—' : has }),
         el('td', {}, diff == null ? el('span', { className: 'mute', textContent: '—' }) : el('span', { className: 'diff ' + (diff ? 'bad' : 'ok'), textContent: diff ? (diff > 0 ? '+' : '') + diff : '✓' })),
         el('td', { className: 'mute', textContent: (i.value || 0).toLocaleString() })));
