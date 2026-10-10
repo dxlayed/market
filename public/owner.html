@@ -68,6 +68,15 @@ h1{font-size:28px;margin-bottom:16px}
 .chat p{margin:2px 0 0;overflow-wrap:anywhere;flex:1}
 .chat .acts{display:flex;gap:6px;flex:none}
 .empty{text-align:center;color:var(--mute);padding:36px 16px}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px;margin-bottom:14px}
+.seg button{border:0;background:transparent;color:var(--mute);border-radius:9px;padding:7px 14px}.seg button.on{background:var(--gold);color:#fff}
+.taxcard{display:flex;align-items:center;gap:20px;flex-wrap:wrap;border-color:#4ade8055;background:linear-gradient(180deg,#4ade800f,var(--surface))}
+.taxcard .big{font-family:Outfit,sans-serif;font-size:40px;font-weight:800;color:var(--ok);line-height:1.1}
+.taxcard .grow{flex:1;min-width:220px}
+.chart{position:relative}.chart svg{display:block;width:100%;height:220px}
+.chart .tip{position:absolute;pointer-events:none;background:#0d0707;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;white-space:nowrap;transform:translate(-50%,-100%);box-shadow:0 8px 24px #000a}
+.chart .tip[hidden]{display:none}.chart .tip b{display:block;font-family:Outfit,sans-serif;font-size:16px}
+.cmp td:not(:first-child),.cmp th:not(:first-child){text-align:right}
 .feerow{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line)}.feerow:first-of-type{border-top:0}
 .feerow .grow{flex:1;min-width:0}.feerow b{display:flex;align-items:center;gap:8px;margin-bottom:2px}
 .sw{position:relative;width:48px;height:28px;border-radius:99px;padding:0;background:var(--raise);border:1px solid var(--line);flex:none}
@@ -150,7 +159,7 @@ function armed(label, armedLabel, run, cls = 'ghost sm danger') {
 const userCell = (name, avatar) => el('span', { className: 'who' }, avEl({ username: name || '?', avatar }), name || 'deleted');
 
 let me = null, tab = 'overview', stats = null, poll = null;
-const TABS = [['overview', 'Overview'], ['trades', 'Trades'], ['bot', 'Bot'], ['market', 'Market'], ['crypto', 'Crypto'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
+const TABS = [['overview', 'Overview'], ['analytics', 'Analytics'], ['trades', 'Trades'], ['bot', 'Bot'], ['market', 'Market'], ['crypto', 'Crypto'], ['users', 'Users & balances'], ['support', 'Support chats'], ['chat', 'Live chat'], ['items', 'Items'], ['logs', 'Logs']];
 const usd = (c) => window.money ? window.money(c) : '$' + (c / 100).toFixed(2);
 
 function shell() {
@@ -164,7 +173,7 @@ function drawSide() {
 }
 async function go(k) {
   tab = k; clearInterval(poll); drawSide();
-  try { await ({ overview, users, support, chat, market, crypto: cryptoTab, items, trades, logs, bot: botTab })[k](); }
+  try { await ({ overview, analytics, users, support, chat, market, crypto: cryptoTab, items, trades, logs, bot: botTab })[k](); }
   catch (e) { $('main').replaceChildren(el('div', { className: 'card', textContent: e.message })); }
 }
 async function refreshStats() { stats = await api('/api/admin/stats'); drawSide(); }
@@ -591,6 +600,100 @@ async function logs() {
     el('div', { className: 'tools' }, q, type),
     el('div', { className: 'card scroll' }, el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['When', 'Who', 'What', ''].map((h) => el('th', { textContent: h })))), body)));
   await load();
+}
+
+// ---------- Analytics ----------
+let anaPeriod = 'week';
+async function analytics() {
+  const d = await api('/api/admin/analytics');
+  const P = { day: 'Today', week: 'This week', month: 'This month', all: 'All time' };
+  const labels = { day: 'last 24 hours', week: 'last 7 days', month: 'last 30 days', all: 'since the start' };
+  const tiles = el('div', { className: 'stats' });
+  const tile = (label, v, sub, hot) => el('div', { className: hot ? 'hot' : '' }, el('span', { textContent: label }), String(v), sub ? el('em', { textContent: sub }) : null);
+  function drawTiles() {
+    const x = d[anaPeriod];
+    tiles.replaceChildren(
+      tile('Items sold', usd(x.sales_cents), x.sales_n + ' sales · ' + x.buyers + ' buyers'),
+      tile('Fees earned', usd(x.sale_fees + x.wd_fees), usd(x.sale_fees) + ' sales · ' + usd(x.wd_fees) + ' withdrawals', true),
+      tile('Crypto deposited', usd(x.dep_cents), x.dep_n + ' deposits'),
+      tile('Crypto withdrawn', usd(x.wd_cents), x.wd_n + ' paid out'),
+      tile('Balance added by owners', usd(x.added_cents), 'by hand'),
+      tile('Item deposits', x.item_dep, 'trades with the bot'),
+      tile('Item withdrawals', x.item_wd, 'trades with the bot'),
+      tile('New users', x.new_users, labels[anaPeriod]));
+  }
+  const seg = el('div', { className: 'seg' }, ...Object.entries(P).map(([k, l]) => el('button', { type: 'button', textContent: l, className: anaPeriod === k ? 'on' : '', onclick: (e) => { anaPeriod = k; [...seg.children].forEach((b) => b.classList.toggle('on', b === e.currentTarget)); drawTiles(); } })));
+  drawTiles();
+
+  // Fees to collect
+  const o = d.owed;
+  const collectBtn = armed('Tax collected', 'Confirm: I took ' + usd(o.total), async () => {
+    const c = await api('/api/admin/analytics/collect', 'POST');
+    toast('Recorded ' + usd(c.amount_cents) + ' as collected. Counting from zero again.'); analytics();
+  }, 'btn');
+  collectBtn.disabled = !o.total;
+  const last = d.collections[0];
+  const tax = el('section', { className: 'card taxcard' },
+    el('div', { className: 'grow' },
+      el('div', { className: 'mute', style: 'font-weight:800;text-transform:uppercase;letter-spacing:.05em', textContent: 'Fees to take' }),
+      el('div', { className: 'big', textContent: usd(o.total) }),
+      el('div', { className: 'mute', textContent: usd(o.sales) + ' from ' + o.sales_n + ' sale' + (o.sales_n === 1 ? '' : 's') + ' + ' + usd(o.wd) + ' from ' + o.wd_n + ' paid withdrawal' + (o.wd_n === 1 ? '' : 's') + (last ? ', since you last pressed Tax collected ' + when(last.created_at) + '.' : ', since the start.') }),
+      o.wd_pending ? el('div', { className: 'mute', textContent: '+ ' + usd(o.wd_pending) + ' more once pending withdrawals are sent.' }) : null,
+      el('div', { className: 'mute', style: 'margin-top:6px', textContent: 'Fees right now: sales ' + (d.sale_tax && d.sale_tax.on ? d.sale_tax.pct + '%' : 'off') + ' · withdrawals ' + (d.withdraw_tax && d.withdraw_tax.on ? d.withdraw_tax.pct + '%' : 'off') + '. Change them on the Overview tab.' })),
+    el('div', { style: 'display:grid;gap:6px;justify-items:end' }, collectBtn, el('span', { className: 'mute', textContent: 'Press after you take the money out' })));
+  const hist = el('tbody');
+  if (!d.collections.length) hist.append(el('tr', {}, el('td', { colSpan: 4, className: 'empty', textContent: 'Nothing collected yet.' })));
+  d.collections.forEach((c) => hist.append(el('tr', {}, el('td', { className: 'mute', textContent: when(c.created_at) }), el('td', {}, el('b', { textContent: usd(c.amount_cents) })),
+    el('td', { className: 'mute', textContent: usd(c.sales_cents) + ' sales · ' + usd(c.withdraw_cents) + ' withdrawals' }), el('td', { textContent: c.collected_by || '' }))));
+
+  // Daily sales chart (last 30 days), one series, hover for details
+  const W = 900, H = 220, pad = { l: 46, r: 8, t: 10, b: 24 };
+  const max = Math.max(100, ...d.daily.map((x) => x.sales_cents));
+  const step = Math.pow(10, Math.floor(Math.log10(max / 100))) * 100;
+  const top = Math.ceil(max / step) * step;
+  const bw = (W - pad.l - pad.r) / d.daily.length;
+  const y = (c) => pad.t + (H - pad.t - pad.b) * (1 - c / top);
+  const ns = 'http://www.w3.org/2000/svg';
+  const sv = (t, a) => { const e = document.createElementNS(ns, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const svg = sv('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', role: 'img', 'aria-label': 'Sales per day, last 30 days' });
+  for (let k = 0; k <= 4; k++) {
+    const v = top * k / 4, yy = y(v);
+    svg.append(sv('line', { x1: pad.l, x2: W - pad.r, y1: yy, y2: yy, stroke: '#3a1717', 'stroke-width': 1 }));
+    const t = sv('text', { x: pad.l - 6, y: yy + 4, 'text-anchor': 'end', fill: '#a88a88', 'font-size': 11 }); t.textContent = '$' + (v / 100).toLocaleString(undefined, { maximumFractionDigits: v < 1000 ? 2 : 0 }); svg.append(t);
+  }
+  const tip = el('div', { className: 'tip', hidden: true });
+  const wrapc = el('div', { className: 'chart' }, svg, tip);
+  d.daily.forEach((x, k) => {
+    const x0 = pad.l + k * bw, h = Math.max(0, y(0) - y(x.sales_cents));
+    if (h > 0) {
+      const r = Math.min(4, h, (bw - 2) / 2), xa = x0 + 1, xb = x0 + bw - 1, yb = y(0), yt = yb - h;
+      svg.append(sv('path', { d: `M${xa},${yb}V${yt + r}Q${xa},${yt} ${xa + r},${yt}H${xb - r}Q${xb},${yt} ${xb},${yt + r}V${yb}Z`, fill: '#e8202a' }));
+    }
+    if (k % 5 === 0 || k === d.daily.length - 1) { const t = sv('text', { x: x0 + bw / 2, y: H - 6, 'text-anchor': 'middle', fill: '#a88a88', 'font-size': 11 }); t.textContent = new Date(x.day + 'T12:00').toLocaleDateString([], { month: 'short', day: 'numeric' }); svg.append(t); }
+    const hit = sv('rect', { x: x0, y: pad.t, width: bw, height: H - pad.t - pad.b, fill: 'transparent' });
+    hit.addEventListener('mouseenter', () => {
+      tip.replaceChildren(el('span', { className: 'mute', textContent: new Date(x.day + 'T12:00').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }) }), el('b', { textContent: usd(x.sales_cents) }), x.sales_n + ' sale' + (x.sales_n === 1 ? '' : 's') + ' · ' + usd(x.fees) + ' fees');
+      const rect = svg.getBoundingClientRect(); tip.style.left = ((x0 + bw / 2) / W * rect.width) + 'px'; tip.style.top = (y(x.sales_cents) / H * rect.height - 6) + 'px'; tip.hidden = false;
+    });
+    hit.addEventListener('mouseleave', () => (tip.hidden = true));
+    svg.append(hit);
+  });
+
+  // Period comparison table
+  const rows = [['Items sold', (x) => usd(x.sales_cents)], ['Sales', (x) => x.sales_n], ['Fees from sales', (x) => usd(x.sale_fees)], ['Fees from withdrawals', (x) => usd(x.wd_fees)],
+    ['Crypto deposited', (x) => usd(x.dep_cents)], ['Crypto withdrawn', (x) => usd(x.wd_cents)], ['Balance added by owners', (x) => usd(x.added_cents)],
+    ['Item deposits', (x) => x.item_dep], ['Item withdrawals', (x) => x.item_wd], ['New users', (x) => x.new_users]];
+  const cmp = el('table', { className: 'tbl cmp' }, el('thead', {}, el('tr', {}, el('th', { textContent: '' }), ...['Today', '7 days', '30 days', 'All time'].map((h) => el('th', { textContent: h })))),
+    el('tbody', {}, ...rows.map(([l, f]) => el('tr', {}, el('td', { textContent: l }), ...['day', 'week', 'month', 'all'].map((k) => el('td', { textContent: f(d[k]) }))))));
+  const topBody = el('tbody');
+  if (!d.top.length) topBody.append(el('tr', {}, el('td', { colSpan: 3, className: 'empty', textContent: 'No sales in the last 30 days.' })));
+  d.top.forEach((i) => topBody.append(el('tr', {}, el('td', {}, el('span', { className: 'irow' }, thumb(i), i.name)), el('td', { textContent: i.n + ' sold' }), el('td', {}, el('b', { textContent: usd(i.cents) })))));
+
+  $('main').replaceChildren(el('h1', { textContent: 'Analytics' }), tax, seg, tiles,
+    el('section', { className: 'card' }, el('h2', { textContent: 'Sales per day (last 30 days)' }), wrapc),
+    el('section', { className: 'card scroll' }, el('h2', { textContent: 'Compare' }), cmp),
+    el('section', { className: 'card scroll' }, el('h2', { textContent: 'Best sellers (30 days)' }), el('table', { className: 'tbl' }, topBody)),
+    el('section', { className: 'card scroll' }, el('h2', { textContent: 'Tax collected history' }), el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['When', 'Amount', 'From', 'By'].map((h) => el('th', { textContent: h })))), hist)));
 }
 
 // ---------- Inventory editor (Users tab → Items) ----------
