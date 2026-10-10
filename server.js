@@ -146,6 +146,18 @@ async function init() {
     ALTER TABLE crypto_withdrawals ADD COLUMN IF NOT EXISTS tax_cents INT NOT NULL DEFAULT 0;
     CREATE TABLE IF NOT EXISTS tax_collections (id SERIAL PRIMARY KEY, amount_cents INT NOT NULL, sales_cents INT NOT NULL, withdraw_cents INT NOT NULL, collected_by TEXT, created_at TIMESTAMPTZ DEFAULT now());
     ALTER TABLE market_listings ADD COLUMN IF NOT EXISTS collected_id INT;
+    CREATE TABLE IF NOT EXISTS deposit_unmatched (
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE SET NULL,
+      trade_id INT REFERENCES trades(id) ON DELETE SET NULL,
+      raw_name TEXT NOT NULL,
+      qty INT NOT NULL DEFAULT 1,
+      status TEXT NOT NULL DEFAULT 'open',
+      item_id INT REFERENCES items(id),
+      handled_by TEXT,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      handled_at TIMESTAMPTZ
+    );
     CREATE TABLE IF NOT EXISTS balance_codes (
       id SERIAL PRIMARY KEY,
       code TEXT UNIQUE NOT NULL,
@@ -807,6 +819,53 @@ app.post('/api/trades/withdraw', auth, wrap(async (req, res) => {
   res.json(out);
 }));
 
+// Turns whatever name the bot reports into a catalog item: exact name, then the same name ignoring
+// case/spaces/apostrophes ("C." = Chroma), then old names (aliases from seed-items.json), then
+// without a trailing "(Gun)"/"(Knife)"/"(Rarity)" tag. Returns null when nothing fits.
+let nameIndex = null, nameIndexAt = 0;
+async function itemIndex(db) {
+  if (nameIndex && Date.now() - nameIndexAt < 5 * 60e3) return nameIndex;
+  const rows = (await (db || pool).query('SELECT id, name, rarity, active FROM items')).rows;
+  const byNorm = new Map();
+  for (const r of rows) { const k = normName(r.name); if (!byNorm.has(k)) byNorm.set(k, []); byNorm.get(k).push(r); }
+  const aliases = new Map();
+  try {
+    for (const x of JSON.parse(fs.readFileSync(path.join(__dirname, 'seed-items.json'), 'utf8'))) {
+      if (x && x.alias && x.name) aliases.set(normName(x.alias), normName(x.name));
+    }
+  } catch {}
+  nameIndex = { byNorm, aliases }; nameIndexAt = Date.now();
+  return nameIndex;
+}
+async function resolveItem(db, r) {
+  if (r.item_id) { const it = (await db.query('SELECT id, name FROM items WHERE id=$1', [parseInt(r.item_id, 10)])).rows[0]; if (it) return it; }
+  const raw = clean(r.name, 80);
+  if (!raw) return null;
+  const exact = (await db.query('SELECT id, name FROM items WHERE lower(name)=lower($1)', [raw])).rows[0];
+  if (exact) return exact;
+  const idx = await itemIndex(db);
+  const rar = (raw.match(/\((Chroma|Ancient|Godly|Unique|Vintage|Legendary|Rare|Uncommon|Common)\)\s*$/i) || [])[1];
+  const pick = (list) => {
+    if (!list || !list.length) return null;
+    const pool2 = rar ? list.filter((x) => x.rarity.toLowerCase() === rar.toLowerCase()) : list;
+    const best = (pool2.length ? pool2 : list).slice().sort((a, b) => Number(b.active) - Number(a.active))[0];
+    return { id: best.id, name: best.name };
+  };
+  const n = normName(raw);
+  return pick(idx.byNorm.get(n))
+    || pick(idx.byNorm.get(idx.aliases.get(n)))
+    || pick(idx.byNorm.get(normName(raw.replace(/\s*\([^)]*\)\s*$/, ''))))
+    || pick(idx.byNorm.get(normName(raw.replace(/^chroma\s+/i, 'c. '))))
+    || null;
+}
+// Last bot API problems, shown in Owner panel → Bot so failed deposits are never silent.
+const botErrors = [];
+function botError(where, body, msg) {
+  botErrors.unshift({ at: new Date().toISOString(), where, roblox_id: body && body.roblox_id ? String(body.roblox_id).slice(0, 20) : null,
+    items: body && Array.isArray(body.received) ? body.received.slice(0, 8).map((x) => (x.qty > 1 ? x.qty + '× ' : '') + String(x.name || x.item_id || '?').slice(0, 40)).join(', ') : null, error: String(msg).slice(0, 200) });
+  botErrors.length = Math.min(botErrors.length, 30);
+}
+
 // Core state changes, shared by users, owners and the API so the rules are identical everywhere.
 async function finishTrade(db, id, actor, outcome, opts = {}) {
   const t = (await db.query('SELECT * FROM trades WHERE id=$1 FOR UPDATE', [id])).rows[0];
@@ -816,17 +875,20 @@ async function finishTrade(db, id, actor, outcome, opts = {}) {
   let detail = { kind: t.kind, user_id: t.user_id };
   if (outcome === 'completed' && t.kind === 'deposit') {
     let got = t.items;
+    const unmatched = [];
     if (Array.isArray(opts.received) && opts.received.length) {
       got = [];
       for (const r of opts.received.slice(0, 50)) {
         const qty = Math.min(Math.max(parseInt(r.qty, 10) || 1, 1), 50);
-        const item = r.item_id
-          ? (await db.query('SELECT id, name FROM items WHERE id=$1', [parseInt(r.item_id, 10)])).rows[0]
-          : (await db.query('SELECT id, name FROM items WHERE lower(name)=lower($1)', [clean(r.name, 60)])).rows[0];
-        if (!item) throw new Fail(400, 'Unknown item: ' + (r.name || r.item_id) + '. Add it to the catalog first.');
-        got.push({ item_id: item.id, name: item.name, qty });
+        const item = await resolveItem(db, r);
+        // Never throw away a deposit because of one odd name: park it for an owner to match by hand.
+        if (!item) { unmatched.push({ name: clean(r.name || String(r.item_id || '?'), 80), qty }); continue; }
+        const same = got.find((g) => g.item_id === item.id);
+        if (same) same.qty += qty; else got.push({ item_id: item.id, name: item.name, qty });
       }
     }
+    for (const u of unmatched) await db.query('INSERT INTO deposit_unmatched (user_id, trade_id, raw_name, qty) VALUES ($1,$2,$3,$4)', [t.user_id, t.id, u.name, u.qty]);
+    if (unmatched.length) detail.unmatched = unmatched;
     const units = got.reduce((a, g) => a + g.qty, 0);
     if (units > 100) throw new Fail(400, 'Too many items in one trade.');
     for (const g of got) for (let k = 0; k < g.qty; k++) {
@@ -922,9 +984,10 @@ app.post('/api/bot/inventory', botAuth, wrap(async (req, res) => {
   res.json({ ok: true, kinds: stock.items.length, units: stock.items.reduce((a, i) => a + i.qty, 0) });
 }));
 // Bot finished a deposit trade in game: add the items to the player's inventory.
-app.post('/api/bot/deposits', botAuth, wrap(async (req, res) => {
+app.post('/api/bot/deposits', botAuth, wrap(async (req, res, next) => {
   const rid = String(req.body.roblox_id || '').replace(/\D/g, '');
   const received = Array.isArray(req.body.received) ? req.body.received : [];
+  try {
   if (!rid) throw new Fail(400, 'roblox_id is required.');
   if (!received.length) throw new Fail(400, 'received must list the items you got.');
   const out = await tx(async (db) => {
@@ -934,9 +997,12 @@ app.post('/api/bot/deposits', botAuth, wrap(async (req, res) => {
     const t = (await db.query("INSERT INTO trades (user_id, kind, code, items, status, handled_by) VALUES ($1,'deposit',$2,'[]','in_progress',$3) RETURNING id", [u.id, makeTradeCode(), req.actor])).rows[0];
     await finishTrade(db, t.id, req.actor, 'completed', { received, note: req.body.note });
     const got = (await db.query('SELECT items FROM trades WHERE id=$1', [t.id])).rows[0].items;
-    return { ok: true, trade_id: t.id, username: u.username, items: got };
+    const um = (await db.query('SELECT raw_name AS name, qty FROM deposit_unmatched WHERE trade_id=$1', [t.id])).rows;
+    if (um.length) botError('deposit (some items need matching)', { roblox_id: rid, received: um }, um.length + ' item name(s) not in the catalog; waiting in Owner panel → Bot');
+    return { ok: true, trade_id: t.id, username: u.username, items: got, unmatched: um };
   });
   res.json(out);
+  } catch (e) { botError('deposit', req.body, e.message); throw e; }
 }));
 
 const tradeView = (t) => ({ id: t.id, kind: t.kind, status: t.status, code: t.code, items: t.items, roblox_id: t.roblox_id ? String(t.roblox_id) : null, roblox_username: t.username, handled_by: t.handled_by, created_at: t.created_at });
@@ -950,7 +1016,10 @@ app.get('/api/bot/trades', botAuth, wrap(async (req, res) => {
 }));
 
 app.post('/api/bot/trades/:id/claim', botAuth, wrap(async (req, res) => res.json(await tx((db) => claimTrade(db, parseInt(req.params.id, 10), req.actor)))));
-app.post('/api/bot/trades/:id/complete', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'completed', { received: req.body.received, note: req.body.note })))));
+app.post('/api/bot/trades/:id/complete', botAuth, wrap(async (req, res) => {
+  try { res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'completed', { received: req.body.received, note: req.body.note }))); }
+  catch (e) { botError('trade #' + req.params.id + ' complete', req.body, e.message); throw e; }
+}));
 app.post('/api/bot/trades/:id/fail', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'failed', { note: req.body.reason })))));
 
 // ---------- Balance codes (sold on SellAuth, redeemed here) ----------
@@ -1222,6 +1291,34 @@ app.get('/api/admin/bot', owner, wrap(async (req, res) => {
     `SELECT count(*) FILTER (WHERE kind='deposit')::int AS deposits, count(*) FILTER (WHERE kind='withdraw')::int AS withdrawals
      FROM trades WHERE status='completed' AND updated_at > now() - interval '24 hours'`)).rows[0];
   res.json({ bot, api_enabled: BOT_KEY.length >= 32, last_seen: botSeen ? new Date(botSeen).toISOString() : null, expected, test_items: test, stock, queue, recent, day, rec_per_1k: REC_PER_1K });
+}));
+
+// ---------- Owner: deposited items whose names didn't match the catalog ----------
+app.get('/api/admin/unmatched', owner, wrap(async (req, res) => {
+  const rows = (await pool.query(`SELECT d.*, u.username, i.name AS item_name FROM deposit_unmatched d LEFT JOIN users u ON u.id=d.user_id LEFT JOIN items i ON i.id=d.item_id
+    ORDER BY (d.status='open') DESC, d.id DESC LIMIT 60`)).rows;
+  res.json({ rows, errors: botErrors });
+}));
+app.post('/api/admin/unmatched/:id/:action', owner, wrap(async (req, res) => {
+  const out = await tx(async (db) => {
+    const d = (await db.query('SELECT * FROM deposit_unmatched WHERE id=$1 FOR UPDATE', [parseInt(req.params.id, 10)])).rows[0];
+    if (!d) throw new Fail(404, 'Not found.');
+    if (d.status !== 'open') throw new Fail(409, 'Already handled.');
+    if (req.params.action === 'dismiss') {
+      await db.query("UPDATE deposit_unmatched SET status='dismissed', handled_by=$1, handled_at=now() WHERE id=$2", [req.user.username, d.id]);
+      await log(db, req.user.username, 'deposit.unmatched_dismissed', 'unmatched:' + d.id, { name: d.raw_name });
+      return { ok: true };
+    }
+    if (req.params.action !== 'assign') throw new Fail(400, 'Unknown action.');
+    const item = (await db.query('SELECT id, name FROM items WHERE id=$1', [parseInt(req.body.item_id, 10)])).rows[0];
+    if (!item) throw new Fail(400, 'Pick the catalog item it should be.');
+    if (!d.user_id) throw new Fail(400, 'That player account no longer exists.');
+    for (let k = 0; k < d.qty; k++) await db.query('INSERT INTO inventory (user_id, item_id, deposit_trade_id) VALUES ($1,$2,$3)', [d.user_id, item.id, d.trade_id]);
+    await db.query("UPDATE deposit_unmatched SET status='assigned', item_id=$1, handled_by=$2, handled_at=now() WHERE id=$3", [item.id, req.user.username, d.id]);
+    await log(db, req.user.username, 'deposit.unmatched_assigned', 'unmatched:' + d.id, { name: d.raw_name, item: item.name, qty: d.qty });
+    return { ok: true, item: item.name, qty: d.qty };
+  });
+  res.json(out);
 }));
 
 // ---------- Owner: edit someone's inventory (testing and fixes) ----------
@@ -1586,19 +1683,48 @@ const PRICE_API = process.env.PRICE_API || 'https://api.coingecko.com/api/v3';
 const prices = {}; let pricesAt = 0;
 const watch = { lastRun: null, lastError: null, checks: 0 };
 
-async function getJson(url) {
-  const r = await fetch(url, { headers: { accept: 'application/json', 'user-agent': 'SplitzMarket/1.0' }, signal: AbortSignal.timeout(10000) });
-  if (!r.ok) throw new Error(url.replace(/\?.*/, '') + ' -> ' + r.status);
-  return r.json();
+// A host that rate-limits us (429) or errors is skipped for a while and the next provider is used.
+const hostCool = new Map();
+const hostOf = (u) => { try { return new URL(u).host; } catch { return u; } };
+async function getJson(url, asText) {
+  const host = hostOf(url);
+  if ((hostCool.get(host) || 0) > Date.now()) throw new Error(host + ' is cooling down');
+  let r;
+  try { r = await fetch(url, { headers: { accept: 'application/json', 'user-agent': 'SplitzMarket/1.0' }, signal: AbortSignal.timeout(10000) }); }
+  catch (e) { hostCool.set(host, Date.now() + 30e3); throw new Error(host + ' unreachable: ' + e.message); }
+  if (!r.ok) {
+    if (r.status === 429 || r.status >= 500) hostCool.set(host, Date.now() + (r.status === 429 ? 90e3 : 30e3));
+    throw new Error(url.replace(/\?.*/, '') + ' -> ' + r.status);
+  }
+  return asText ? r.text() : r.json();
 }
+// Prices come from CoinGecko, then Coinbase, then Kraken. The last good price is saved, so a
+// rate-limited price API never stops deposits from being picked up.
+const PRICE_SOURCES = [
+  async (coins) => { const j = await getJson(PRICE_API + '/simple/price?ids=' + coins.map((c) => c.gecko).join(',') + '&vs_currencies=usd'); return Object.fromEntries(coins.map((c) => [c.id, j[c.gecko] && j[c.gecko].usd])); },
+  async (coins) => Object.fromEntries(await Promise.all(coins.map(async (c) => [c.id, parseFloat((await getJson('https://api.coinbase.com/v2/prices/' + c.symbol + '-USD/spot')).data.amount)]))),
+  async (coins) => Object.fromEntries(await Promise.all(coins.map(async (c) => { const j = await getJson('https://api.kraken.com/0/public/Ticker?pair=' + (c.symbol === 'BTC' ? 'XBT' : c.symbol) + 'USD'); const k = Object.keys(j.result || {})[0]; return [c.id, k ? parseFloat(j.result[k].c[0]) : null]; }))),
+];
+let pricesSavedAt = 0;
 async function refreshPrices(force) {
-  const ids = Object.values(CRYPTO).map((c) => c.gecko);
-  if (!ids.length || (!force && Date.now() - pricesAt < 60000)) return prices;
-  try {
-    const j = await getJson(PRICE_API + '/simple/price?ids=' + ids.join(',') + '&vs_currencies=usd');
-    for (const c of Object.values(CRYPTO)) if (j[c.gecko] && j[c.gecko].usd > 0) prices[c.id] = j[c.gecko].usd;
-    pricesAt = Date.now();
-  } catch (e) { watch.lastError = 'prices: ' + e.message; }
+  const coins = Object.values(CRYPTO);
+  if (!coins.length) return prices;
+  for (const c of coins) if (!prices[c.id] && settings.last_prices && settings.last_prices[c.id] > 0) prices[c.id] = settings.last_prices[c.id];
+  if (!force && Date.now() - pricesAt < 60000) return prices;
+  pricesAt = Date.now();
+  let missing = coins;
+  for (const src of PRICE_SOURCES) {
+    try {
+      const got = await src(missing);
+      for (const c of missing) if (got[c.id] > 0) prices[c.id] = got[c.id];
+      missing = missing.filter((c) => !(got[c.id] > 0));
+    } catch (e) { watch.lastError = 'prices: ' + e.message; }
+    if (!missing.length) break;
+  }
+  if (Date.now() - pricesSavedAt > 10 * 60e3 && Object.keys(prices).length) {
+    pricesSavedAt = Date.now(); settings.last_prices = { ...prices };
+    pool.query("INSERT INTO settings (key, value) VALUES ('last_prices', $1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value", [JSON.stringify(prices)]).catch(() => {});
+  }
   return prices;
 }
 const feeCents = (c) => Math.round(parseFloat(c.fee) * 100) || 0;
@@ -1690,6 +1816,41 @@ app.get('/api/admin/crypto', owner, wrap(async (req, res) => {
     deposits: deposits.map((d) => ({ ...d, amount_sats: Number(d.amount_sats) })), watch,
   });
 }));
+// Owner: force-check a deposit by address or transaction ID right now.
+app.post('/api/admin/crypto/recheck', owner, wrap(async (req, res) => {
+  const q = String(req.body.query || '').trim();
+  if (!q) throw new Fail(400, 'Paste a deposit address or a transaction ID.');
+  let addrs = (await pool.query('SELECT * FROM crypto_addresses WHERE address=$1', [q])).rows;
+  if (!addrs.length && /^[0-9a-fA-F]{64}$/.test(q)) {
+    const known = (await pool.query('SELECT DISTINCT address FROM crypto_deposits WHERE txid=$1', [q.toLowerCase()])).rows.map((r) => r.address);
+    let outs = known;
+    if (!outs.length) for (const c of Object.values(CRYPTO)) for (const base of ESPLORA[c.id] || []) {
+      try { const t = await getJson(base + '/tx/' + q.toLowerCase()); outs = (t.vout || []).map((o) => o.scriptpubkey_address).filter(Boolean); break; } catch {}
+    }
+    if (outs.length) addrs = (await pool.query('SELECT * FROM crypto_addresses WHERE address = ANY($1)', [outs])).rows;
+  }
+  if (!addrs.length) throw new Fail(404, 'That is not one of our deposit addresses, or the transaction was not found. Check the coin and that it was sent to the address shown on the site.');
+  for (const a of addrs) await checkAddress(a);
+  const deps = (await pool.query(`SELECT d.*, u.username FROM crypto_deposits d LEFT JOIN users u ON u.id=d.user_id WHERE d.address = ANY($1) ORDER BY d.id DESC LIMIT 10`, [addrs.map((a) => a.address)])).rows;
+  const owner = (await pool.query('SELECT username FROM users WHERE id=$1', [addrs[0].user_id])).rows[0];
+  await log(null, req.user.username, 'crypto.recheck', q.slice(0, 20));
+  res.json({ user: owner ? owner.username : null, addresses: addrs.map((a) => a.address), deposits: deps.map((d) => ({ ...d, amount_sats: Number(d.amount_sats) })) });
+}));
+// Owner: credit a deposit that was under the minimum anyway.
+app.post('/api/admin/crypto/deposits/:id/credit', owner, wrap(async (req, res) => {
+  const out = await tx(async (db) => {
+    const d = (await db.query("SELECT * FROM crypto_deposits WHERE id=$1 FOR UPDATE", [parseInt(req.params.id, 10)])).rows[0];
+    if (!d) throw new Fail(404, 'Deposit not found.');
+    if (d.status !== 'below_min') throw new Fail(409, 'Only deposits under the minimum can be credited by hand.');
+    await db.query('SELECT id FROM users WHERE id=$1 FOR UPDATE', [d.user_id]);
+    const c = CRYPTO[d.coin] || cx.COINS[d.coin];
+    await moveMoney(db, d.user_id, d.usd_cents, 'crypto_deposit', (Number(d.amount_sats) / 1e8).toFixed(8).replace(/0+$/, '').replace(/\.$/, '') + ' ' + c.symbol + ' (credited by staff)', d.usd_cents);
+    await db.query("UPDATE crypto_deposits SET status='credited', credited_at=now() WHERE id=$1", [d.id]);
+    await log(db, req.user.username, 'crypto.deposit_credited_by_owner', d.coin + ':' + d.txid, { usd: usd(d.usd_cents) });
+    return { ok: true };
+  });
+  res.json(out);
+}));
 app.post('/api/admin/crypto/withdrawals/:id/:action', owner, wrap(async (req, res) => {
   const id = parseInt(req.params.id, 10), a = req.params.action;
   const out = await tx(async (db) => {
@@ -1715,27 +1876,58 @@ app.post('/api/admin/crypto/withdrawals/:id/:action', owner, wrap(async (req, re
 
 // ---------- Blockchain watcher ----------
 const tips = {};
-async function tipHeight(c) {
-  const t = tips[c.id];
+// Blockchain data: Esplora explorers first (mempool.space / blockstream / litecoinspace), BlockCypher as a last resort.
+const ESPLORA = {
+  btc: [...new Set([cx.COINS.btc.api, 'https://blockstream.info/api', 'https://mempool.space/api'])],
+  ltc: [...new Set([cx.COINS.ltc.api, 'https://litecoinspace.org/api'])],
+};
+const CYPHER = { btc: 'btc/main', ltc: 'ltc/main' };
+async function tipHeight(base) {
+  const t = tips[base];
   if (t && Date.now() - t.at < 5000) return t.h;
-  const h = parseInt(await (await fetch(c.api + '/blocks/tip/height', { signal: AbortSignal.timeout(10000) })).text(), 10);
-  if (!(h > 0)) throw new Error(c.id + ' tip height unavailable');
-  tips[c.id] = { h, at: Date.now() };
+  const h = parseInt(await getJson(base + '/blocks/tip/height', true), 10);
+  if (!(h > 0)) throw new Error(hostOf(base) + ' tip height unavailable');
+  tips[base] = { h, at: Date.now() };
   return h;
+}
+// Every payment to an address as [{ txid, sats, confs }].
+async function addressTxs(c, address) {
+  let last;
+  for (const base of ESPLORA[c.id] || []) {
+    try {
+      const txs = await getJson(base + '/address/' + address + '/txs');
+      const tip = await tipHeight(base);
+      return (Array.isArray(txs) ? txs : []).map((t) => ({
+        txid: t.txid,
+        sats: (t.vout || []).filter((o) => o.scriptpubkey_address === address).reduce((a, o) => a + Number(o.value || 0), 0),
+        confs: t.status && t.status.confirmed && t.status.block_height ? Math.max(1, tip - t.status.block_height + 1) : 0, // a mined tx always has at least 1
+      }));
+    } catch (e) { last = e; }
+  }
+  if (CYPHER[c.id]) {
+    try {
+      const j = await getJson('https://api.blockcypher.com/v1/' + CYPHER[c.id] + '/addrs/' + address + '/full?limit=50');
+      return (j.txs || []).map((t) => ({
+        txid: t.hash,
+        sats: (t.outputs || []).filter((o) => (o.addresses || []).includes(address)).reduce((a, o) => a + Number(o.value || 0), 0),
+        confs: t.block_height > 0 ? Math.max(1, Number(t.confirmations) || 1) : 0,
+      }));
+    } catch (e) { last = e; }
+  }
+  throw last || new Error('no explorer available for ' + c.id);
 }
 async function checkAddress(row) {
   const c = CRYPTO[row.coin];
   if (!c) return;
-  const txs = await getJson(c.api + '/address/' + row.address + '/txs');
-  const tip = await tipHeight(c);
+  const txs = await addressTxs(c, row.address);
   watch.checks++;
-  for (const t of Array.isArray(txs) ? txs : []) {
-    const sats = (t.vout || []).filter((o) => o.scriptpubkey_address === row.address).reduce((a, o) => a + Number(o.value || 0), 0);
+  for (const t of txs) {
+    const sats = t.sats, confs = t.confs;
     if (!sats) continue;
-    const confs = t.status && t.status.confirmed && t.status.block_height ? Math.max(1, tip - t.status.block_height + 1) : 0; // a mined tx always has at least 1
     let dep = (await pool.query('SELECT * FROM crypto_deposits WHERE coin=$1 AND txid=$2 AND address=$3', [c.id, t.txid, row.address])).rows[0];
     if (!dep) {
-      if (!prices[c.id]) continue; // wait until we have a price to lock in
+      if (!prices[c.id]) await refreshPrices(true);
+      if (!prices[c.id]) { watch.lastError = 'no ' + c.symbol + ' price yet, deposit ' + t.txid.slice(0, 10) + ' waits'; continue; }
       const cents = Math.round((sats / 1e8) * prices[c.id] * 100);
       dep = (await pool.query(
         `INSERT INTO crypto_deposits (user_id, coin, address, txid, amount_sats, usd_cents, confirmations) VALUES ($1,$2,$3,$4,$5,$6,$7)
@@ -1764,32 +1956,37 @@ async function checkAddress(row) {
   await pool.query('UPDATE crypto_addresses SET last_checked=now() WHERE id=$1', [row.id]);
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-let busy = false;
+// Three loops that never block each other:
+//  hot  - addresses opened in the last 30 minutes and anything still confirming (every few seconds)
+//  day  - addresses opened in the last 24 hours (every minute)
+//  all  - every address (every 15 minutes, slowly, so explorers don't rate-limit us)
+const busy = { hot: false, day: false, all: false };
 async function sweep(mode) {
-  const all = mode === true;
-  if (busy || !Object.keys(CRYPTO).length) return;
-  busy = true;
+  if (busy[mode] || !Object.keys(CRYPTO).length) return;
+  busy[mode] = true;
   try {
     await refreshPrices();
     const keys = Object.values(CRYPTO).map((c) => c.id + ':' + c.keyId);
+    const pending = "EXISTS (SELECT 1 FROM crypto_deposits d WHERE d.address=a.address AND d.status='pending')";
+    const where = mode === 'all' ? 'true'
+      : mode === 'hot' ? `((a.last_viewed > now() - interval '30 minutes' AND (a.last_checked IS NULL OR a.last_checked < now() - interval '6 seconds')) OR ${pending})`
+      : `(a.last_viewed > now() - interval '24 hours' AND (a.last_checked IS NULL OR a.last_checked < now() - interval '45 seconds'))`;
     const rows = (await pool.query(
-      `SELECT a.* FROM crypto_addresses a WHERE (a.coin || ':' || a.key_id) = ANY($1) AND ($2 OR a.last_viewed > now() - ($3 || ' minutes')::interval
-         OR EXISTS (SELECT 1 FROM crypto_deposits d WHERE d.address=a.address AND d.status='pending'))
-       ORDER BY a.last_checked ASC NULLS FIRST LIMIT 500`, [keys, all, mode === 'hot' ? '30' : '1440'])).rows;
+      `SELECT a.* FROM crypto_addresses a WHERE (a.coin || ':' || a.key_id) = ANY($1) AND ${where}
+       ORDER BY a.last_checked ASC NULLS FIRST LIMIT $2`, [keys, mode === 'all' ? 1000 : 200])).rows;
     for (const r of rows) {
       try { await checkAddress(r); } catch (e) { watch.lastError = new Date().toISOString() + ' ' + e.message; }
-      await sleep(all ? 1000 : mode === 'hot' ? 150 : 350);
+      await sleep(mode === 'all' ? 1200 : mode === 'hot' ? 150 : 400);
     }
     watch.lastRun = new Date().toISOString();
   } catch (e) { watch.lastError = e.message; }
-  busy = false;
+  busy[mode] = false;
 }
-// Fast loop: addresses opened in the last 30 minutes and anything still confirming. Slow loop: the last 24 hours.
 const POLL = Math.max(3, parseInt(process.env.CRYPTO_POLL_SECONDS, 10) || 5) * 1000;
 setInterval(() => sweep('hot'), POLL);
 setInterval(() => sweep('day'), 60 * 1000);
-setInterval(() => sweep(true), 15 * 60 * 1000);
-setTimeout(() => sweep(true), 5000);
+setInterval(() => sweep('all'), 15 * 60 * 1000);
+setTimeout(() => sweep('all'), 60 * 1000);
 
 
 app.use((err, req, res, next) => {
