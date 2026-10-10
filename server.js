@@ -142,6 +142,8 @@ async function init() {
     CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value JSONB NOT NULL);
     ALTER TABLE items ADD COLUMN IF NOT EXISTS demand INT;
     ALTER TABLE inventory ADD COLUMN IF NOT EXISTS added_by TEXT;
+    ALTER TABLE market_listings ADD COLUMN IF NOT EXISTS fee_cents INT NOT NULL DEFAULT 0;
+    ALTER TABLE crypto_withdrawals ADD COLUMN IF NOT EXISTS tax_cents INT NOT NULL DEFAULT 0;
     ALTER TABLE items ADD COLUMN IF NOT EXISTS stability TEXT;
     ALTER TABLE items ADD COLUMN IF NOT EXISTS value_change INT;
     ALTER TABLE items ADD COLUMN IF NOT EXISTS value_updated_at TIMESTAMPTZ;
@@ -228,7 +230,10 @@ const authAny = wrap(async (req, res, next) => {
 // ---------- Maintenance mode ----------
 // Owners flip this in the owner panel. Owners keep seeing the normal site; everyone else gets
 // public/maintenance.html, and the API refuses requests except login and the bot API.
-const settings = { maintenance: false };
+const settings = { maintenance: false, sale_tax: { on: false, pct: 5 }, withdraw_tax: { on: false, pct: 5 } };
+// Site fees, switched on and off in Owner panel → Overview.
+const taxPct = (k) => (settings[k] && settings[k].on ? Math.min(Math.max(Number(settings[k].pct) || 0, 0), 50) : 0);
+const taxOf = (cents, pct) => Math.round(cents * pct / 100);
 const OPEN_DURING_MAINTENANCE = /^\/api\/(auth\/|logout$|me$|status$|bot\/)/;
 app.use(wrap(async (req, res, next) => {
   if (!settings.maintenance) return next();
@@ -458,9 +463,11 @@ app.post('/api/market/buy', auth, wrap(async (req, res) => {
     const mine = wallets.find((w) => w.id === req.user.id);
     if (mine.balance_cents < total) throw new Fail(402, `You need ${usd(total)} but have ${usd(mine.balance_cents)}. Add funds first.`);
     const balance = await moveMoney(db, req.user.id, -total, 'purchase', ls.length + ' item' + (ls.length === 1 ? '' : 's') + ': ' + ls.map((l) => l.name).join(', ').slice(0, 200), -total);
+    const pct = taxPct('sale_tax');
     for (const l of ls) {
-      await moveMoney(db, l.seller_id, l.price_cents, 'sale', 'Sold ' + l.name + ' to ' + req.user.username);
-      await db.query("UPDATE market_listings SET status='sold', buyer_id=$1, sold_at=now() WHERE id=$2", [req.user.id, l.id]);
+      const fee = taxOf(l.price_cents, pct);
+      await moveMoney(db, l.seller_id, l.price_cents - fee, 'sale', 'Sold ' + l.name + ' to ' + req.user.username + (fee ? ' (' + usd(l.price_cents) + ' minus ' + pct + '% fee ' + usd(fee) + ')' : ''));
+      await db.query("UPDATE market_listings SET status='sold', buyer_id=$1, sold_at=now(), fee_cents=$3 WHERE id=$2", [req.user.id, l.id, fee]);
       await db.query("UPDATE inventory SET user_id=$1, status='held' WHERE id=$2 AND status='listed'", [req.user.id, l.inventory_id]);
       await log(db, req.user.username, 'market.sold', 'listing:' + l.id, { item: l.name, price: usd(l.price_cents), seller_id: l.seller_id, buyer_id: req.user.id });
     }
@@ -479,7 +486,7 @@ app.get('/api/profile', auth, wrap(async (req, res) => {
   const id = req.user.id;
   const u = (await pool.query('SELECT username, created_at, balance_cents FROM users WHERE id=$1', [id])).rows[0];
   const one = async (sql) => (await pool.query(sql, [id])).rows[0];
-  const sold = await one("SELECT count(*)::int AS n, COALESCE(sum(price_cents),0)::int AS c FROM market_listings WHERE seller_id=$1 AND status='sold'");
+  const sold = await one("SELECT count(*)::int AS n, COALESCE(sum(price_cents - fee_cents),0)::int AS c FROM market_listings WHERE seller_id=$1 AND status='sold'");
   const bought = await one("SELECT count(*)::int AS n, COALESCE(sum(price_cents),0)::int AS c FROM market_listings WHERE buyer_id=$1 AND status='sold'");
   const deposits = (await one("SELECT count(*)::int AS n FROM trades WHERE user_id=$1 AND kind='deposit' AND status='completed'")).n;
   const messages = (await one('SELECT count(*)::int AS n FROM messages WHERE user_id=$1')).n;
@@ -579,6 +586,10 @@ app.get('/api/admin/stats', owner, wrap(async (req, res) => {
       NOT COALESCE((SELECT staff FROM ticket_messages m WHERE m.ticket_id=t.id ORDER BY m.id DESC LIMIT 1), false)`),
     activeTrades: await q("SELECT count(*)::int AS n FROM trades WHERE status IN ('pending','in_progress')"),
     itemsHeld: await q("SELECT count(*)::int AS n FROM inventory WHERE status IN ('held','withdrawing','listed')"),
+    fees24: await q(`SELECT ((SELECT COALESCE(sum(fee_cents),0) FROM market_listings WHERE status='sold' AND sold_at > now() - interval '24 hours')
+      + (SELECT COALESCE(sum(tax_cents),0) FROM crypto_withdrawals WHERE status<>'rejected' AND created_at > now() - interval '24 hours'))::int AS n`),
+    feesAll: await q(`SELECT ((SELECT COALESCE(sum(fee_cents),0) FROM market_listings WHERE status='sold')
+      + (SELECT COALESCE(sum(tax_cents),0) FROM crypto_withdrawals WHERE status<>'rejected'))::int AS n`),
     owners: OWNERS,
     apiEnabled: BOT_KEY.length >= 32,
   });
@@ -636,13 +647,26 @@ app.delete('/api/admin/chat/:id', owner, wrap(async (req, res) => {
   res.json({ ok: true });
 }));
 
-app.get('/api/admin/settings', owner, (req, res) => res.json(settings));
+const publicSettings = () => ({ maintenance: settings.maintenance, sale_tax: settings.sale_tax, withdraw_tax: settings.withdraw_tax });
+app.get('/api/admin/settings', owner, (req, res) => res.json(publicSettings()));
 app.post('/api/admin/settings', owner, wrap(async (req, res) => {
-  if (typeof req.body.maintenance !== 'boolean') throw new Fail(400, 'Nothing to change.');
-  await pool.query("INSERT INTO settings (key, value) VALUES ('maintenance', $1) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value", [JSON.stringify(req.body.maintenance)]);
-  settings.maintenance = req.body.maintenance;
-  await log(null, req.user.username, req.body.maintenance ? 'site.maintenance_on' : 'site.maintenance_off', null);
-  res.json(settings);
+  const save = (k, v) => pool.query("INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value", [k, JSON.stringify(v)]);
+  let changed = false;
+  if (typeof req.body.maintenance === 'boolean') {
+    await save('maintenance', req.body.maintenance);
+    settings.maintenance = req.body.maintenance; changed = true;
+    await log(null, req.user.username, req.body.maintenance ? 'site.maintenance_on' : 'site.maintenance_off', null);
+  }
+  for (const k of ['sale_tax', 'withdraw_tax']) {
+    const v = req.body[k];
+    if (!v || typeof v !== 'object') continue;
+    const pct = Math.round(Math.min(Math.max(Number(v.pct ?? settings[k].pct) || 0, 0), 50) * 100) / 100;
+    const next = { on: !!v.on, pct };
+    await save(k, next); settings[k] = next; changed = true;
+    await log(null, req.user.username, 'site.' + k + (next.on ? '_on' : '_off'), null, { pct });
+  }
+  if (!changed) throw new Fail(400, 'Nothing to change.');
+  res.json(publicSettings());
 }));
 
 app.get('/api/admin/market', owner, wrap(async (req, res) => {
@@ -683,7 +707,7 @@ app.get('/api/items', wrap(async (req, res) => {
   res.json(rows);
 }));
 
-app.get('/api/trading-info', (req, res) => res.json({ open: TRADING_OPEN, market: LISTINGS_OPEN, accounts: MM_ACCOUNTS, rec_per_1k: REC_PER_1K }));
+app.get('/api/trading-info', (req, res) => res.json({ open: TRADING_OPEN, market: LISTINGS_OPEN, accounts: MM_ACCOUNTS, rec_per_1k: REC_PER_1K, sale_tax_pct: taxPct('sale_tax'), withdraw_tax_pct: taxPct('withdraw_tax') }));
 
 app.get('/api/inventory', authAny, wrap(async (req, res) => {
   const { rows } = await pool.query(
@@ -1313,7 +1337,7 @@ app.get('/api/crypto', wrap(async (req, res) => {
   if (u) withdrawable = Math.max(0, u.balance_cents - (await pool.query('SELECT locked_cents FROM users WHERE id=$1', [u.id])).rows[0].locked_cents);
   res.json({
     coins: Object.values(CRYPTO).map((c) => ({ id: c.id, name: c.name, symbol: c.symbol, price: prices[c.id] || null, confirmations: c.confirmations, fee_cents: feeCents(c) })),
-    min_deposit: MIN_DEPOSIT, min_withdraw: MIN_WITHDRAW,
+    min_deposit: MIN_DEPOSIT, min_withdraw: MIN_WITHDRAW, withdraw_tax_pct: taxPct('withdraw_tax'),
     balance: u ? u.balance_cents : null, withdrawable,
     open: LISTINGS_OPEN || isOwner(u),
   });
@@ -1339,7 +1363,7 @@ app.post('/api/crypto/address', auth, wrap(async (req, res) => {
 
 app.get('/api/crypto/history', auth, wrap(async (req, res) => {
   const deposits = (await pool.query('SELECT id, coin, txid, amount_sats, usd_cents, confirmations, status, created_at FROM crypto_deposits WHERE user_id=$1 ORDER BY id DESC LIMIT 20', [req.user.id])).rows;
-  const withdrawals = (await pool.query('SELECT id, coin, address, usd_cents, fee_cents, coin_amount, status, txid, note, created_at FROM crypto_withdrawals WHERE user_id=$1 ORDER BY id DESC LIMIT 20', [req.user.id])).rows;
+  const withdrawals = (await pool.query('SELECT id, coin, address, usd_cents, fee_cents, tax_cents, coin_amount, status, txid, note, created_at FROM crypto_withdrawals WHERE user_id=$1 ORDER BY id DESC LIMIT 20', [req.user.id])).rows;
   res.json({ deposits: deposits.map((d) => ({ ...d, amount_sats: Number(d.amount_sats), needed: (CRYPTO[d.coin] || cx.COINS[d.coin] || {}).confirmations })), withdrawals });
 }));
 
@@ -1352,7 +1376,8 @@ app.post('/api/crypto/withdraw', auth, wrap(async (req, res) => {
   const amount = toCents(req.body.amount);
   const fee = feeCents(c);
   if (amount < MIN_WITHDRAW) throw new Fail(400, 'The minimum withdrawal is ' + usd(MIN_WITHDRAW) + '.');
-  if (amount <= fee) throw new Fail(400, 'The amount has to be more than the ' + usd(fee) + ' fee.');
+  const tpct = taxPct('withdraw_tax'), tax = taxOf(amount, tpct);
+  if (amount <= fee + tax) throw new Fail(400, 'The amount has to be more than the ' + usd(fee + tax) + ' in fees.');
   await refreshPrices();
   const out = await tx(async (db) => {
     const u = (await db.query('SELECT balance_cents, locked_cents FROM users WHERE id=$1 FOR UPDATE', [req.user.id])).rows[0];
@@ -1360,10 +1385,10 @@ app.post('/api/crypto/withdraw', auth, wrap(async (req, res) => {
     if (open) throw new Fail(400, 'You already have a withdrawal waiting. Wait for it to be sent first.');
     const free = u.balance_cents - u.locked_cents;
     if (amount > free) throw new Fail(400, `You can withdraw up to ${usd(Math.max(0, free))}. Deposited money has to be spent on items before it can be withdrawn.`);
-    const w = (await db.query('INSERT INTO crypto_withdrawals (user_id, coin, address, usd_cents, fee_cents, coin_amount) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
-      [req.user.id, c.id, address, amount, fee, coinAmount(c, amount - fee)])).rows[0];
-    const balance = await moveMoney(db, req.user.id, -amount, 'crypto_withdrawal', c.name + ' to ' + address.slice(0, 10) + '…');
-    await log(db, req.user.username, 'crypto.withdraw_requested', 'withdrawal:' + w.id, { coin: c.id, address, amount: usd(amount), fee: usd(fee) });
+    const w = (await db.query('INSERT INTO crypto_withdrawals (user_id, coin, address, usd_cents, fee_cents, tax_cents, coin_amount) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',
+      [req.user.id, c.id, address, amount, fee, tax, coinAmount(c, amount - fee - tax)])).rows[0];
+    const balance = await moveMoney(db, req.user.id, -amount, 'crypto_withdrawal', c.name + ' to ' + address.slice(0, 10) + '…' + (tax ? ' (incl. ' + tpct + '% fee ' + usd(tax) + ')' : ''));
+    await log(db, req.user.username, 'crypto.withdraw_requested', 'withdrawal:' + w.id, { coin: c.id, address, amount: usd(amount), fee: usd(fee), tax: usd(tax) });
     return { ok: true, id: w.id, balance };
   });
   res.json(out);
@@ -1379,7 +1404,7 @@ app.get('/api/admin/crypto', owner, wrap(async (req, res) => {
     `SELECT d.*, u.username FROM crypto_deposits d LEFT JOIN users u ON u.id=d.user_id ORDER BY d.id DESC LIMIT 100`)).rows;
   res.json({
     coins: Object.values(CRYPTO).map((c) => ({ id: c.id, name: c.name, price: prices[c.id] || null, explorer: c.explorer })),
-    withdrawals: withdrawals.map((w) => ({ ...w, send_now: coinAmount(CRYPTO[w.coin] || cx.COINS[w.coin], w.usd_cents - w.fee_cents) })),
+    withdrawals: withdrawals.map((w) => ({ ...w, send_now: coinAmount(CRYPTO[w.coin] || cx.COINS[w.coin], w.usd_cents - w.fee_cents - (w.tax_cents || 0)) })),
     deposits: deposits.map((d) => ({ ...d, amount_sats: Number(d.amount_sats) })), watch,
   });
 }));
