@@ -1332,6 +1332,16 @@
   "image": "/items/bloom.webp"
  },
  {
+  "name": "Corrupt",
+  "rarity": "Godly",
+  "type": "Knife",
+  "value": 350,
+  "demand": 3,
+  "stability": "Stable",
+  "image": "/items/corrupt.webp",
+  "change": -25
+ },
+ {
   "name": "Heart Wand",
   "rarity": "Godly",
   "type": "Knife",
