@@ -119,7 +119,7 @@ function gate() {
 
 const usd = (c) => window.money ? window.money(c) : '$' + (c / 100).toFixed(2);
 const when = (d) => new Date(d).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-const REASON = { sale: 'Sale', purchase: 'Purchase', owner_added: 'Funds added', owner_removed: 'Withdrawal', crypto_deposit: 'Crypto deposit', crypto_withdrawal: 'Crypto withdrawal', withdrawal_refund: 'Withdrawal refunded' };
+const REASON = { sale: 'Sale', purchase: 'Purchase', owner_added: 'Funds added', owner_removed: 'Withdrawal', crypto_deposit: 'Crypto deposit', crypto_withdrawal: 'Crypto withdrawal', withdrawal_refund: 'Withdrawal refunded', code_redeemed: 'Balance code' };
 
 function render(me, p, w) {
   $('who').replaceChildren(RbxAuth.menu(me, async () => { await api('/api/logout', 'POST'); location.href = '/'; }));
