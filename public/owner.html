@@ -358,6 +358,23 @@ function adjust(u, done) {
 
 async function cryptoTab() {
   const body = el('div');
+    const rq = el('input', { placeholder: 'Deposit address or transaction ID', autocomplete: 'off', spellcheck: false });
+    const rres = el('div', { style: 'margin-top:10px' });
+    const rbtn = el('button', { className: 'btn', textContent: 'Check now', onclick: async () => {
+      rbtn.disabled = true; rres.replaceChildren(el('span', { className: 'mute', textContent: 'Checking the blockchain...' }));
+      try {
+        const r = await api('/api/admin/crypto/recheck', 'POST', { query: rq.value });
+        rres.replaceChildren(el('p', { style: 'margin:0 0 6px' }, 'Address belongs to ', el('b', { textContent: r.user || '?' }), '.'),
+          ...(r.deposits.length ? r.deposits.map((x) => el('div', { className: 'mute' }, (x.amount_sats / 1e8).toFixed(8).replace(/0+$/, '') + ' ' + String(x.coin).toUpperCase() + ' · ' + usd(x.usd_cents) + ' · ',
+            el('b', { textContent: x.status === 'pending' ? 'confirming (' + x.confirmations + ')' : x.status === 'below_min' ? 'under the minimum (use Credit anyway below)' : x.status }), ' · ' + x.txid.slice(0, 14) + '…'))
+            : [el('div', { className: 'mute', textContent: 'No payments to this address on the blockchain yet. If they just sent it, wait a minute and check again.' })]));
+        load();
+      } catch (e) { rres.replaceChildren(el('span', { style: 'color:var(--bad)', textContent: e.message })); }
+      rbtn.disabled = false;
+    } });
+    const recheck = el('section', { className: 'card' }, el('h2', { textContent: 'Find a missing deposit' }),
+      el('p', { className: 'mute', style: 'margin:0 0 10px', textContent: 'Someone says their deposit did not show up? Paste the address they sent to or the transaction ID. The site checks the blockchain right now and credits it if it has enough confirmations.' }),
+      el('div', { className: 'tools', style: 'margin:0' }, rq, rbtn), rres);
   async function load() {
     const d = await api('/api/admin/crypto');
     const ex = Object.fromEntries(d.coins.map((c) => [c.id, c]));
@@ -398,9 +415,9 @@ async function cryptoTab() {
       el('td', { textContent: usd(x.usd_cents) }),
       el('td', {}, el('span', { className: 'pill ' + (x.status === 'credited' ? 'ok' : x.status === 'pending' ? 'gold' : 'bad'), textContent: x.status === 'pending' ? 'confirming ' + x.confirmations : x.status })),
       el('td', {}, ex[x.coin] ? el('a', { href: ex[x.coin].explorer + x.txid, target: '_blank', rel: 'noopener', textContent: x.txid.slice(0, 12) + '…' }) : x.txid.slice(0, 12)),
-      el('td', { className: 'mute', textContent: when(x.created_at) }))));
+      el('td', { className: 'mute' }, when(x.created_at), x.status === 'below_min' ? el('span', {}, ' ', armed('Credit anyway', 'Confirm ' + usd(x.usd_cents), async () => { await api('/api/admin/crypto/deposits/' + x.id + '/credit', 'POST'); toast('Credited ' + usd(x.usd_cents) + ' to ' + x.username); load(); }, 'btn sm')) : null))));
     const w = d.watch;
-    body.append(q,
+    body.append(q, recheck,
       el('section', { className: 'card scroll' }, el('h2', { textContent: 'Recent deposits' }),
         el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['User', 'Amount', 'USD', 'Status', 'Transaction', 'When'].map((h) => el('th', { textContent: h })))), deps)),
       el('section', { className: 'card scroll' }, el('h2', { textContent: 'Past withdrawals' }),
@@ -915,7 +932,37 @@ async function botTab() {
       el('td', { textContent: t.items.map((x) => (x.qty > 1 ? x.qty + '× ' : '') + x.name).join(', ') }),
       el('td', {}, el('span', { className: 'pill ' + (t.status === 'completed' ? 'ok' : t.status === 'failed' ? 'bad' : ''), textContent: t.status.replace('_', ' ') })))));
 
-    $('main').replaceChildren(el('h1', { textContent: 'Bot' }), head,
+    // Deposited items whose names didn't match the catalog, plus recent bot API problems
+    const um = await api('/api/admin/unmatched');
+    if (!catalogCache) catalogCache = await api('/api/items');
+    const open = um.rows.filter((r) => r.status === 'open');
+    const umBox = el('div', { style: 'display:grid;gap:8px' });
+    if (!um.rows.length) umBox.append(el('p', { className: 'mute', textContent: 'Nothing to fix. Every deposited item matched the catalog.' }));
+    um.rows.forEach((r) => {
+      if (r.status !== 'open') { umBox.append(el('div', { className: 'mute' }, (r.qty > 1 ? r.qty + '× ' : '') + '"' + r.raw_name + '" from ' + (r.username || '?') + ' → ', el('b', { textContent: r.status === 'assigned' ? r.item_name : 'dismissed' }), ' · ' + (r.handled_by || '') + ' ' + when(r.handled_at || r.created_at))); return; }
+      const q = el('input', { placeholder: 'Which item is it? Type to search', value: r.raw_name.replace(/\s*\([^)]*\)\s*$/, ''), style: 'flex:1;min-width:180px' });
+      const list = el('div', { className: 'picklist', style: 'max-height:150px' });
+      const drawList = () => { const t = q.value.trim().toLowerCase(); list.replaceChildren(...catalogCache.filter((i) => !t || i.name.toLowerCase().includes(t)).slice(0, 8).map((i) => el('button', { type: 'button', onclick: async () => {
+        try { const x = await api('/api/admin/unmatched/' + r.id + '/assign', 'POST', { item_id: i.id }); toast('Gave ' + (x.qty > 1 ? x.qty + '× ' : '') + x.item + ' to ' + r.username); load(); } catch (e) { toast(e.message, true); }
+      } }, thumb(i), el('span', { style: 'flex:1', textContent: i.name }), el('span', { className: 'pill', style: 'color:' + (RCO[i.rarity] || RCO.Common), textContent: i.rarity })))); };
+      q.oninput = drawList; drawList();
+      umBox.append(el('div', { style: 'background:var(--raise);border:1px solid #e8202a66;border-radius:12px;padding:10px 12px;display:grid;gap:8px' },
+        el('div', { style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap' }, el('b', { textContent: (r.qty > 1 ? r.qty + '× ' : '') + '"' + r.raw_name + '"' }),
+          el('span', { className: 'mute', textContent: 'deposited by ' + (r.username || '?') + ' · ' + when(r.created_at) }),
+          el('span', { style: 'margin-left:auto' }, armed('Dismiss', 'Confirm dismiss', async () => { await api('/api/admin/unmatched/' + r.id + '/dismiss', 'POST'); toast('Dismissed'); load(); }))),
+        el('div', { className: 'tools', style: 'margin:0' }, q), list));
+    });
+    const errBody = el('tbody');
+    if (!um.errors.length) errBody.append(el('tr', {}, el('td', { colSpan: 4, className: 'empty', textContent: 'No problems since the site last restarted.' })));
+    um.errors.forEach((x) => errBody.append(el('tr', {}, el('td', { className: 'mute', textContent: when(x.at) }), el('td', { textContent: x.where + (x.roblox_id ? ' · Roblox ID ' + x.roblox_id : '') }),
+      el('td', { className: 'mute', textContent: x.items || '' }), el('td', { style: 'color:var(--bad)', textContent: x.error }))));
+    const fixCard = el('section', { className: 'card', style: open.length ? 'border-color:#e8202a' : '' }, el('h2', {}, 'Needs matching ', open.length ? el('span', { className: 'pill bad', textContent: open.length + ' waiting' }) : null),
+      el('p', { className: 'mute', style: 'margin:0 0 10px', textContent: "The bot traded these items but their names didn't match anything in the catalog. Pick the right item and it goes straight into that player's inventory." }), umBox);
+    const errCard = el('section', { className: 'card scroll' }, el('h2', { textContent: 'Bot problems' }),
+      el('p', { className: 'mute', style: 'margin:0 0 10px', textContent: 'Every time the bot reports a deposit or trade the site could not accept, it shows here with the reason.' }),
+      el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['When', 'What', 'Items', 'Problem'].map((h) => el('th', { textContent: h })))), errBody));
+
+    $('main').replaceChildren(el('h1', { textContent: 'Bot' }), head, fixCard, errCard,
       el('div', { className: 'stats' },
         el('div', {}, el('span', { textContent: 'Items it should hold' }), String(units), el('em', { textContent: d.expected.length + ' different items' })),
         el('div', {}, el('span', { textContent: 'Total value' }), valueSum.toLocaleString(), el('em', { textContent: '≈ ' + usd(worth) + ' at recommended prices' })),
@@ -929,7 +976,7 @@ async function botTab() {
         el('div', { className: 'scroll' }, el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['When', 'Trade', 'User', 'Items', 'Result'].map((h) => el('th', { textContent: h })))), rBody))));
   }
   await load();
-  poll = setInterval(() => load().catch(() => {}), 15000);
+  poll = setInterval(() => { if (!document.querySelector('#main input:focus') && !document.querySelector('#main .arm')) load().catch(() => {}); }, 15000);
 }
 
 function denied() {
