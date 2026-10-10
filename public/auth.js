@@ -123,7 +123,7 @@
       ? 'Open a support ticket saying how much you want to add and the team will top up your balance.'
       : 'Open a support ticket with the amount you want to withdraw and where to send it. The team will send it and take it off your balance.';
     const go = document.createElement('a'); go.className = 'btn'; go.textContent = add ? 'Open a ticket to add funds' : 'Request a withdrawal';
-    go.href = '/support.html?subject=' + encodeURIComponent(add ? 'Add funds' : 'Withdrawal request');
+    go.href = '/support?subject=' + encodeURIComponent(add ? 'Add funds' : 'Withdrawal request');
     go.style.cssText = 'text-decoration:none;display:inline-block;padding:10px 16px;border-radius:10px;font-weight:700';
     const x = document.createElement('button'); x.className = 'ghost'; x.textContent = 'Close'; x.onclick = () => fd.close();
     const row = document.createElement('div'); row.className = 'row'; row.append(go, x);
@@ -548,9 +548,9 @@
     btn.setAttribute('aria-haspopup', 'true');
     const pop = mk('div', { className: 'um-pop' }); pop.hidden = true; pops.push(pop);
     const out = mk('button', { type: 'button', textContent: 'Log out', onclick: onLogout }); out.style.color = 'var(--bad)';
-    if (u.owner) { const o = mk('a', { href: '/owner.html', textContent: 'Owner panel' }); o.style.color = 'var(--gold)'; pop.append(o, mk('hr')); }
-    pop.append(mk('a', { href: '/profile.html', textContent: 'Profile' }), mk('a', { href: '/inventory.html', textContent: 'My shop' }),
-      mk('a', { href: '/inventory.html', textContent: 'Inventory' }), mk('a', { href: '/profile.html#wallet', textContent: 'Transactions' }), mk('a', { href: '/support.html', textContent: 'Support' }), mk('hr'),
+    if (u.owner) { const o = mk('a', { href: '/owner', textContent: 'Owner panel' }); o.style.color = 'var(--gold)'; pop.append(o, mk('hr')); }
+    pop.append(mk('a', { href: '/profile', textContent: 'Profile' }), mk('a', { href: '/inventory', textContent: 'My shop' }),
+      mk('a', { href: '/inventory', textContent: 'Inventory' }), mk('a', { href: '/profile#wallet', textContent: 'Transactions' }), mk('a', { href: '/support', textContent: 'Support' }), mk('hr'),
       mk('button', { type: 'button', textContent: 'Deposit balance', onclick: () => { closeAll(); window.openFunds('add'); } }),
       mk('button', { type: 'button', textContent: 'Deposit items', onclick: () => { closeAll(); window.openItemDeposit(); } }),
       mk('a', { href: 'https://discord.gg/splitzmarket', target: '_blank', rel: 'noopener', textContent: 'Discord' }), mk('hr'), out);
@@ -665,15 +665,15 @@
   };
   window.addEventListener('scroll', () => tip.classList.remove('on'), { passive: true });
   const nav = document.querySelector('.bar nav');
-  if (nav && !nav.querySelector('a[href="/values.html"]')) {
-    const a = document.createElement('a'); a.href = '/values.html'; a.textContent = 'Values';
-    if (location.pathname === '/values.html') a.className = 'on';
+  if (nav && !nav.querySelector('a[href="/values"]')) {
+    const a = document.createElement('a'); a.href = '/values'; a.textContent = 'Values';
+    if (location.pathname === '/values') a.className = 'on';
     const first = nav.querySelector('a'); first ? first.after(a) : nav.append(a);
   }
-  if (nav && !nav.querySelector('a[href="/giveaways.html"]')) {
-    const g = document.createElement('a'); g.href = '/giveaways.html'; g.textContent = 'Giveaways';
-    if (location.pathname === '/giveaways.html') g.className = 'on';
-    const v = nav.querySelector('a[href="/values.html"]'); v ? v.after(g) : nav.append(g);
+  if (nav && !nav.querySelector('a[href="/giveaways"]')) {
+    const g = document.createElement('a'); g.href = '/giveaways'; g.textContent = 'Giveaways';
+    if (location.pathname === '/giveaways') g.className = 'on';
+    const v = nav.querySelector('a[href="/values"]'); v ? v.after(g) : nav.append(g);
   }
 
   // ---------- Discord, owner maintenance banner, first-visit welcome ----------
@@ -726,7 +726,7 @@
   if (!document.body.dataset.nowelcome) fetch('/api/me').then((r) => r.json()).then((u) => {
     if (!u || !u.owner || !u.maintenance) return;
     const b = document.createElement('div'); b.id = 'mBanner';
-    b.innerHTML = 'Maintenance mode is on. Only owners can see the site right now. <a href="/owner.html#maintenance">Turn it off</a>';
+    b.innerHTML = 'Maintenance mode is on. Only owners can see the site right now. <a href="/owner#maintenance">Turn it off</a>';
     document.body.prepend(b);
   }).catch(() => {});
 
@@ -808,7 +808,7 @@
   const seenWins = () => { try { return JSON.parse(localStorage.getItem('sm_wins') || '[]'); } catch { return []; } };
   function showWin(g) {
     const old = document.getElementById('gwin'); if (old) old.remove();
-    const a = document.createElement('a'); a.id = 'gwin'; a.href = '/giveaways.html'; a.setAttribute('role', 'status');
+    const a = document.createElement('a'); a.id = 'gwin'; a.href = '/giveaways'; a.setAttribute('role', 'status');
     const pic = document.createElement('span'); pic.className = 'pic';
     if (g.image_url && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(g.image_url)) { const im = document.createElement('img'); im.src = g.image_url; im.alt = ''; im.referrerPolicy = 'no-referrer'; pic.append(im); }
     const txt = document.createElement('span');
