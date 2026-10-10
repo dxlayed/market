@@ -128,7 +128,7 @@ body{background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transpare
 <body>
 <div class="bar">
   <a class="logo" href="/">Splitz<b>Market</b></a>
-  <nav><a href="/">Market</a><a class="on" href="/inventory.html">Inventory</a><a href="/support.html">Support</a></nav>
+  <nav><a href="/">Market</a><a class="on" href="/inventory">Inventory</a><a href="/support">Support</a></nav>
   <div id="who"></div>
 </div>
 <div class="wrap" id="main"><div class="card mute">Loading...</div></div>
