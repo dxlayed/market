@@ -722,7 +722,7 @@ async function giveawaysTab() {
         el('p', { className: 'mute', style: 'margin:0 0 10px', textContent: 'Pick one or more items from your own inventory (each becomes its own giveaway). Anyone logged in with Roblox can join once for free; every entry has the same chance. When time is up a winner is picked at random and the item moves to their inventory. If nobody joins, it comes back to you.' }),
         grid,
         el('div', { className: 'tools', style: 'margin:14px 0 0;align-items:center' }, el('span', { className: 'mute', textContent: 'Runs for' }), len, unit, go,
-          el('a', { href: '/giveaways.html', target: '_blank', textContent: 'Open the public page →', style: 'margin-left:auto' }))),
+          el('a', { href: '/giveaways', target: '_blank', textContent: 'Open the public page →', style: 'margin-left:auto' }))),
       el('section', { className: 'card scroll' }, el('h2', { textContent: 'All giveaways' }),
         el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['Item', 'Entries', 'Chance', 'Status', 'Started', ''].map((h) => el('th', { textContent: h })))), body)));
   }
