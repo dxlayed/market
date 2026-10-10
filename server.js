@@ -361,12 +361,14 @@ app.get('/api/status', wrap(async (req, res) => {
 // Sellers list items they've already deposited. The site holds the item, so a purchase
 // moves the item and the money in one database transaction and nobody can be scammed.
 const marketGate = (u) => { if (!LISTINGS_OPEN && !isOwner(u)) throw new Fail(503, 'Buying and selling are coming soon.'); };
-const MIN_PRICE = 5, MAX_PRICE = 500000; // $0.05 to $5,000
+const MIN_PRICE = 5, MAX_PRICE = 5000000; // $0.05 to $50,000
+// Recommended price shown to buyers and sellers: dollars per 1,000 value (RECOMMENDED_PER_1K in Railway, default 20).
+const REC_PER_1K = Math.max(0, parseFloat(process.env.RECOMMENDED_PER_1K) || 20);
 function toCents(v) {
   const s = String(v == null ? '' : v).trim().replace(/^\$/, '');
   if (!/^\d{1,6}(\.\d{1,2})?$/.test(s)) throw new Fail(400, 'Enter a price like 4.99');
   const c = Math.round(parseFloat(s) * 100);
-  if (c < MIN_PRICE || c > MAX_PRICE) throw new Fail(400, 'Prices must be between $0.05 and $5,000.');
+  if (c < MIN_PRICE || c > MAX_PRICE) throw new Fail(400, 'Prices must be between $0.05 and $50,000.');
   return c;
 }
 const usd = (c) => '$' + (c / 100).toFixed(2);
@@ -405,15 +407,18 @@ app.get('/api/market/recent', wrap(async (req, res) => {
 app.post('/api/market/list', auth, wrap(async (req, res) => {
   marketGate(req.user);
   if (!limit('list' + req.user.id, 2000)) throw new Fail(429, 'Slow down a little.');
-  const price = toCents(req.body.price);
-  const ids = [...new Set((Array.isArray(req.body.inventory_ids) ? req.body.inventory_ids : []).map((x) => parseInt(x, 10)).filter((x) => x > 0))].slice(0, 50);
+  // Either { items: [{ inventory_id, price }] } with a price per item, or { inventory_ids, price } for one price.
+  const priceOf = new Map();
+  if (Array.isArray(req.body.items)) for (const it of req.body.items.slice(0, 50)) { const id = parseInt(it.inventory_id, 10); if (id > 0) priceOf.set(id, toCents(it.price)); }
+  else { const p = toCents(req.body.price); for (const x of (Array.isArray(req.body.inventory_ids) ? req.body.inventory_ids : []).slice(0, 50)) { const id = parseInt(x, 10); if (id > 0) priceOf.set(id, p); } }
+  const ids = [...priceOf.keys()];
   if (!ids.length) throw new Fail(400, 'Pick at least one item to sell.');
   const out = await tx(async (db) => {
     const got = (await db.query(
       "UPDATE inventory SET status='listed' WHERE id = ANY($1) AND user_id=$2 AND status='held' RETURNING id, item_id", [ids, req.user.id])).rows;
     if (got.length !== ids.length) throw new Fail(400, 'Some of those items are not in your inventory anymore. Refresh and try again.');
-    for (const g of got) await db.query('INSERT INTO market_listings (seller_id, inventory_id, item_id, price_cents) VALUES ($1,$2,$3,$4)', [req.user.id, g.id, g.item_id, price]);
-    await log(db, req.user.username, 'market.listed', null, { inventory_ids: ids, price: usd(price) });
+    for (const g of got) await db.query('INSERT INTO market_listings (seller_id, inventory_id, item_id, price_cents) VALUES ($1,$2,$3,$4)', [req.user.id, g.id, g.item_id, priceOf.get(g.id)]);
+    await log(db, req.user.username, 'market.listed', null, { items: got.map((g) => ({ inventory_id: g.id, price: usd(priceOf.get(g.id)) })) });
     return { ok: true, listed: got.length };
   });
   res.json(out);
@@ -676,7 +681,7 @@ app.get('/api/items', wrap(async (req, res) => {
   res.json(rows);
 }));
 
-app.get('/api/trading-info', (req, res) => res.json({ open: TRADING_OPEN, market: LISTINGS_OPEN, accounts: MM_ACCOUNTS }));
+app.get('/api/trading-info', (req, res) => res.json({ open: TRADING_OPEN, market: LISTINGS_OPEN, accounts: MM_ACCOUNTS, rec_per_1k: REC_PER_1K }));
 
 app.get('/api/inventory', authAny, wrap(async (req, res) => {
   const { rows } = await pool.query(
@@ -855,7 +860,7 @@ app.get('/api/values', wrap(async (req, res) => {
     `SELECT i.id, i.name, i.type, i.rarity, i.value, i.image_url, i.demand, i.stability, i.value_change, i.value_updated_at,
        (SELECT min(ml.price_cents) FROM market_listings ml JOIN users u ON u.id=ml.seller_id WHERE ml.item_id=i.id AND ml.status='active' AND NOT u.banned) AS lowest_cents,
        (SELECT count(*)::int FROM market_listings ml WHERE ml.item_id=i.id AND ml.status='active') AS for_sale
-     FROM items i WHERE i.active ORDER BY i.value DESC, i.name ASC`);
+     FROM items i WHERE i.active AND i.value > 0 ORDER BY i.value DESC, i.name ASC`);
   res.json(rows);
 }));
 
@@ -940,8 +945,9 @@ async function importValues(text, rarityIn, addNew, actor) {
         await db.query(`UPDATE items SET value=CASE WHEN $8 THEN $1 ELSE value END, demand=CASE WHEN $8 THEN $2 ELSE demand END,
             stability=CASE WHEN $8 THEN $3 ELSE stability END, value_change=CASE WHEN $8 THEN $4 ELSE value_change END,
             value_updated_at=CASE WHEN $8 THEN now() ELSE value_updated_at END,
-            type=COALESCE($6, type), image_url=CASE WHEN $7::text IS NOT NULL AND image_data IS NULL THEN $7 ELSE image_url END WHERE id=$5`,
-          [it.value, it.demand, it.stability, it.change, hit.id, it.type || null, it.image || null, hasV]);
+            type=COALESCE($6, type), image_url=CASE WHEN $7::text IS NOT NULL AND image_data IS NULL THEN $7 ELSE image_url END,
+            rarity=COALESCE($9, rarity), name=$10, active=CASE WHEN $8 THEN true ELSE active END WHERE id=$5`,
+          [it.value, it.demand, it.stability, it.change, hit.id, it.type || null, it.image || null, hasV, it.rarity || null, it.name]);
         updated++;
       } else if (addNew) {
         const type = it.type || (GUN_WORDS.test(it.name) ? 'Gun' : 'Knife');
@@ -960,16 +966,20 @@ app.post('/api/admin/items/values', owner, wrap(async (req, res) => {
   res.json(await importValues(req.body.text, req.body.rarity, req.body.add_new !== false, req.user.username));
 }));
 
-// One-time starter catalog: on the first start after deploy, seed-items.json (all 865 weapons with rarity, type and picture, plus the owners' Godly values)
+// One-time starter catalog: on the first start after deploy, seed-items.json (the 383 items that have a number value, with rarity, type and picture)
 // is loaded into the item catalog. It never runs again, so later edits in the owner panel are kept.
 async function seedItems() {
-  if (settings.seed_items_v3) return;
+  if (settings.seed_items_v4) return;
   const file = path.join(__dirname, 'seed-items.json');
   if (!fs.existsSync(file)) return;
   try {
     const r = await importValues(fs.readFileSync(file, 'utf8'), 'Godly', true, 'system');
-    await pool.query("INSERT INTO settings (key, value) VALUES ('seed_items_v3', 'true') ON CONFLICT (key) DO UPDATE SET value='true'");
-    settings.seed_items_v3 = true;
+    // Items without a real value are hidden, unless someone holds one, it's listed, or an owner uploaded its picture.
+    const hidden = await pool.query(`UPDATE items i SET active=false WHERE i.active AND i.value <= 0 AND i.image_data IS NULL
+      AND NOT EXISTS (SELECT 1 FROM inventory v WHERE v.item_id=i.id AND v.status IN ('held','listed','withdrawing'))`);
+    await pool.query("INSERT INTO settings (key, value) VALUES ('seed_items_v4', 'true') ON CONFLICT (key) DO UPDATE SET value='true'");
+    settings.seed_items_v4 = true;
+    console.log('Items without a value hidden: ' + hidden.rowCount);
     console.log('Starter items loaded: ' + r.added.length + ' added, ' + r.updated + ' updated');
   } catch (e) { console.error('Starter items failed:', e.message); }
 }
