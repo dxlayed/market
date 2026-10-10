@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MM2 values | SplitzMarket</title>
+<meta name="description" content="Murder Mystery 2 item values, demand and recent changes, plus the lowest price on SplitzMarket.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0707;--surface:#140c0c;--raise:#1e1111;--line:#3a1717;--text:#f6efee;--mute:#a88a88;--gold:#e8202a;--violet:#8f0d14;--ok:#4ade80;--bad:#ff7a45}
+*{box-sizing:border-box}
+body{margin:0;font-family:Manrope,system-ui,sans-serif;color:var(--text);background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transparent 60%) fixed,var(--bg)}
+h1,h2,h3,.logo{font-family:Outfit,system-ui,sans-serif;margin:0}
+button,input,select{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+button{cursor:pointer;font-weight:700}
+button:focus-visible,input:focus,select:focus,a:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.btn{background:var(--gold);color:#fff;border:0}.ghost{background:transparent}.sm{padding:6px 12px;font-size:13px;border-radius:8px}
+.mute{color:var(--mute);font-size:13px}
+.bar{display:flex;align-items:center;gap:14px;padding:12px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:#0a0707cc;backdrop-filter:blur(8px);position:sticky;top:0;z-index:15}
+.logo{font-size:22px;font-weight:800;text-decoration:none;color:var(--text)}.logo b{color:var(--gold);text-shadow:0 0 18px #e8202a88}
+.bar nav{display:flex;gap:6px;margin-right:auto;flex-wrap:wrap}
+.bar nav a{padding:8px 14px;border-radius:10px;color:var(--mute);text-decoration:none;font-weight:700}
+.bar nav a.on{background:var(--surface);color:var(--text);box-shadow:inset 0 -2px 0 var(--gold)}
+.av{width:32px;height:32px;border-radius:9px;background:var(--violet);display:grid;place-items:center;font-weight:800;font-family:Outfit,sans-serif;flex:none}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 24px 80px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.head h1{font-size:34px;letter-spacing:-.02em}
+.head p{margin:6px 0 0;color:var(--mute);max-width:60ch}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.tools input{flex:1;min-width:200px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:99px;background:var(--raise);border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--text)}
+.chip.on{border-color:var(--c,var(--gold));background:color-mix(in srgb,var(--c,var(--gold)) 22%,var(--raise))}
+.chip .dot{width:9px;height:9px;border-radius:50%;background:var(--c)}
+.chip .dot.chroma{background:conic-gradient(#ff5a5f,#ffd166,#4fe3d0,#8b6cff,#ff5a5f)}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.row{display:grid;grid-template-columns:56px minmax(0,1.6fr) 110px 130px 110px 120px 130px;gap:14px;align-items:center;padding:10px 16px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row.th{font-size:12px;font-weight:800;color:var(--mute);background:#0f0909;padding-top:12px;padding-bottom:12px}
+.row.th button{background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.row.th button.on{color:var(--text)}
+.row:not(.th):hover{background:#1a0e0e}
+.pic{width:48px;height:48px;border-radius:11px;display:grid;place-items:center;background:radial-gradient(circle at 50% 58%,color-mix(in srgb,var(--c) 45%,transparent),transparent 70%),var(--raise);color:var(--c);overflow:hidden}
+.pic img{max-width:90%;max-height:90%}.pic svg{width:28px;height:28px}
+.nm b{display:block;font-size:15px;overflow-wrap:anywhere}
+.nm small{color:var(--mute);font-weight:700;font-size:12px}
+.val{font-family:Outfit,sans-serif;font-weight:800;font-size:20px}
+.dem{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.dem i{display:flex;gap:2px}.dem i span{width:6px;height:14px;border-radius:2px;background:#2a1414}.dem i span.f{background:var(--gold)}
+.st{font-size:12px;font-weight:800;border-radius:99px;padding:3px 10px;background:var(--raise);color:var(--mute);justify-self:start}
+.st.stable{background:#4ade8018;color:#4ade80}.st.under{background:#e6b42222;color:#e6b422}.st.fluc{background:#ff7a4522;color:var(--bad)}.st.over{background:#e8202a22;color:#ff8a8f}
+.ch{font-weight:800;font-size:14px}.ch.up{color:#4ade80}.ch.down{color:#ff8a8f}.ch.none{color:var(--mute)}
+.buy{font-size:13px;font-weight:700;text-decoration:none;color:var(--text);background:var(--raise);border:1px solid var(--line);border-radius:9px;padding:6px 10px;text-align:center}
+.buy:hover{border-color:var(--gold)}
+.buy small{display:block;color:var(--mute);font-size:11px}
+.none{color:#6e5554;font-size:13px}
+.empty{text-align:center;color:var(--mute);padding:50px 16px}
+@media (max-width:900px){.row{grid-template-columns:48px minmax(0,1fr) auto;row-gap:6px}.row.th{display:none}.row .c-dem,.row .c-st{display:none}.row>.pic{grid-row:1 / span 2}.row .nm{grid-column:2;grid-row:1}.row .c-ch{grid-column:2;grid-row:2}.row .c-val{grid-column:3;grid-row:1;text-align:right}.row .c-buy{grid-column:3;grid-row:2;justify-self:end}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <a class="logo" href="/">Splitz<b>Market</b></a>
+  <nav><a href="/">Market</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a></nav>
+  <div id="who"></div>
+</div>
+<div class="wrap">
+  <div class="head">
+    <div><h1>MM2 values</h1><p>What every item is worth in trades, how wanted it is, and the cheapest one for sale here right now.</p></div>
+    <span class="mute" id="updated"></span>
+  </div>
+  <div class="tools">
+    <input id="q" placeholder="Search an item" aria-label="Search items">
+    <select id="type" aria-label="Type"><option value="">All types</option><option>Knife</option><option>Gun</option><option>Pet</option><option>Misc</option></select>
+  </div>
+  <div class="chips" id="rars"></div>
+  <div class="list" id="list"><div class="empty">Loading values...</div></div>
+</div>
+
+<script src="/auth.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const el = (t, p = {}, ...k) => { const e = document.createElement(t); for (const [a, v] of Object.entries(p)) { if (a.includes('-')) e.setAttribute(a, v); else e[a] = v; } k.forEach((x) => x != null && e.append(x)); return e; };
+const toast = () => {};
+const RC = { Chroma: '#c58bff', Ancient: '#8a6cff', Godly: '#e05ad8', Unique: '#e6b422', Vintage: '#d9b98a', Legendary: '#ff4d4d', Rare: '#2fb36a', Uncommon: '#4d7cff', Common: '#8a8fa3' };
+const ICON = {
+  Knife: '<svg viewBox="0 0 64 64"><path d="M14 54 40 10l8 5-24 42z" fill="currentColor"/></svg>',
+  Gun: '<svg viewBox="0 0 64 64"><path d="M6 22h42v11H31l-4 17H15l3-17H6z" fill="currentColor"/></svg>',
+  Pet: '<svg viewBox="0 0 64 64"><circle cx="32" cy="38" r="16" fill="currentColor"/><circle cx="19" cy="17" r="7" fill="currentColor"/><circle cx="45" cy="17" r="7" fill="currentColor"/></svg>',
+  Misc: '<svg viewBox="0 0 64 64"><path d="m32 6 8 18h19L44 36l5 20-17-11-17 11 5-20L5 24h19z" fill="currentColor"/></svg>'
+};
+let items = [], rars = new Set(), sort = 'value', dir = -1;
+
+Object.keys(RC).forEach((r) => {
+  const dot = el('span', { className: 'dot' + (r === 'Chroma' ? ' chroma' : '') });
+  const c = el('button', { type: 'button', className: 'chip', onclick: () => { rars.has(r) ? rars.delete(r) : rars.add(r); c.classList.toggle('on', rars.has(r)); draw(); } }, dot, r);
+  c.style.setProperty('--c', RC[r]); $('rars').append(c);
+});
+$('q').oninput = draw; $('type').onchange = draw;
+
+const stClass = (s) => (!s ? '' : /stable/i.test(s) ? 'stable' : /under/i.test(s) ? 'under' : /fluct/i.test(s) ? 'fluc' : /over/i.test(s) ? 'over' : '');
+function pic(i) {
+  const p = el('div', { className: 'pic' }); p.style.setProperty('--c', RC[i.rarity] || RC.Common);
+  if (i.image_url && /^(https:\/\/|\/img\/item\/)/.test(i.image_url)) p.append(el('img', { src: i.image_url, alt: '', loading: 'lazy' }));
+  else p.innerHTML = ICON[i.type] || ICON.Misc;
+  return p;
+}
+function head() {
+  const col = (k, label) => el('button', { type: 'button', className: sort === k ? 'on' : '', textContent: label + (sort === k ? (dir < 0 ? ' ▾' : ' ▴') : ''),
+    onclick: () => { if (sort === k) dir = -dir; else { sort = k; dir = k === 'name' ? 1 : -1; } draw(); } });
+  return el('div', { className: 'row th' }, el('span'), col('name', 'Item'), col('value', 'Value'), col('demand', 'Demand'), el('span', { textContent: 'Stability' }), col('change', 'Change'), col('price', 'Cheapest here'));
+}
+function draw() {
+  const q = $('q').value.toLowerCase().trim(), t = $('type').value;
+  const list = items.filter((i) => (!q || i.name.toLowerCase().includes(q)) && (!t || i.type === t) && (!rars.size || rars.has(i.rarity)));
+  const key = { value: (i) => i.value, name: (i) => i.name.toLowerCase(), demand: (i) => i.demand ?? -1, change: (i) => i.value_change ?? 0, price: (i) => i.lowest_cents ?? (dir < 0 ? -1 : 1e12) }[sort];
+  list.sort((a, b) => { const x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : 0) * dir || b.value - a.value; });
+  const box = $('list'); box.replaceChildren(head());
+  if (!list.length) box.append(el('div', { className: 'empty', textContent: items.length ? 'No items match.' : 'No values yet.' }));
+  list.forEach((i) => {
+    const d = Math.max(0, Math.min(10, i.demand || 0));
+    const dem = el('div', { className: 'dem c-dem' }, el('i', {}, ...Array.from({ length: 5 }, (_, k) => el('span', { className: k < Math.ceil(d / 2) ? 'f' : '' }))), i.demand == null ? '—' : String(i.demand));
+    const ch = i.value_change;
+    const row = el('div', { className: 'row' }, pic(i),
+      el('div', { className: 'nm' }, el('b', { textContent: i.name }), el('small', { textContent: i.rarity + ' ' + i.type })),
+      el('div', { className: 'val c-val', textContent: i.value.toLocaleString() }),
+      dem,
+      el('div', { className: 'c-st' }, i.stability ? el('span', { className: 'st ' + stClass(i.stability), textContent: i.stability }) : el('span', { className: 'none', textContent: '—' })),
+      el('div', { className: 'ch c-ch ' + (!ch ? 'none' : ch > 0 ? 'up' : 'down'), textContent: ch == null ? '—' : ch === 0 ? 'No change' : (ch > 0 ? '▲ +' : '▼ ') + ch.toLocaleString() }),
+      i.for_sale ? el('a', { className: 'buy c-buy', href: '/?q=' + encodeURIComponent(i.name) }, money(i.lowest_cents), el('small', { textContent: i.for_sale + ' for sale' })) : el('span', { className: 'none c-buy', textContent: 'None for sale' }));
+    box.append(row);
+  });
+}
+(async () => {
+  const me = await fetch('/api/me').then((r) => r.json()).catch(() => null);
+  $('who').replaceChildren(me ? RbxAuth.menu(me, async () => { await fetch('/api/logout', { method: 'POST' }); location.reload(); })
+    : el('button', { className: 'btn sm', type: 'button', textContent: 'Log in with Roblox', onclick: () => RbxAuth.open(() => location.reload()) }));
+  try { items = await fetch('/api/values').then((r) => r.json()); } catch { items = []; }
+  const last = items.map((i) => i.value_updated_at).filter(Boolean).sort().pop();
+  $('updated').textContent = last ? 'Values updated ' + new Date(last).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+  draw();
+})();
+</script>
+</body>
+</html>
