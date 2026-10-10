@@ -361,10 +361,13 @@
   const vcss = document.createElement('style');
   vcss.textContent = `#vtip{position:fixed;z-index:45;pointer-events:none;width:230px;background:#120a0a;border:1px solid #5a1f1f;border-radius:14px;padding:12px 14px;box-shadow:0 18px 50px #000c;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;font-size:13px}
 #vtip.on{opacity:1;transform:none}
+#vtip .top{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+#vtip .top img{width:46px;height:46px;object-fit:contain;flex:none;background:#0a0707;border-radius:10px;padding:3px}
 #vtip .n{font-family:Outfit,system-ui,sans-serif;font-weight:800;font-size:16px;line-height:1.2}
-#vtip .s{color:var(--mute);font-size:12px;font-weight:700;margin-bottom:8px}
+#vtip .s{color:var(--mute);font-size:12px;font-weight:700}
 #vtip .v{display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px}
 #vtip .v b{font-family:Outfit,system-ui,sans-serif;font-size:24px;font-weight:800}
+#vtip .v b:not(:only-child){white-space:nowrap}
 #vtip .ch{font-weight:800;font-size:12px}#vtip .ch.up{color:#4ade80}#vtip .ch.down{color:#ff8a8f}
 #vtip dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:8px 0 0}
 #vtip dt{color:var(--mute);font-weight:700}#vtip dd{margin:0;text-align:right;font-weight:700}
@@ -376,13 +379,16 @@
     const mk = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
     const ch = i.value_change;
     const chEl = ch == null || ch === 0 ? mk('span', 'ch', ch === 0 ? 'No change' : '') : mk('span', 'ch ' + (ch > 0 ? 'up' : 'down'), (ch > 0 ? '▲ +' : '▼ ') + ch.toLocaleString());
-    const v = mk('div', 'v'); v.append(mk('span', '', 'Value'), mk('b', '', (i.value || 0).toLocaleString()));
+    const v = mk('div', 'v'); v.append(mk('span', '', 'Value'), mk('b', '', i.value ? i.value.toLocaleString() : 'No value yet'));
     const dl = mk('dl');
     [['Demand', i.demand == null ? '—' : demandWord(i.demand) + ' (' + i.demand + ')'], ['Stability', i.stability || '—'], ['Recent change', null]].forEach(([k, val]) => {
       dl.append(mk('dt', '', k)); const dd = mk('dd', '', val); if (val == null) dd.append(chEl); dl.append(dd);
     });
     if (i.price_cents) { dl.append(mk('dt', '', 'Price')); dl.append(mk('dd', '', money(i.price_cents))); }
-    tip.replaceChildren(mk('div', 'n', i.name), mk('div', 's', [i.rarity, i.type].filter(Boolean).join(' ')), v, dl);
+    const top = mk('div', 'top');
+    if (i.image_url && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(i.image_url)) { const im = mk('img'); im.src = i.image_url; im.alt = ''; im.referrerPolicy = 'no-referrer'; im.onerror = () => im.remove(); top.append(im); }
+    const nm = mk('div'); nm.append(mk('div', 'n', i.name), mk('div', 's', [i.rarity, i.type].filter(Boolean).join(' '))); top.append(nm);
+    tip.replaceChildren(top, v, dl);
   }
   function place(el) {
     const r = el.getBoundingClientRect(), w = 230, h = tip.offsetHeight || 170;
