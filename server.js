@@ -812,8 +812,61 @@ function botAuth(req, res, next) {
   const ok = BOT_KEY.length >= 32 && got.length === BOT_KEY.length && crypto.timingSafeEqual(Buffer.from(got), Buffer.from(BOT_KEY));
   if (!ok) return res.status(401).json({ error: 'Bad or missing API key.' });
   req.actor = 'api:' + clean(req.headers['x-actor'] || 'bot', 30);
+  botSeen = Date.now();
   next();
 }
+
+// ---------- Deposit bot shown on the site (Item Deposit window) ----------
+// Change these with BOT_USERNAME, BOT_USER_ID and BOT_SERVER_LINK in Railway.
+const BOT = {
+  username: clean(process.env.BOT_USERNAME || 'qwrfcve', 30),
+  id: String(process.env.BOT_USER_ID || '11576939663').replace(/\D/g, ''),
+  link: process.env.BOT_SERVER_LINK || 'https://www.roblox.com/share?code=77982f0c08628c4ab598d523da6fd62c&type=Server',
+};
+if (!/^https:\/\/(www\.)?roblox\.com\//.test(BOT.link)) BOT.link = 'https://www.roblox.com/users/' + BOT.id + '/profile';
+let botSeen = 0, botAvatar = null, botAvatarAt = 0;
+async function botView() {
+  if (Date.now() - botAvatarAt > 3600e3) {
+    botAvatarAt = Date.now();
+    try {
+      const t = await rbx('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=' + BOT.id + '&size=150x150&format=Png&isCircular=false');
+      const u = (t.data && t.data[0] && t.data[0].imageUrl) || '';
+      if (/^https:\/\/[\w.-]+\.rbxcdn\.com\//.test(u)) botAvatar = u;
+    } catch { botAvatarAt = Date.now() - 3540e3; }
+  }
+  // Online = the bot program has talked to the API in the last 3 minutes.
+  return { username: BOT.username, id: BOT.id, link: BOT.link, profile: 'https://www.roblox.com/users/' + BOT.id + '/profile', avatar: botAvatar, online: Date.now() - botSeen < 180e3 };
+}
+app.get('/api/bots', wrap(async (req, res) => res.json([await botView()])));
+
+// Bot keeps itself marked Online on the site.
+app.post('/api/bot/heartbeat', botAuth, (req, res) => res.json({ ok: true }));
+// Bot checks a player before trading them.
+app.get('/api/bot/users/:robloxId', botAuth, wrap(async (req, res) => {
+  const u = (await pool.query('SELECT id, username, banned FROM users WHERE roblox_id=$1', [String(req.params.robloxId).replace(/\D/g, '') || '0'])).rows[0];
+  if (!u) return res.json({ registered: false });
+  const open = (await pool.query(
+    `SELECT t.*, u.username, u.roblox_id FROM trades t JOIN users u ON u.id=t.user_id
+     WHERE t.user_id=$1 AND t.status IN ('pending','in_progress') ORDER BY t.id`, [u.id])).rows;
+  res.json({ registered: true, banned: u.banned, username: u.username, withdrawals: open.filter((t) => t.kind === 'withdraw').map(tradeView), deposits: open.filter((t) => t.kind === 'deposit').map(tradeView) });
+}));
+// Bot finished a deposit trade in game: add the items to the player's inventory.
+app.post('/api/bot/deposits', botAuth, wrap(async (req, res) => {
+  const rid = String(req.body.roblox_id || '').replace(/\D/g, '');
+  const received = Array.isArray(req.body.received) ? req.body.received : [];
+  if (!rid) throw new Fail(400, 'roblox_id is required.');
+  if (!received.length) throw new Fail(400, 'received must list the items you got.');
+  const out = await tx(async (db) => {
+    const u = (await db.query('SELECT id, username, banned FROM users WHERE roblox_id=$1', [rid])).rows[0];
+    if (!u) throw new Fail(404, 'That player has no SplitzMarket account. Ask them to log in on the site first.');
+    if (u.banned) throw new Fail(403, 'That player is banned.');
+    const t = (await db.query("INSERT INTO trades (user_id, kind, code, items, status, handled_by) VALUES ($1,'deposit',$2,'[]','in_progress',$3) RETURNING id", [u.id, makeTradeCode(), req.actor])).rows[0];
+    await finishTrade(db, t.id, req.actor, 'completed', { received, note: req.body.note });
+    const got = (await db.query('SELECT items FROM trades WHERE id=$1', [t.id])).rows[0].items;
+    return { ok: true, trade_id: t.id, username: u.username, items: got };
+  });
+  res.json(out);
+}));
 
 const tradeView = (t) => ({ id: t.id, kind: t.kind, status: t.status, code: t.code, items: t.items, roblox_id: t.roblox_id ? String(t.roblox_id) : null, roblox_username: t.username, handled_by: t.handled_by, created_at: t.created_at });
 
