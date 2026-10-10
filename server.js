@@ -146,6 +146,24 @@ async function init() {
     ALTER TABLE crypto_withdrawals ADD COLUMN IF NOT EXISTS tax_cents INT NOT NULL DEFAULT 0;
     CREATE TABLE IF NOT EXISTS tax_collections (id SERIAL PRIMARY KEY, amount_cents INT NOT NULL, sales_cents INT NOT NULL, withdraw_cents INT NOT NULL, collected_by TEXT, created_at TIMESTAMPTZ DEFAULT now());
     ALTER TABLE market_listings ADD COLUMN IF NOT EXISTS collected_id INT;
+    CREATE TABLE IF NOT EXISTS giveaways (
+      id SERIAL PRIMARY KEY,
+      inventory_id INT REFERENCES inventory(id),
+      item_id INT REFERENCES items(id),
+      host_id INT REFERENCES users(id) ON DELETE SET NULL,
+      status TEXT NOT NULL DEFAULT 'active',
+      ends_at TIMESTAMPTZ NOT NULL,
+      winner_id INT REFERENCES users(id) ON DELETE SET NULL,
+      entries_at_draw INT,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      ended_at TIMESTAMPTZ
+    );
+    CREATE TABLE IF NOT EXISTS giveaway_entries (
+      giveaway_id INT REFERENCES giveaways(id) ON DELETE CASCADE,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      PRIMARY KEY (giveaway_id, user_id)
+    );
     ALTER TABLE crypto_withdrawals ADD COLUMN IF NOT EXISTS collected_id INT;
     ALTER TABLE items ADD COLUMN IF NOT EXISTS stability TEXT;
     ALTER TABLE items ADD COLUMN IF NOT EXISTS value_change INT;
@@ -924,6 +942,109 @@ app.post('/api/bot/trades/:id/claim', botAuth, wrap(async (req, res) => res.json
 app.post('/api/bot/trades/:id/complete', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'completed', { received: req.body.received, note: req.body.note })))));
 app.post('/api/bot/trades/:id/fail', botAuth, wrap(async (req, res) => res.json(await tx((db) => finishTrade(db, parseInt(req.params.id, 10), req.actor, 'failed', { note: req.body.reason })))));
 
+// ---------- Giveaways ----------
+// Owners put one of their own held items up. Anyone logged in with Roblox can join once, for free.
+// When time runs out a winner is picked at random (every entry has the same chance) and the item moves to them.
+const GIVE_SELECT = `SELECT g.id, g.status, g.ends_at, g.created_at, g.ended_at, g.entries_at_draw,
+    i.id AS item_id, i.name, i.rarity, i.type, i.value, i.image_url, i.demand, i.stability, i.value_change,
+    h.username AS host, w.username AS winner, w.avatar_url AS winner_avatar,
+    (SELECT count(*)::int FROM giveaway_entries e WHERE e.giveaway_id=g.id) AS entries
+  FROM giveaways g JOIN items i ON i.id=g.item_id LEFT JOIN users h ON h.id=g.host_id LEFT JOIN users w ON w.id=g.winner_id`;
+async function drawGiveaway(db, id, actor) {
+  const g = (await db.query('SELECT * FROM giveaways WHERE id=$1 FOR UPDATE', [id])).rows[0];
+  if (!g) throw new Fail(404, 'Giveaway not found.');
+  if (g.status !== 'active') throw new Fail(409, 'This giveaway already ended.');
+  const entrants = (await db.query(
+    `SELECT e.user_id, u.username FROM giveaway_entries e JOIN users u ON u.id=e.user_id
+     WHERE e.giveaway_id=$1 AND NOT u.banned ORDER BY e.user_id`, [id])).rows;
+  const item = (await db.query('SELECT name FROM items WHERE id=$1', [g.item_id])).rows[0];
+  if (!entrants.length) {
+    await db.query("UPDATE inventory SET status='held' WHERE id=$1 AND status='giveaway'", [g.inventory_id]);
+    await db.query("UPDATE giveaways SET status='ended', entries_at_draw=0, ended_at=now() WHERE id=$1", [id]);
+    await log(db, actor, 'giveaway.no_entries', 'giveaway:' + id, { item: item.name });
+    return { ok: true, winner: null };
+  }
+  const win = entrants[crypto.randomInt(entrants.length)];
+  await db.query("UPDATE inventory SET user_id=$1, status='held' WHERE id=$2 AND status='giveaway'", [win.user_id, g.inventory_id]);
+  await db.query("UPDATE giveaways SET status='ended', winner_id=$1, entries_at_draw=$2, ended_at=now() WHERE id=$3", [win.user_id, entrants.length, id]);
+  await log(db, actor, 'giveaway.won', 'giveaway:' + id, { item: item.name, winner: win.username, entries: entrants.length });
+  return { ok: true, winner: win.username, item: item.name, entries: entrants.length };
+}
+// Draw every giveaway whose time is up.
+setInterval(async () => {
+  try {
+    const due = (await pool.query("SELECT id FROM giveaways WHERE status='active' AND ends_at <= now() ORDER BY id")).rows;
+    for (const g of due) await tx((db) => drawGiveaway(db, g.id, 'timer')).catch((e) => { if (!(e instanceof Fail)) console.error('giveaway draw', e.message); });
+  } catch {}
+}, 3000);
+
+app.get('/api/giveaways', wrap(async (req, res) => {
+  const u = await currentUser(req);
+  const active = (await pool.query(`${GIVE_SELECT} WHERE g.status='active' ORDER BY g.ends_at ASC`)).rows;
+  const ended = (await pool.query(`${GIVE_SELECT} WHERE g.status='ended' ORDER BY g.ended_at DESC LIMIT 12`)).rows;
+  let mine = new Set();
+  if (u && active.length) mine = new Set((await pool.query('SELECT giveaway_id FROM giveaway_entries WHERE user_id=$1 AND giveaway_id = ANY($2)', [u.id, active.map((g) => g.id)])).rows.map((r) => r.giveaway_id));
+  res.json({ now: new Date().toISOString(), active: active.map((g) => ({ ...g, joined: mine.has(g.id) })), ended, rec_per_1k: REC_PER_1K });
+}));
+// Latest win, for the "Yooo ___ just won a ___" pop-up on every page.
+app.get('/api/giveaways/latest', wrap(async (req, res) => {
+  const g = (await pool.query(`${GIVE_SELECT} WHERE g.status='ended' AND g.winner_id IS NOT NULL AND g.ended_at > now() - interval '10 minutes' ORDER BY g.ended_at DESC LIMIT 1`)).rows[0];
+  res.json(g ? { id: g.id, winner: g.winner, name: g.name, rarity: g.rarity, image_url: g.image_url, entries: g.entries_at_draw } : null);
+}));
+app.post('/api/giveaways/:id/join', auth, wrap(async (req, res) => {
+  if (!req.user.roblox_id) throw new Fail(400, 'Log in with Roblox to join.');
+  if (!limit('gj' + req.user.id, 1000)) throw new Fail(429, 'Slow down a little.');
+  const id = parseInt(req.params.id, 10);
+  const g = (await pool.query('SELECT id, status, ends_at, host_id FROM giveaways WHERE id=$1', [id])).rows[0];
+  if (!g || g.status !== 'active' || new Date(g.ends_at) <= new Date()) throw new Fail(409, 'This giveaway already ended.');
+  if (g.host_id === req.user.id) throw new Fail(400, "You can't join your own giveaway.");
+  await pool.query('INSERT INTO giveaway_entries (giveaway_id, user_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [id, req.user.id]);
+  const n = (await pool.query('SELECT count(*)::int AS n FROM giveaway_entries WHERE giveaway_id=$1', [id])).rows[0].n;
+  res.json({ ok: true, entries: n });
+}));
+
+app.get('/api/admin/giveaways', owner, wrap(async (req, res) => {
+  const rows = (await pool.query(`${GIVE_SELECT} ORDER BY (g.status='active') DESC, g.id DESC LIMIT 50`)).rows;
+  const items = (await pool.query(
+    `SELECT inv.id, i.name, i.rarity, i.type, i.value, i.image_url FROM inventory inv JOIN items i ON i.id=inv.item_id
+     WHERE inv.user_id=$1 AND inv.status='held' ORDER BY i.value DESC, i.name`, [req.user.id])).rows;
+  res.json({ giveaways: rows, items });
+}));
+app.post('/api/admin/giveaways', owner, wrap(async (req, res) => {
+  const ids = [...new Set((Array.isArray(req.body.inventory_ids) ? req.body.inventory_ids : [req.body.inventory_id]).map((x) => parseInt(x, 10)).filter((x) => x > 0))].slice(0, 20);
+  const minutes = Math.round(parseFloat(req.body.minutes));
+  if (!ids.length) throw new Fail(400, 'Pick an item from your inventory.');
+  if (!(minutes >= 1 && minutes <= 60 * 24 * 14)) throw new Fail(400, 'Pick a length between 1 minute and 14 days.');
+  const out = await tx(async (db) => {
+    const rows = (await db.query(
+      `SELECT inv.id, inv.item_id, i.name FROM inventory inv JOIN items i ON i.id=inv.item_id
+       WHERE inv.id = ANY($1) AND inv.user_id=$2 AND inv.status='held' FOR UPDATE OF inv`, [ids, req.user.id])).rows;
+    if (rows.length !== ids.length) throw new Fail(400, 'Some of those items are not in your inventory anymore. Refresh and try again.');
+    const made = [];
+    for (const r of rows) {
+      await db.query("UPDATE inventory SET status='giveaway' WHERE id=$1", [r.id]);
+      const g = (await db.query("INSERT INTO giveaways (inventory_id, item_id, host_id, ends_at) VALUES ($1,$2,$3, now() + ($4 || ' minutes')::interval) RETURNING id", [r.id, r.item_id, req.user.id, String(minutes)])).rows[0];
+      await log(db, req.user.username, 'giveaway.created', 'giveaway:' + g.id, { item: r.name, minutes });
+      made.push(g.id);
+    }
+    return { ok: true, created: made.length };
+  });
+  res.json(out);
+}));
+app.post('/api/admin/giveaways/:id/draw', owner, wrap(async (req, res) => res.json(await tx((db) => drawGiveaway(db, parseInt(req.params.id, 10), req.user.username)))));
+app.post('/api/admin/giveaways/:id/cancel', owner, wrap(async (req, res) => {
+  const out = await tx(async (db) => {
+    const g = (await db.query('SELECT * FROM giveaways WHERE id=$1 FOR UPDATE', [parseInt(req.params.id, 10)])).rows[0];
+    if (!g) throw new Fail(404, 'Giveaway not found.');
+    if (g.status !== 'active') throw new Fail(409, 'This giveaway already ended.');
+    await db.query("UPDATE inventory SET status='held' WHERE id=$1 AND status='giveaway'", [g.inventory_id]);
+    await db.query("UPDATE giveaways SET status='cancelled', ended_at=now() WHERE id=$1", [g.id]);
+    await log(db, req.user.username, 'giveaway.cancelled', 'giveaway:' + g.id);
+    return { ok: true };
+  });
+  res.json(out);
+}));
+
 // ---------- Owner: analytics and fee collection ----------
 async function uncollected(db) {
   const r = (await db.query(`SELECT
@@ -991,9 +1112,10 @@ app.get('/api/admin/bot', owner, wrap(async (req, res) => {
        count(*)::int AS qty,
        count(*) FILTER (WHERE inv.status='held')::int AS held,
        count(*) FILTER (WHERE inv.status='listed')::int AS listed,
-       count(*) FILTER (WHERE inv.status='withdrawing')::int AS withdrawing
+       count(*) FILTER (WHERE inv.status='withdrawing')::int AS withdrawing,
+       count(*) FILTER (WHERE inv.status='giveaway')::int AS giveaway
      FROM inventory inv JOIN items i ON i.id=inv.item_id
-     WHERE inv.status IN ('held','listed','withdrawing') AND inv.added_by IS NULL
+     WHERE inv.status IN ('held','listed','withdrawing','giveaway') AND inv.added_by IS NULL
      GROUP BY i.id ORDER BY i.value DESC, i.name`)).rows;
   const test = (await pool.query("SELECT count(*)::int AS n FROM inventory WHERE status IN ('held','listed','withdrawing') AND added_by IS NOT NULL")).rows[0].n;
   const stock = (await pool.query("SELECT value FROM settings WHERE key='bot_stock'")).rows[0]?.value || null;
