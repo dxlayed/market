@@ -100,6 +100,15 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
 @media (prefers-reduced-motion:reduce){.track{animation:none}}
 
 .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}.tools input{flex:1;min-width:180px}
+.views{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.views button{border:0;background:transparent;color:var(--mute);padding:7px 14px;border-radius:9px;font-size:14px}
+.views button.on{background:var(--gold);color:#fff}
+.card.unlisted .art{filter:saturate(.75)}
+.card.unlisted .price{color:#b89b9a}
+.rec{font-size:12px;font-weight:700;color:var(--mute);display:flex;align-items:center;gap:6px}
+.rec b{color:#4ade80;font-weight:800}
+.lc{position:absolute;bottom:10px;left:10px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;background:#4ade8026;color:#4ade80}
+.lc.off{background:#000b;color:var(--mute)}
 .notice{background:#e8202a14;border:1px solid #e8202a55;border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:14px}
 .notice b{color:var(--gold)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
@@ -173,8 +182,9 @@ a.btn{display:inline-block;text-decoration:none;padding:10px 16px;border-radius:
     <div class="ticker"><span class="live">RECENT SALES</span><div class="track" id="track"></div></div>
     <div id="notice"></div>
     <div class="tools">
+      <div class="views" role="tablist" aria-label="What to show"><button type="button" role="tab" data-v="all" class="on">All items</button><button type="button" role="tab" data-v="listed">Listings only</button></div>
       <input id="q" placeholder="Search items, like Harvester" aria-label="Search items">
-      <select id="sort" aria-label="Sort"><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="new">Newest first</option><option value="value">Highest value</option></select>
+      <select id="sort" aria-label="Sort"><option value="value">Highest value</option><option value="high">Price: high to low</option><option value="low">Price: low to high</option><option value="new">Newest listings</option></select>
       <span class="mute" id="count"></span>
     </div>
     <div class="grid" id="grid"></div>
@@ -216,6 +226,23 @@ function art(i) {
 }
 
 const seller = new URLSearchParams(location.search).get('seller');
+let view = seller ? 'listed' : 'all', catalog = [];
+const recCents = (v) => Math.round((v || 0) * (info.rec_per_1k ?? 20) / 10); // dollars per 1k value -> cents
+document.querySelectorAll('.views button').forEach((b) => {
+  b.classList.toggle('on', b.dataset.v === view);
+  b.onclick = () => { view = b.dataset.v; document.querySelectorAll('.views button').forEach((x) => x.classList.toggle('on', x === b)); draw(); };
+});
+// Every valued item, joined with its live listings (cheapest first).
+function allEntries() {
+  const by = new Map();
+  rows.forEach((l) => { if (!by.has(l.item_id)) by.set(l.item_id, []); by.get(l.item_id).push(l); });
+  return catalog.map((i) => {
+    const lst = (by.get(i.id) || []).slice().sort((a, b) => a.price_cents - b.price_cents);
+    const newest = lst.reduce((a, l) => (l.created_at > a ? l.created_at : a), '');
+    return { ...i, item_id: i.id, lst, rec: recCents(i.value), price_cents: lst.length ? lst[0].price_cents : null, shown: lst.length ? lst[0].price_cents : recCents(i.value), newest };
+  });
+}
+function dataset() { return view === 'all' ? allEntries().map((e) => ({ ...e, price_cents: e.shown })) : rows; }
 let me = null, info = { market: false }, rows = [], rars = new Set(), cart = [], busy = false;
 try { cart = JSON.parse(localStorage.getItem('cart') || '[]').filter(Number.isInteger); } catch {}
 const saveCart = () => { try { localStorage.setItem('cart', JSON.stringify(cart)); } catch {} };
@@ -270,7 +297,8 @@ buildFacets();
 function paintFacets() {
   const q = $('q').value.toLowerCase().trim();
   const min = parseFloat($('pmin').value) * 100, max = parseFloat($('pmax').value) * 100;
-  const base = rows.filter((l) => (!q || l.name.toLowerCase().includes(q)) && (isNaN(min) || l.price_cents >= min) && (isNaN(max) || l.price_cents <= max));
+  const data = dataset();
+  const base = data.filter((l) => (!q || l.name.toLowerCase().includes(q)) && (isNaN(min) || l.price_cents >= min) && (isNaN(max) || l.price_cents <= max));
   document.querySelectorAll('#rars .rrow').forEach((b) => {
     const n = base.filter((l) => l.rarity === b.dataset.k && (!types.size || types.has(l.type))).length;
     b.classList.toggle('on', rars.has(b.dataset.k)); b.setAttribute('aria-pressed', String(rars.has(b.dataset.k)));
@@ -281,10 +309,10 @@ function paintFacets() {
     b.classList.toggle('on', types.has(b.dataset.k)); b.setAttribute('aria-pressed', String(types.has(b.dataset.k)));
     b.querySelector('small').textContent = TYPE_SUB[b.dataset.k] + ' · ' + n;
   });
-  const top = rows.reduce((a, l) => Math.max(a, l.price_cents), 0);
+  const top = data.reduce((a, l) => Math.max(a, l.price_cents || 0), 0);
   const nextTop = Math.max(1000, Math.ceil(top / 1000) * 1000);
   if (nextTop !== priceTop) { priceTop = nextTop; fromInputsQuiet(); }
-  $('pnote').textContent = rows.length ? 'up to ' + usd(priceTop) : '';
+  $('pnote').textContent = data.length ? 'up to ' + usd(priceTop) : '';
 }
 function fromInputsQuiet() {
   const mn = parseFloat($('pmin').value), mx = parseFloat($('pmax').value);
@@ -314,8 +342,46 @@ function groups() {
   return list;
 }
 
+function drawAll() {
+  const q = $('q').value.toLowerCase().trim();
+  const min = parseFloat($('pmin').value) * 100, max = parseFloat($('pmax').value) * 100;
+  const list = allEntries().filter((e) => (!q || e.name.toLowerCase().includes(q)) && (!types.size || types.has(e.type)) && (!rars.size || rars.has(e.rarity))
+    && (isNaN(min) || e.shown >= min) && (isNaN(max) || e.shown <= max));
+  const s = $('sort').value;
+  list.sort((a, b) => s === 'high' ? b.shown - a.shown : s === 'low' ? a.shown - b.shown : s === 'new' ? ((b.newest || '') > (a.newest || '') ? 1 : (b.newest || '') < (a.newest || '') ? -1 : b.value - a.value) : b.value - a.value);
+  const g = $('grid'); g.replaceChildren();
+  const listed = list.filter((e) => e.lst.length).length;
+  $('count').textContent = list.length + ' items · ' + listed + ' listed';
+  if (!list.length) g.append(el('div', { className: 'empty', textContent: catalog.length ? 'Nothing matches these filters. Try resetting them.' : 'No items yet.' }));
+  list.forEach((x) => {
+    const a = art(x);
+    a.append(el('span', { className: 'badge', textContent: x.rarity.toUpperCase() }));
+    a.append(el('span', { className: 'lc' + (x.lst.length ? '' : ' off'), textContent: x.lst.length ? x.lst.length + ' listed' : 'Not listed' }));
+    const acts = el('div', { className: 'acts' });
+    if (x.lst.length) {
+      const mine = me ? x.lst.filter((l) => l.seller_id === me.id).length : 0;
+      const free = x.lst.find((l) => !cart.includes(l.id) && !(me && l.seller_id === me.id));
+      const inCart = x.lst.filter((l) => cart.includes(l.id)).length;
+      acts.append(el('button', { className: 'btn sm', type: 'button', disabled: !free,
+        textContent: !free ? (mine === x.lst.length ? 'Only your listings' : 'All in cart') : inCart ? 'Add another (' + inCart + ')' : 'Add to cart',
+        onclick: () => { if (!me) return login(); cart.push(free.id); saveCart(); draw(); drawCart(); } }));
+    } else acts.append(el('button', { className: 'btn sm', type: 'button', disabled: true, textContent: 'No listings yet' }));
+    const priceRow = x.lst.length
+      ? [el('div', { className: 'price', textContent: usd(x.price_cents) }), el('div', { className: 'rec' }, 'Recommended ', el('b', { textContent: usd(x.rec) }))]
+      : [el('div', { className: 'price', textContent: usd(x.rec) }), el('div', { className: 'rec', textContent: 'Recommended price' })];
+    const card = el('article', { className: 'card' + (x.lst.length ? '' : ' unlisted') }, a, el('div', { className: 'info' },
+      el('h3', { textContent: x.name }),
+      el('div', { className: 'mute', textContent: x.type + ' · value ' + x.value.toLocaleString() }),
+      ...priceRow, acts));
+    card.style.setProperty('--c', RC[x.rarity] || RC.Common);
+    if (window.valueTip) valueTip(a, { ...x, price_cents: x.lst.length ? x.price_cents : null, rec_cents: x.rec });
+    g.append(card);
+  });
+}
+
 function draw() {
   paintFacets();
+  if (view === 'all') return drawAll();
   const list = groups(), g = $('grid');
   g.replaceChildren();
   const units = list.reduce((a, x) => a + x.ids.length, 0);
@@ -337,9 +403,9 @@ function draw() {
     const card = el('article', { className: 'card' }, a, el('div', { className: 'info' },
       el('h3', { textContent: x.name }),
       el('div', { className: 'mute' }, x.type + ' · value ' + x.value.toLocaleString() + ' · by ', el('a', { href: '/?seller=' + encodeURIComponent(x.seller), textContent: x.seller, style: 'color:inherit' })),
-      el('div', { className: 'price', textContent: usd(x.price_cents) }), acts));
+      el('div', { className: 'price', textContent: usd(x.price_cents) }), x.value ? el('div', { className: 'rec' }, 'Recommended ', el('b', { textContent: usd(recCents(x.value)) })) : null, acts));
     card.style.setProperty('--c', c);
-    if (window.valueTip) valueTip(a, x);
+    if (window.valueTip) valueTip(a, { ...x, rec_cents: recCents(x.value) });
     g.append(card);
   });
 }
@@ -408,7 +474,8 @@ function drawNotice() {
 }
 
 async function load() {
-  try { rows = await api('/api/market' + (seller ? '?seller=' + encodeURIComponent(seller) : '')); } catch { rows = []; }
+  const [r, c] = await Promise.all([api('/api/market' + (seller ? '?seller=' + encodeURIComponent(seller) : '')).catch(() => null), api('/api/values').catch(() => null)]);
+  if (r) rows = r; if (c) catalog = c;
   if (me) { const u = await refreshBalance(); if (u) me.balance = u.balance; }
   draw(); drawCart();
 }
