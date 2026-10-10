@@ -91,7 +91,7 @@ const ICON = {
   Pet: '<svg viewBox="0 0 64 64"><circle cx="32" cy="38" r="16" fill="currentColor"/><circle cx="19" cy="17" r="7" fill="currentColor"/><circle cx="45" cy="17" r="7" fill="currentColor"/></svg>',
   Misc: '<svg viewBox="0 0 64 64"><path d="m32 6 8 18h19L44 36l5 20-17-11-17 11 5-20L5 24h19z" fill="currentColor"/></svg>'
 };
-let items = [], rars = new Set(), sort = 'value', dir = -1;
+let items = [], rars = new Set(), sort = 'value', dir = -1, rate = 20;
 
 Object.keys(RC).forEach((r) => {
   const dot = el('span', { className: 'dot' + (r === 'Chroma' ? ' chroma' : '') });
@@ -130,7 +130,7 @@ function draw() {
       el('div', { className: 'c-st' }, i.stability ? el('span', { className: 'st ' + stClass(i.stability), textContent: i.stability }) : el('span', { className: 'none', textContent: '—' })),
       el('div', { className: 'ch c-ch ' + (!ch ? 'none' : ch > 0 ? 'up' : 'down'), textContent: ch == null ? '—' : ch === 0 ? 'No change' : (ch > 0 ? '▲ +' : '▼ ') + ch.toLocaleString() }),
       i.for_sale ? el('a', { className: 'buy c-buy', href: '/?q=' + encodeURIComponent(i.name) }, money(i.lowest_cents), el('small', { textContent: i.for_sale + ' for sale' })) : el('span', { className: 'none c-buy', textContent: 'None for sale' }));
-    if (window.valueTip) valueTip(row, { ...i, price_cents: i.lowest_cents });
+    if (window.valueTip) valueTip(row, { ...i, price_cents: i.lowest_cents, rec_cents: Math.round(i.value * rate / 10) });
     box.append(row);
   });
 }
@@ -139,6 +139,7 @@ function draw() {
   $('who').replaceChildren(me ? RbxAuth.menu(me, async () => { await fetch('/api/logout', { method: 'POST' }); location.reload(); })
     : el('button', { className: 'btn sm', type: 'button', textContent: 'Log in with Roblox', onclick: () => RbxAuth.open(() => location.reload()) }));
   try { items = await fetch('/api/values').then((r) => r.json()); } catch { items = []; }
+  try { const t = await fetch('/api/trading-info').then((r) => r.json()); if (t.rec_per_1k != null) rate = t.rec_per_1k; } catch {}
   const last = items.map((i) => i.value_updated_at).filter(Boolean).sort().pop();
   $('updated').textContent = last ? 'Values updated ' + new Date(last).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : '';
   draw();
