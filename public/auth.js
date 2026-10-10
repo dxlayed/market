@@ -285,28 +285,240 @@
   }
   window.openFunds = (mode) => openCrypto(mode);
 
+  // ---------- Top bar: Withdraw menu, wallet + quick actions, Item Deposit and Withdraw Items windows ----------
+  const qcss = document.createElement('style');
+  qcss.textContent = `.um-wd{position:relative}
+.um-wdbtn{display:flex;align-items:center;gap:8px;height:100%;background:linear-gradient(180deg,#3a1012,#220a0b);border:1px solid #7a1c20;color:#ffd9d9;border-radius:12px;padding:8px 14px;font:inherit;font-weight:800;cursor:pointer}
+.um-wdbtn:hover{border-color:var(--gold);box-shadow:0 0 18px #e8202a33}
+.um-wdbtn svg{width:18px;height:18px}.um-wdbtn .car{font-size:11px;opacity:.8}
+.um-wallet .plus{display:flex;align-items:center;justify-content:center;width:42px;font-size:22px;font-weight:800}
+.qa{position:absolute;right:0;top:calc(100% + 10px);width:300px;background:#120a0a;border:1px solid var(--line);border-radius:16px;padding:14px;z-index:31;box-shadow:0 18px 50px #000c;display:grid;gap:10px}
+.qa[hidden]{display:none}
+.qa h4{margin:2px 4px 2px;font-size:12px;letter-spacing:.08em;color:#d8c6c6;font-weight:800}
+.qa button{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:#1a0f0f;border:1px solid var(--line);border-radius:14px;padding:12px;color:var(--text);font:inherit;cursor:pointer}
+.qa button:hover{border-color:#7a1c20;background:#211212}
+.qa .ic{flex:none;width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#e8202a33,#8f0d1433);border:1px solid #e8202a55;color:#ff5a61}
+.qa .ic svg{width:22px;height:22px}
+.qa b{display:block;font-family:Outfit,system-ui,sans-serif;font-size:16px}.qa small{color:var(--mute);font-weight:600}
+.wdm{position:absolute;right:0;top:calc(100% + 10px);min-width:220px;background:#120a0a;border:1px solid var(--line);border-radius:14px;padding:8px;z-index:31;box-shadow:0 18px 50px #000c;display:grid;gap:2px}
+.wdm[hidden]{display:none}
+.wdm button{display:flex;align-items:center;gap:12px;width:100%;background:transparent;border:0;border-radius:10px;padding:10px 12px;color:#e4d6d6;font:inherit;font-weight:700;font-size:15px;cursor:pointer;text-align:left}
+.wdm button:hover{background:#1e1111;color:#fff}.wdm svg{width:22px;height:22px;color:#ff5a61}
+.sdlg{background:#100909;color:var(--text);border:1px solid #3a1717;border-radius:20px;width:min(480px,94vw);max-height:92vh;padding:0;overflow:hidden}
+.sdlg[open]{display:flex;flex-direction:column}
+.sdlg::backdrop{background:#000c;backdrop-filter:blur(3px)}
+.sdlg .hd{display:flex;align-items:center;gap:14px;padding:20px 20px 16px;border-bottom:1px solid var(--line)}
+.sdlg .hd .ic{flex:none;width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#e8202a44,#8f0d1444);border:1px solid #e8202a66;color:#ff5a61}
+.sdlg .hd .ic svg{width:24px;height:24px}
+.sdlg .hd h2{margin:0;font-family:Outfit,system-ui,sans-serif;font-size:21px;letter-spacing:.02em;text-transform:uppercase}
+.sdlg .hd p{margin:2px 0 0;color:var(--mute);font-size:14px}
+.sdlg .x{margin-left:auto;align-self:flex-start;background:transparent;border:0;color:var(--mute);font-size:22px;line-height:1;cursor:pointer;padding:2px 6px}
+.sdlg .x:hover{color:#fff}
+.sdlg .bd{padding:16px 20px;overflow:auto;display:grid;gap:14px}
+.sdlg .warn{display:flex;gap:10px;background:#2a1a08;border:1px solid #6b4a14;color:#f3c45a;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:700;line-height:1.45}
+.sdlg .warn svg{flex:none;width:18px;height:18px;margin-top:2px}
+.sdlg .lab{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;letter-spacing:.06em;color:#d8c6c6;text-transform:uppercase}
+.sdlg .lab button{background:none;border:0;color:#ff5a61;font:inherit;font-weight:800;text-transform:none;letter-spacing:0;font-size:14px;cursor:pointer;padding:0}
+.botc{background:#170e0e;border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:12px}
+.botc .top{display:flex;align-items:center;gap:12px}
+.botc .av{position:relative;width:50px;height:50px;border-radius:14px;background:#2a1616 center/cover;display:flex;align-items:center;justify-content:center;font-family:Outfit,system-ui,sans-serif;font-weight:900;font-size:22px;color:#ff5a61;flex:none;border:1px solid var(--line)}
+.botc .av i{position:absolute;right:-3px;bottom:-3px;width:13px;height:13px;border-radius:99px;background:#6b6b6b;border:2px solid #170e0e}
+.botc.on .av i{background:#4ade80}
+.botc .nm{flex:1;min-width:0}
+.botc .nm b{display:block;font-family:Outfit,system-ui,sans-serif;font-size:18px;overflow-wrap:anywhere}
+.botc .nm small{color:var(--mute);font-weight:700;display:flex;align-items:center;gap:6px}
+.botc .nm small::before{content:"";width:7px;height:7px;border-radius:99px;background:#6b6b6b}
+.botc.on .nm small{color:#4ade80}.botc.on .nm small::before{background:#4ade80}
+.botc .cp{width:40px;height:40px;border-radius:12px;background:#221313;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#e4d6d6;padding:0}
+.botc .cp svg{width:17px;height:17px}
+.botc .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.botc .acts a{display:flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:12px;font-weight:800;text-decoration:none;font-size:15px}
+.botc .acts svg{width:17px;height:17px}
+.botc .fr{background:#2a1214;border:1px solid #6b1c20;color:#ff9a9e}.botc .fr:hover{border-color:var(--gold)}
+.botc .js{background:var(--gold);color:#fff;box-shadow:0 6px 24px #e8202a44}.botc .js:hover{filter:brightness(1.12)}
+.bsteps{display:grid;gap:10px}
+.bsteps>div{display:flex;gap:12px;background:#170e0e;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.bsteps>div>span{flex:none;width:28px;height:28px;border-radius:99px;display:flex;align-items:center;justify-content:center;background:#2a1214;border:1px solid #6b1c20;color:#ff5a61;font-weight:800;font-size:13px}
+.bsteps b{display:block;font-family:Outfit,system-ui,sans-serif;font-size:16px}.bsteps p{margin:2px 0 0;color:var(--mute);font-size:14px;line-height:1.45}
+.wrow{display:flex;align-items:center;gap:12px;background:#170e0e;border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.wrow.sel{border-color:#a3262b;background:linear-gradient(90deg,#e8202a14,#170e0e)}
+.wrow .ph{width:58px;height:58px;flex:none;border-radius:12px;background:#0d0707;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.wrow .ph img{width:100%;height:100%;object-fit:contain}
+.wrow .nm{flex:1;min-width:0}.wrow .nm b{display:block;font-family:Outfit,system-ui,sans-serif;font-size:17px}
+.wrow .nm small{display:flex;align-items:center;gap:8px;color:#e4d6d6;font-weight:700;font-size:13px;margin-top:4px}
+.wrow .rp{font-size:11px;font-weight:800;letter-spacing:.04em;border-radius:7px;padding:2px 7px;border:1px solid currentColor;text-transform:uppercase}
+.wrow .stp{display:flex;align-items:center;background:#221313;border:1px solid var(--line);border-radius:12px;padding:3px}
+.wrow .stp button{width:34px;height:34px;border:0;border-radius:9px;background:transparent;color:#fff;font-size:20px;font-weight:800;cursor:pointer;padding:0}
+.wrow .stp button:hover:not(:disabled){background:#341b1b}.wrow .stp button:disabled{opacity:.35;cursor:default}
+.wrow .stp em{min-width:30px;text-align:center;font-style:normal;font-weight:800}
+.sdlg .ft{display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid var(--line);background:#0d0707}
+.sdlg .ft .wsum{flex:1;display:block}.sdlg .ft .wsum b{display:block}.sdlg .ft .wsum small{color:#ff5a61;font-weight:800}
+.sdlg .ft .cl{background:#221313;border:1px solid var(--line);border-radius:12px;padding:12px 20px;font-weight:800;cursor:pointer}
+.sdlg .ft .go{display:flex;align-items:center;gap:8px;background:var(--gold);color:#fff;border:0;border-radius:12px;padding:12px 22px;font-weight:800;cursor:pointer}
+.sdlg .ft .go:disabled{opacity:.45;cursor:default}.sdlg .ft .go svg{width:17px;height:17px}
+.sdlg .empty{color:var(--mute);text-align:center;padding:26px 10px;font-size:14px}
+.sdlg .pend{display:flex;align-items:center;gap:10px;background:#1c1010;border:1px solid #6b1c20;border-radius:14px;padding:10px 12px;font-size:14px}
+.sdlg .pend span{flex:1}.sdlg .pend button{background:var(--gold);color:#fff;border:0;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer}
+@media (max-width:640px){.um-wdbtn .t{display:none}.qa,.wdm{position:fixed;left:16px;right:16px;width:auto}}`;
+  document.head.append(qcss);
+
+  const IC = {
+    wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 14.5h2"/></svg>',
+    cardIn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="2.5"/><path d="M3 9h18M12 13v7M9 17l3 3 3-3"/></svg>',
+    boxIn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M12 9v6M9.5 12.5L12 15l2.5-2.5"/></svg>',
+    boxOut: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M12 15V9M9.5 11.5L12 9l2.5 2.5"/></svg>',
+    coinOut: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 10v6M9.5 12.5L12 10l2.5 2.5M12 2v2"/></svg>',
+    warn: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l9 4v6c0 5-3.8 9.3-9 10-5.2-.7-9-5-9-10V6z"/><path d="M12 7v6M12 16v.5" stroke="#2a1a08" stroke-width="2.2" stroke-linecap="round"/></svg>',
+    copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 10"/></svg>',
+    play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12.5-7.5z"/></svg>',
+  };
+  const RCOL = { Chroma: '#b78bff', Ancient: '#7c5cff', Godly: '#d94fd0', Unique: '#e6b422', Vintage: '#d9b98a', Legendary: '#ff4d4d', Rare: '#2fb36a', Uncommon: '#4d7cff', Common: '#8a8fa3' };
+  const ex = (t, p = {}, ...k) => { const e = document.createElement(t); for (const [a, v] of Object.entries(p)) { if (a === 'html') e.innerHTML = v; else if (a.includes('-')) e.setAttribute(a, v); else e[a] = v; } k.forEach((x) => x != null && e.append(x)); return e; };
+  const sdlg = (id) => { let x = document.getElementById(id); if (!x) { x = ex('dialog', { id, className: 'sdlg' }); x.addEventListener('click', (e) => { if (e.target === x) x.close(); }); document.body.append(x); } return x; };
+  const head = (dlg, icon, title, sub) => ex('div', { className: 'hd' }, ex('div', { className: 'ic', html: icon }), ex('div', {}, ex('h2', { textContent: title }), sub ? ex('p', { textContent: sub }) : null), ex('button', { className: 'x', type: 'button', textContent: '×', 'aria-label': 'Close', onclick: () => dlg.close() }));
+  let tinfo = null;
+  const tradingInfo = async () => tinfo || (tinfo = await jget('/api/trading-info').catch(() => ({ rec_per_1k: 20 })));
+
+  // Item Deposit (also used after a withdrawal: join the same bot to receive)
+  window.openItemDeposit = async function (mode) {
+    const recv = mode === 'receive';
+    const dlg = sdlg('botDlg');
+    const list = ex('div', { style: 'display:grid;gap:10px' }, ex('div', { className: 'empty', textContent: 'Loading bots...' }));
+    const lab = ex('div', { className: 'lab' }, ex('span', { textContent: 'Bots' }));
+    dlg.replaceChildren(
+      head(dlg, recv ? IC.boxOut : IC.boxIn, recv ? 'Receive items' : 'Item Deposit', recv ? 'Join the bot below and it will trade you your items.' : 'Join a bot below to deposit your items.'),
+      ex('div', { className: 'bd' },
+        ex('div', { className: 'warn' }, ex('span', { html: IC.warn }), ex('span', { textContent: "Always double-check the bot's exact username above. Scammers impersonate our bots — never trade with anyone else, and we'll never DM you first." })),
+        lab, list,
+        ex('div', { className: 'bsteps' },
+          ex('div', {}, ex('span', { textContent: '1' }), ex('div', {}, ex('b', { textContent: 'Under 13? Add as friend' }), ex('p', { textContent: 'Roblox restricts under-13 accounts from joining servers without being friends first.' }))),
+          ex('div', {}, ex('span', { textContent: '2' }), ex('div', {}, ex('b', { textContent: 'Join the private server' }), ex('p', { textContent: recv ? 'The bot will trade you the items you withdrew once you are in. Accept it to finish.' : 'Bring the items you want to deposit. The bot will trade you once you\'re in, and the items show up in your inventory right after.' }))))));
+    if (!dlg.open) dlg.showModal();
+    let bots = [];
+    try { bots = await jget('/api/bots'); } catch {}
+    const on = bots.filter((b) => b.online).length;
+    lab.firstChild.textContent = on + (on === 1 ? ' bot' : ' bots') + ' online · join any to ' + (recv ? 'receive' : 'deposit');
+    list.replaceChildren(...(bots.length ? bots.map((b) => {
+      const av = ex('div', { className: 'av' }, ex('i'));
+      if (b.avatar && /^https:\/\/[\w.-]+\.rbxcdn\.com\//.test(b.avatar)) av.style.backgroundImage = 'url("' + b.avatar + '")'; else av.prepend(b.username[0].toUpperCase());
+      const cp = ex('button', { className: 'cp', type: 'button', title: 'Copy username', 'aria-label': 'Copy username', html: IC.copy });
+      cp.onclick = () => navigator.clipboard.writeText(b.username).then(() => { cp.innerHTML = IC.check; if (typeof toast === 'function') toast('Copied ' + b.username); setTimeout(() => (cp.innerHTML = IC.copy), 1500); });
+      return ex('div', { className: 'botc' + (b.online ? ' on' : '') },
+        ex('div', { className: 'top' }, av, ex('div', { className: 'nm' }, ex('b', { textContent: b.username }), ex('small', { textContent: b.online ? 'Online' : 'Offline' })), cp),
+        ex('div', { className: 'acts' },
+          ex('a', { className: 'fr', href: b.profile, target: '_blank', rel: 'noopener', html: IC.check + '<span>Friends</span>' }),
+          ex('a', { className: 'js', href: b.link, target: '_blank', rel: 'noopener', html: IC.play + '<span>Join Server</span>' })));
+    }) : [ex('div', { className: 'empty', textContent: 'No bots right now. Check back soon or ask in our Discord.' })]));
+  };
+
+  // Withdraw Items
+  window.openItemWithdraw = async function (preselect) {
+    const dlg = sdlg('wdDlg');
+    const info = await tradingInfo();
+    let inv = [], trades = [];
+    try { [inv, trades] = await Promise.all([jget('/api/inventory'), jget('/api/trades').catch(() => [])]); } catch (e) { if (typeof toast === 'function') toast(e.message, true); return; }
+    const groups = new Map();
+    for (const i of inv.filter((x) => x.status === 'held')) {
+      if (!groups.has(i.item_id)) groups.set(i.item_id, { ...i, ids: [], pick: 0 });
+      groups.get(i.item_id).ids.push(i.id);
+    }
+    const pre = new Set((preselect || []).map(Number));
+    groups.forEach((g) => { g.pick = g.ids.filter((id) => pre.has(id)).length; });
+    if (!pre.size && groups.size === 1) groups.forEach((g) => (g.pick = 1));
+    const recC = (v) => Math.round((Number(v) || 0) * (info.rec_per_1k || 20) / 10);
+    const rows = ex('div', { style: 'display:grid;gap:10px' });
+    const lab = ex('span');
+    const selB = ex('b'), estS = ex('small');
+    const go = ex('button', { className: 'go', type: 'button', html: IC.boxOut + '<span>Withdraw</span>' });
+    function upd() {
+      let n = 0, c = 0;
+      groups.forEach((g) => { n += g.pick; c += g.pick * recC(g.value); });
+      selB.textContent = n + ' selected'; estS.textContent = '≈ ' + money(c); go.disabled = !n;
+    }
+    function draw() {
+      lab.textContent = 'Withdrawable - ' + [...groups.values()].reduce((a, g) => a + g.ids.length, 0);
+      rows.replaceChildren(...(groups.size ? [...groups.values()].map((g) => {
+        const ph = ex('div', { className: 'ph' });
+        if (g.image_url && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(g.image_url)) ph.append(ex('img', { src: g.image_url, alt: '', referrerPolicy: 'no-referrer', loading: 'lazy' }));
+        const qty = ex('em', { textContent: String(g.pick) });
+        const minus = ex('button', { type: 'button', textContent: '−', 'aria-label': 'Less' });
+        const plus = ex('button', { type: 'button', textContent: '+', 'aria-label': 'More' });
+        const row = ex('div', { className: 'wrow' }, ph,
+          ex('div', { className: 'nm' }, ex('b', { textContent: g.name }), ex('small', {}, ex('span', { className: 'rp', textContent: g.rarity, style: 'color:' + (RCOL[g.rarity] || RCOL.Common) }), ex('span', { textContent: g.ids.length + ' available' }))),
+          ex('div', { className: 'stp' }, minus, qty, plus));
+        const set = (v) => { g.pick = Math.max(0, Math.min(g.ids.length, v)); qty.textContent = g.pick; minus.disabled = !g.pick; plus.disabled = g.pick >= g.ids.length; row.classList.toggle('sel', g.pick > 0); upd(); };
+        minus.onclick = () => set(g.pick - 1); plus.onclick = () => set(g.pick + 1);
+        if (typeof window.valueTip === 'function') window.valueTip(ph, g);
+        set(g.pick);
+        return row;
+      }) : [ex('div', { className: 'empty', textContent: 'Nothing to withdraw. Items you deposit or buy show up here. Items listed for sale have to be taken down first.' })]));
+      upd();
+    }
+    const pending = trades.filter((t) => t.kind === 'withdraw' && ['pending', 'in_progress'].includes(t.status));
+    const bd = ex('div', { className: 'bd' });
+    if (pending.length) bd.append(ex('div', { className: 'pend' }, ex('span', { textContent: 'You have a withdrawal waiting. Join the bot to get it.' }), ex('button', { type: 'button', textContent: 'Join bot', onclick: () => { dlg.close(); window.openItemDeposit('receive'); } })));
+    bd.append(ex('div', { className: 'lab' }, lab, ex('button', { type: 'button', textContent: 'Clear all', onclick: () => { groups.forEach((g) => (g.pick = 0)); draw(); } })), rows);
+    go.onclick = async () => {
+      const ids = []; groups.forEach((g) => ids.push(...g.ids.slice(0, g.pick)));
+      if (ids.length > 50) { if (typeof toast === 'function') toast('You can withdraw up to 50 items at once.', true); return; }
+      go.disabled = true;
+      try {
+        await jpost('/api/trades/withdraw', { inventory_ids: ids });
+        dlg.close();
+        if (typeof toast === 'function') toast('Withdrawal ready. Join the bot to receive your items.');
+        if (typeof window.onItemsChanged === 'function') window.onItemsChanged();
+        window.openItemDeposit('receive');
+      } catch (e) { if (typeof toast === 'function') toast(e.message, true); go.disabled = false; }
+    };
+    dlg.replaceChildren(head(dlg, IC.boxOut, 'Withdraw Items'), bd,
+      ex('div', { className: 'ft' }, ex('div', { className: 'wsum' }, selB, estS), ex('button', { className: 'cl', type: 'button', textContent: 'Close', onclick: () => dlg.close() }), go));
+    draw();
+    if (!dlg.open) dlg.showModal();
+  };
+
   window.RbxAuth.menu = function (u, onLogout) {
     const mk = (tag, props, ...kids) => { const e = document.createElement(tag); Object.assign(e, props); kids.forEach((k) => e.append(k)); return e; };
+    const pops = [];
+    const closeAll = (except) => pops.forEach((p) => { if (p !== except) p.hidden = true; });
+    const toggle = (p) => (e) => { e.stopPropagation(); const show = p.hidden; closeAll(); p.hidden = !show; p.style.top = window.innerWidth <= 640 ? e.currentTarget.getBoundingClientRect().bottom + 8 + 'px' : ''; };
+
+    // Withdraw ▾
+    const wdm = mk('div', { className: 'wdm' }); wdm.hidden = true; pops.push(wdm);
+    wdm.append(ex('button', { type: 'button', html: IC.boxOut + '<span>Withdraw Items</span>', onclick: () => { closeAll(); window.openItemWithdraw(); } }),
+      ex('button', { type: 'button', html: IC.coinOut + '<span>Withdraw Crypto</span>', onclick: () => { closeAll(); window.openFunds('out'); } }));
+    const wdBtn = ex('button', { className: 'um-wdbtn', type: 'button', html: IC.boxOut + '<span class="t">Withdraw</span><span class="car">▾</span>' });
+    wdBtn.onclick = toggle(wdm);
+    const wdWrap = mk('div', { className: 'um-wd' }, wdBtn, wdm);
+
+    // Wallet + quick actions
     const bal = mk('b', { textContent: money(u.balance) }); balEls.add(bal);
-    const wallet = mk('div', { className: 'um-wallet' }, mk('span', {}, bal),
-      mk('button', { type: 'button', textContent: '+', title: 'Add funds', onclick: () => window.openFunds('add') }));
-    wallet.querySelector('button').setAttribute('aria-label', 'Add funds');
+    const qa = mk('div', { className: 'qa' }); qa.hidden = true; pops.push(qa);
+    qa.append(ex('h4', { textContent: 'QUICK ACTIONS' }),
+      ex('button', { type: 'button', onclick: () => { closeAll(); window.openFunds('add'); } }, ex('span', { className: 'ic', html: IC.cardIn }), ex('span', {}, ex('b', { textContent: 'Deposit Balance' }), ex('small', { textContent: 'Cards / Crypto' }))),
+      ex('button', { type: 'button', onclick: () => { closeAll(); window.openItemDeposit(); } }, ex('span', { className: 'ic', html: IC.boxIn }), ex('span', {}, ex('b', { textContent: 'Item Deposit' }), ex('small', { textContent: 'MM2' }))));
+    const plus = ex('button', { className: 'plus', type: 'button', textContent: '+', title: 'Deposit', 'aria-label': 'Deposit' });
+    plus.onclick = toggle(qa);
+    const wallet = mk('div', { className: 'um-wallet' }, ex("span", { html: "<i style=\"color:var(--mute);display:flex\">" + IC.wallet.replace("<svg ", "<svg width=\"18\" height=\"18\" ") + "</i>" }, bal), plus);
+    const walletWrap = mk('div', { className: 'um-wd' }, wallet, qa);
+
+    // Account menu
     const rk = mk('small');
     const btn = mk('button', { className: 'um-btn', type: 'button' }, window.avEl(u), mk('span', {}, mk('b', { textContent: u.username }), rk), document.createTextNode('▾'));
     btn.setAttribute('aria-haspopup', 'true');
-    const pop = mk('div', { className: 'um-pop' }); pop.hidden = true;
+    const pop = mk('div', { className: 'um-pop' }); pop.hidden = true; pops.push(pop);
     const out = mk('button', { type: 'button', textContent: 'Log out', onclick: onLogout }); out.style.color = 'var(--bad)';
     if (u.owner) { const o = mk('a', { href: '/owner.html', textContent: 'Owner panel' }); o.style.color = 'var(--gold)'; pop.append(o, mk('hr')); }
     pop.append(mk('a', { href: '/profile.html', textContent: 'Profile' }), mk('a', { href: '/?seller=' + encodeURIComponent(u.username), textContent: 'My shop' }),
       mk('a', { href: '/inventory.html', textContent: 'Inventory' }), mk('a', { href: '/profile.html#wallet', textContent: 'Transactions' }), mk('a', { href: '/support.html', textContent: 'Support' }), mk('hr'),
-      mk('button', { type: 'button', textContent: 'Add funds', onclick: () => window.openFunds('add') }),
-      mk('button', { type: 'button', textContent: 'Withdraw funds', onclick: () => window.openFunds('out') }),
+      mk('button', { type: 'button', textContent: 'Deposit balance', onclick: () => { closeAll(); window.openFunds('add'); } }),
+      mk('button', { type: 'button', textContent: 'Deposit items', onclick: () => { closeAll(); window.openItemDeposit(); } }),
       mk('a', { href: 'https://discord.gg/splitzmarket', target: '_blank', rel: 'noopener', textContent: 'Discord' }), mk('hr'), out);
+    btn.onclick = toggle(pop);
     const box = mk('div', { className: 'um' }, btn, pop);
-    const wrap = mk('div', { className: 'um' }, wallet, box);
-    btn.onclick = (e) => { e.stopPropagation(); pop.hidden = !pop.hidden; btn.setAttribute('aria-expanded', String(!pop.hidden)); };
-    document.addEventListener('click', (e) => { if (!box.contains(e.target)) pop.hidden = true; });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') pop.hidden = true; });
+    const wrap = mk('div', { className: 'um' }, wdWrap, walletWrap, box);
+    document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) closeAll(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
     fetch('/api/profile').then((r) => (r.ok ? r.json() : null)).then((p) => { if (p) rk.textContent = p.rank; }).catch(() => {});
     return wrap;
   };
