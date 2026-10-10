@@ -78,7 +78,7 @@ body{background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transpare
 <body>
 <div class="bar">
   <a class="logo" href="/">Splitz<b>Market</b></a>
-  <nav><a href="/">Market</a><a href="/inventory.html">Inventory</a><a href="/support.html">Support</a><a class="on" href="/profile.html">Profile</a></nav>
+  <nav><a href="/">Market</a><a href="/inventory">Inventory</a><a href="/support">Support</a><a class="on" href="/profile">Profile</a></nav>
   <div id="who"></div>
 </div>
 
@@ -86,11 +86,11 @@ body{background:radial-gradient(ellipse 90% 60% at 50% -10%,#3a0a0d 0%,transpare
   <div class="title"><h1>Profile</h1></div>
   <div class="layout">
     <aside class="side">
-      <a class="on" href="/profile.html">Profile</a>
+      <a class="on" href="/profile">Profile</a>
       <a href="#wallet">Balance &amp; transactions</a>
       <a href="#listings">For sale</a>
       <a id="myshop" href="/">My shop</a>
-      <a href="/inventory.html">Inventory</a>
+      <a href="/inventory">Inventory</a>
     </aside>
     <main id="main"><div class="card mute">Loading your profile...</div></main>
   </div>
@@ -159,7 +159,7 @@ function render(me, p, w) {
       el('button', { className: 'ghost sm', textContent: 'Copy', onclick: () => navigator.clipboard.writeText(shopUrl).then(() => toast('Link copied')) })));
 
   const list = el('section', { className: 'card', id: 'listings' }, el('h2', { textContent: 'For sale now' }));
-  if (!p.listings.length) list.append(el('p', { className: 'mute' }, 'Nothing listed. Pick items in your ', el('a', { href: '/inventory.html', textContent: 'inventory', style: 'color:var(--gold)' }), ' and press Sell.'));
+  if (!p.listings.length) list.append(el('p', { className: 'mute' }, 'Nothing listed. Pick items in your ', el('a', { href: '/inventory', textContent: 'inventory', style: 'color:var(--gold)' }), ' and press Sell.'));
   p.listings.forEach((l) => {
     const down = el('button', { className: 'ghost sm', textContent: 'Take down', onclick: async () => {
       down.disabled = true;
