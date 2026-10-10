@@ -357,6 +357,53 @@
     a.append(i, name);
   });
 
+  // ---------- Item value hover card + "Values" link in every top menu ----------
+  const vcss = document.createElement('style');
+  vcss.textContent = `#vtip{position:fixed;z-index:45;pointer-events:none;width:230px;background:#120a0a;border:1px solid #5a1f1f;border-radius:14px;padding:12px 14px;box-shadow:0 18px 50px #000c;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;font-size:13px}
+#vtip.on{opacity:1;transform:none}
+#vtip .n{font-family:Outfit,system-ui,sans-serif;font-weight:800;font-size:16px;line-height:1.2}
+#vtip .s{color:var(--mute);font-size:12px;font-weight:700;margin-bottom:8px}
+#vtip .v{display:flex;align-items:baseline;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px}
+#vtip .v b{font-family:Outfit,system-ui,sans-serif;font-size:24px;font-weight:800}
+#vtip .ch{font-weight:800;font-size:12px}#vtip .ch.up{color:#4ade80}#vtip .ch.down{color:#ff8a8f}
+#vtip dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:8px 0 0}
+#vtip dt{color:var(--mute);font-weight:700}#vtip dd{margin:0;text-align:right;font-weight:700}
+@media (hover:none){#vtip{display:none}}`;
+  document.head.append(vcss);
+  const tip = document.createElement('div'); tip.id = 'vtip'; tip.setAttribute('role', 'tooltip'); document.body.append(tip);
+  const demandWord = (d) => (d == null ? '—' : d >= 7 ? 'Very high' : d >= 5 ? 'High' : d >= 3 ? 'Medium' : d >= 2 ? 'Low' : 'Very low');
+  function fillTip(i) {
+    const mk = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+    const ch = i.value_change;
+    const chEl = ch == null || ch === 0 ? mk('span', 'ch', ch === 0 ? 'No change' : '') : mk('span', 'ch ' + (ch > 0 ? 'up' : 'down'), (ch > 0 ? '▲ +' : '▼ ') + ch.toLocaleString());
+    const v = mk('div', 'v'); v.append(mk('span', '', 'Value'), mk('b', '', (i.value || 0).toLocaleString()));
+    const dl = mk('dl');
+    [['Demand', i.demand == null ? '—' : demandWord(i.demand) + ' (' + i.demand + ')'], ['Stability', i.stability || '—'], ['Recent change', null]].forEach(([k, val]) => {
+      dl.append(mk('dt', '', k)); const dd = mk('dd', '', val); if (val == null) dd.append(chEl); dl.append(dd);
+    });
+    if (i.price_cents) { dl.append(mk('dt', '', 'Price')); dl.append(mk('dd', '', money(i.price_cents))); }
+    tip.replaceChildren(mk('div', 'n', i.name), mk('div', 's', [i.rarity, i.type].filter(Boolean).join(' ')), v, dl);
+  }
+  function place(el) {
+    const r = el.getBoundingClientRect(), w = 230, h = tip.offsetHeight || 170;
+    let x = r.right + 10; if (x + w > innerWidth - 8) x = r.left - w - 10; if (x < 8) x = Math.min(innerWidth - w - 8, Math.max(8, r.left));
+    let y = r.top + 10; if (y + h > innerHeight - 8) y = innerHeight - h - 8;
+    tip.style.left = x + 'px'; tip.style.top = Math.max(8, y) + 'px';
+  }
+  window.valueTip = function (el, item) {
+    const show = () => { fillTip(item); place(el); tip.classList.add('on'); };
+    const hide = () => tip.classList.remove('on');
+    el.addEventListener('mouseenter', show); el.addEventListener('mouseleave', hide);
+    el.addEventListener('focusin', show); el.addEventListener('focusout', hide);
+  };
+  window.addEventListener('scroll', () => tip.classList.remove('on'), { passive: true });
+  const nav = document.querySelector('.bar nav');
+  if (nav && !nav.querySelector('a[href="/values.html"]')) {
+    const a = document.createElement('a'); a.href = '/values.html'; a.textContent = 'Values';
+    if (location.pathname === '/values.html') a.className = 'on';
+    const first = nav.querySelector('a'); first ? first.after(a) : nav.append(a);
+  }
+
   // ---------- Discord, owner maintenance banner, first-visit welcome ----------
   const DISCORD = 'https://discord.gg/splitzmarket';
   window.DISCORD = DISCORD;
