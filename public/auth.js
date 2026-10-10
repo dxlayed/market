@@ -835,6 +835,17 @@
   try { seen = !!sessionStorage.getItem('sm_welcomed'); } catch {}
   if (!seen && !document.body.dataset.nowelcome) window.showWelcome();
 
+  // ---------- Presence: lets owners see how many people are on the site (guests included) ----------
+  (function () {
+    let sid = null;
+    try { sid = sessionStorage.getItem('sm_sid'); if (!sid) { sid = Array.from(crypto.getRandomValues(new Uint8Array(9)), (b) => b.toString(36).padStart(2, '0')).join('').slice(0, 16); sessionStorage.setItem('sm_sid', sid); } }
+    catch { sid = Math.random().toString(36).slice(2, 14) + Date.now().toString(36); }
+    const ping = () => fetch('/api/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid, page: location.pathname, hidden: document.hidden }), keepalive: true }).catch(() => {});
+    ping(); setInterval(ping, 20000);
+    document.addEventListener('visibilitychange', ping);
+    window.addEventListener('pagehide', () => { try { navigator.sendBeacon('/api/presence', new Blob([JSON.stringify({ sid, leave: true })], { type: 'application/json' })); } catch {} });
+  })();
+
   // ---------- Live chat drawer, on every page ----------
   if (!document.body.dataset.nochat) {
     const ccss = document.createElement('style');
