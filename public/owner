@@ -707,16 +707,17 @@ async function giveawaysTab() {
     const body = el('tbody');
     if (!d.giveaways.length) body.append(el('tr', {}, el('td', { colSpan: 6, className: 'empty', textContent: 'No giveaways yet.' })));
     d.giveaways.forEach((g) => {
-      const status = g.status === 'active' ? el('span', { className: 'pill gold', textContent: 'Live · ends ' + when(g.ends_at) })
+      const status = g.status === 'active' ? el('span', {}, el('span', { className: 'pill gold', textContent: 'Live · ends ' + when(g.ends_at) }), g.picked ? el('div', { className: 'mute', style: 'margin-top:4px', textContent: '★ Your pick: ' + g.picked + ' (wins at the end)' }) : null)
         : g.status === 'cancelled' ? el('span', { className: 'pill', textContent: 'Cancelled' })
-        : g.winner ? el('span', { className: 'pill ok', textContent: 'Won by ' + g.winner }) : el('span', { className: 'pill', textContent: 'No entries, item returned' });
+        : g.winner ? el('span', {}, el('span', { className: 'pill ok', textContent: 'Won by ' + g.winner }), g.hidden ? el('span', { className: 'pill', textContent: 'Hidden', style: 'margin-left:6px' }) : null) : el('span', { className: 'pill', textContent: 'No entries, item returned' });
       body.append(el('tr', {},
         el('td', {}, el('span', { className: 'irow' }, thumb(g), g.name), g.status === 'ended' && g.winner ? el('div', { className: 'mute', textContent: g.mode === 'pick' ? '★ Picked by team' : '🎲 Random draw' }) : null),
         el('td', { textContent: g.status === 'active' ? g.entries : (g.entries_at_draw ?? g.entries) }),
         el('td', { textContent: g.status === 'active' && g.entries ? (100 / g.entries).toFixed(g.entries > 100 ? 2 : 1) + '% each if drawn' : '' }),
         el('td', {}, status),
         el('td', { className: 'mute', textContent: 'by ' + (g.host || '?') + ' · ' + when(g.created_at) }),
-        el('td', { style: 'white-space:nowrap' }, g.status === 'active' ? el('button', { className: 'btn sm', textContent: choosing === g.id ? 'Hide entries' : 'Entries & choose', onclick: () => { choosing = choosing === g.id ? null : g.id; load(); } }) : '', ' ', g.status === 'active' && g.mode !== 'pick' ? armed('Draw now', 'Confirm draw', async () => { const r = await api('/api/admin/giveaways/' + g.id + '/draw', 'POST'); toast(r.winner ? r.winner + ' won ' + r.item + '!' : 'No one joined. Item returned.'); load(); }, 'btn sm') : '',
+        el('td', { style: 'white-space:nowrap' }, g.status === 'active' ? el('button', { className: 'btn sm', textContent: choosing === g.id ? 'Hide entries' : 'Entries & choose', onclick: () => { choosing = choosing === g.id ? null : g.id; load(); } }) : '', ' ', g.status === 'active' ? armed('End now', 'Confirm end', async () => { const r = await api('/api/admin/giveaways/' + g.id + '/draw', 'POST'); toast(r.winner ? r.winner + ' won ' + r.item + '!' : 'No one joined. Item returned.'); load(); }, 'ghost sm') : '',
+          g.status === 'ended' && g.winner ? el('button', { className: 'ghost sm', textContent: g.hidden ? 'Show in recent winners' : 'Remove from recent winners', onclick: async () => { await api('/api/admin/giveaways/' + g.id + '/hide', 'POST', { hidden: !g.hidden }); toast(g.hidden ? 'Shown again on the giveaways page' : 'Removed from recent winners'); load(); } }) : '',
           ' ', g.status === 'active' ? armed('Cancel', 'Confirm cancel', async () => { await api('/api/admin/giveaways/' + g.id + '/cancel', 'POST'); toast('Cancelled. Item is back in your inventory.'); load(); }) : '')));
     });
     // Staff pick: the entry list for the giveaway being chosen
@@ -733,13 +734,16 @@ async function giveawaysTab() {
         el('td', { className: 'mute', textContent: 'member since ' + new Date(u.joined_site).toLocaleDateString() }),
         el('td', { textContent: u.purchases + ' bought · ' + u.sales + ' sold' }),
         el('td', { textContent: u.wins ? u.wins + ' past win' + (u.wins === 1 ? '' : 's') : 'no past wins' }),
-        el('td', {}, u.banned ? '' : armed('Pick', 'Confirm ' + u.username, async () => { const r = await api('/api/admin/giveaways/' + cg.id + '/pick', 'POST', { user_id: u.id }); toast(r.winner + ' wins ' + r.item + '!'); choosing = null; load(); }, 'btn sm')))));
-      chooser = el('section', { className: 'card scroll', style: 'border-color:#e6b422' }, el('h2', {}, 'Choose the winner of ' + cg.name + ' ', el('span', { className: 'mute', textContent: '· ' + ents.length + ' entered' + (new Date(cg.ends_at) > new Date() ? ' · entries still open until ' + when(cg.ends_at) : ' · entries closed') })),
+        el('td', {}, u.banned ? '' : cg.picked === u.username
+          ? el('span', {}, el('span', { className: 'pill gold', textContent: '★ Chosen' }), ' ', el('button', { className: 'ghost sm', textContent: 'Undo', onclick: async () => { await api('/api/admin/giveaways/' + cg.id + '/pick', 'POST', { user_id: null }); toast('Pick cleared. It will be a random draw.'); load(); } }))
+          : el('button', { className: 'btn sm', textContent: cg.picked ? 'Choose instead' : 'Choose', onclick: async () => { const r = await api('/api/admin/giveaways/' + cg.id + '/pick', 'POST', { user_id: u.id }); toast(r.picked + ' will win when the giveaway ends (' + when(r.ends_at) + ')'); load(); } })))));
+      chooser = el('section', { className: 'card scroll', style: 'border-color:#e6b422' }, el('h2', {}, 'Choose the winner of ' + cg.name + ' ', el('span', { className: 'mute', textContent: '· ' + ents.length + ' entered · ends ' + when(cg.ends_at) })),
+        el('p', { className: 'mute', style: 'margin:0 0 10px', textContent: cg.picked ? '★ ' + cg.picked + ' will win when the timer ends. The giveaway keeps running until then; you can change or undo your pick.' : 'Choose someone and they win when the timer ends. If you don\'t choose anyone, a random winner is drawn.' }),
         el('table', { className: 'tbl' }, el('thead', {}, el('tr', {}, ...['Player', 'Entered', 'Account', 'Activity', 'Giveaways', ''].map((h) => el('th', { textContent: h })))), eb));
     }
     $('main').replaceChildren(el('h1', { textContent: 'Giveaways' }), chooser,
       el('section', { className: 'card' }, el('h2', { textContent: 'Start a giveaway' }),
-        el('p', { className: 'mute', style: 'margin:0 0 10px', textContent: 'Pick one or more items from your own inventory (each becomes its own giveaway). Anyone logged in with Roblox can join once for free. Press Entries & choose on any live giveaway to see who joined and pick a winner yourself (shown to players as picked by the team). If you do not pick anyone, a random winner is drawn when the timer ends. If nobody joins, the item comes back to you.' }),
+        el('p', { className: 'mute', style: 'margin:0 0 10px', textContent: 'Pick one or more items from your own inventory (each becomes its own giveaway). Anyone logged in with Roblox can join once for free. Press Entries & choose on any live giveaway to see who joined and choose a winner; they win when the timer ends (shown to players as picked by the team). If you don\'t choose anyone, a random winner is drawn. If nobody joins, the item comes back to you.' }),
         grid,
         el('div', { className: 'tools', style: 'margin:14px 0 0;align-items:center' }, el('span', { className: 'mute', textContent: 'Runs for' }), len, unit, go,
           el('a', { href: '/giveaways', target: '_blank', textContent: 'Open the public page →', style: 'margin-left:auto' }))),
