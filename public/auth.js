@@ -830,7 +830,7 @@
     } catch {}
   }
   window.showWin = showWin;
-  if (!document.body.dataset.nowelcome) { setTimeout(checkWins, 2500); setInterval(checkWins, 10000); }
+  // Winner pop-ups are turned off. (showWin/checkWins are kept in case you want them back.)
   let seen = false;
   try { seen = !!sessionStorage.getItem('sm_welcomed'); } catch {}
   if (!seen && !document.body.dataset.nowelcome) window.showWelcome();
