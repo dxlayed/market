@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Giveaways | SplitzMarket</title>
-<meta name="description" content="Free MM2 item giveaways on SplitzMarket. Join with one click, everyone gets the same chance.">
+<meta name="description" content="Free MM2 item giveaways on SplitzMarket. Join with one click.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800;900&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -40,6 +40,8 @@ h2.sec .live{width:9px;height:9px;border-radius:99px;background:var(--gold);box-
 .gw .clock{position:absolute;top:12px;right:12px;font-family:Outfit,sans-serif;font-weight:800;font-size:14px;background:#000b;border:1px solid var(--line);border-radius:9px;padding:3px 10px}
 .gw .clock.soon{color:#ffb4b6;border-color:var(--gold)}
 .gw .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.gw .kind{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font-size:12px;font-weight:800;border-radius:99px;padding:3px 10px;background:var(--raise);color:var(--mute);border:1px solid var(--line)}
+.gw .kind.pick{background:#e6b4221a;color:#f3c45a;border-color:#e6b42255}
 .gw .bd b.nm{font-family:Outfit,sans-serif;font-size:20px}
 .gw .meta{display:flex;justify-content:space-between;gap:10px;color:var(--mute);font-size:13px;font-weight:700}
 .odds{background:var(--raise);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
@@ -55,7 +57,7 @@ h2.sec .live{width:9px;height:9px;border-radius:99px;background:var(--gold);box-
 .won .pic img{max-width:88%;max-height:88%}
 .won b{display:block}.won small{color:var(--mute);font-weight:700}
 .won .w{color:var(--ok)}
-.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:30px}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:30px}
 .how div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5;color:#d4bfbe}
 .how b{display:block;font-family:Outfit,sans-serif;color:var(--text);font-size:16px;margin-bottom:2px}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#4ade80;color:#06240f;padding:10px 18px;border-radius:10px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
@@ -71,7 +73,7 @@ h2.sec .live{width:9px;height:9px;border-radius:99px;background:var(--gold);box-
 <div class="wrap">
   <div class="head">
     <h1>Giveaways</h1>
-    <p>Free items from the SplitzMarket team. Join with one click. When the timer hits zero, one person is picked at random and the item lands in their inventory, ready to withdraw or sell.</p>
+    <p>Free items from the SplitzMarket team. Join with one click. The team picks a winner from the entries, or one is drawn at random when the timer hits zero, and the item lands in their inventory, ready to withdraw or sell.</p>
   </div>
   <h2 class="sec"><span class="live" aria-hidden="true"></span>Live now</h2>
   <div class="grid" id="live"><div class="empty">Loading giveaways...</div></div>
@@ -79,7 +81,8 @@ h2.sec .live{width:9px;height:9px;border-radius:99px;background:var(--gold);box-
   <div class="won" id="won"></div>
   <div class="how">
     <div><b>Free to join</b>Log in with Roblox and press Join. One entry per person.</div>
-    <div><b>Same chance for everyone</b>Every entry has the same chance of winning. If 100 people enter, each one has a 1 in 100 chance.</div>
+    <div><b>How winners are chosen</b>The team can pick a winner from everyone who entered, for example someone active in the community. If they don't, a winner is drawn at random when the timer ends, with every entry having the same chance.</div>
+    <div><b>Always shown</b>Recent winners say whether they were picked by the team or drawn at random.</div>
     <div><b>Instant delivery</b>The winner gets the item in their inventory the moment the giveaway ends.</div>
   </div>
 </div>
@@ -94,9 +97,9 @@ const RC = { Chroma: '#c58bff', Ancient: '#8a6cff', Godly: '#e05ad8', Unique: '#
 const okImg = (u) => u && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(u);
 let me = null, data = null, skew = 0;
 
-function left(ends) {
+function left(ends, mode) {
   const ms = new Date(ends).getTime() - (Date.now() + skew);
-  if (ms <= 0) return ['Drawing...', true];
+  if (ms <= 0) return [mode === 'pick' ? 'Choosing winner...' : 'Drawing...', true];
   const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
   const t = d ? d + 'd ' + h + 'h' : h ? h + 'h ' + String(m).padStart(2, '0') + 'm' : m + ':' + String(sec).padStart(2, '0');
   return [t, ms < 60000];
@@ -110,16 +113,18 @@ function draw() {
     art.style.setProperty('--c', RC[g.rarity] || RC.Common);
     if (okImg(g.image_url)) art.append(el('img', { src: g.image_url, alt: '', referrerPolicy: 'no-referrer' }));
     const rar = el('span', { className: 'rar', textContent: g.rarity }); rar.style.setProperty('--c', RC[g.rarity] || RC.Common);
-    const [t, soon] = left(g.ends_at);
-    const clock = el('span', { className: 'clock' + (soon ? ' soon' : ''), textContent: t, 'data-ends': g.ends_at });
+    const [t, soon] = left(g.ends_at, g.mode);
+    const clock = el('span', { className: 'clock' + (soon ? ' soon' : ''), textContent: t, 'data-ends': g.ends_at, 'data-mode': g.mode || 'random' });
     art.append(rar, clock);
     if (window.valueTip) valueTip(art, g);
     let act;
     if (g.joined) act = el('button', { className: 'joined', type: 'button', disabled: true, textContent: "✓ You're in" });
     else if (me && me.username === g.host) act = el('button', { className: 'joined', type: 'button', disabled: true, textContent: 'Your giveaway', style: 'color:var(--mute);background:var(--raise);border-color:var(--line)' });
+    else if (new Date(g.ends_at).getTime() <= Date.now() + skew) act = el('button', { className: 'joined', type: 'button', disabled: true, textContent: 'Entries closed', style: 'color:var(--mute);background:var(--raise);border-color:var(--line)' });
     else act = el('button', { className: 'btn join', type: 'button', textContent: me ? 'Join giveaway' : 'Log in to join', onclick: () => join(g, act) });
     return el('div', { className: 'gw' + (g.joined ? ' in' : '') }, art,
       el('div', { className: 'bd' },
+        g.mode === 'pick' ? el('span', { className: 'kind pick', textContent: '★ Winner chosen by the team' }) : el('span', { className: 'kind', textContent: '🎲 Random draw or ★ team pick' }),
         el('b', { className: 'nm', textContent: g.name }),
         el('div', { className: 'meta' }, el('span', { textContent: g.type + (g.value ? ' · value ' + Number(g.value).toLocaleString() : '') })),
         el('div', { className: 'odds' }, el('span', { textContent: 'Entered' }), el('b', { textContent: entered(g.entries) })),
@@ -130,7 +135,7 @@ function draw() {
     const pic = el('div', { className: 'pic' }); pic.style.setProperty('--c', RC[g.rarity] || RC.Common);
     if (okImg(g.image_url)) pic.append(el('img', { src: g.image_url, alt: '', referrerPolicy: 'no-referrer' }));
     return el('div', {}, pic, el('div', {}, el('b', { textContent: g.name }),
-      g.winner ? el('small', {}, 'Won by ', el('span', { className: 'w', textContent: g.winner }), ' · 1 of ' + g.entries_at_draw) : el('small', { textContent: 'No one joined' })));
+      g.winner ? el('small', {}, 'Won by ', el('span', { className: 'w', textContent: g.winner }), g.mode === 'pick' ? ' · picked by the team from ' + g.entries_at_draw : ' · random draw, 1 of ' + g.entries_at_draw) : el('small', { textContent: 'No one joined' })));
   }) : [el('div', { className: 'mute', style: 'background:none;border:0;padding:0', textContent: 'No winners yet.' })]));
 }
 async function join(g, btn) {
@@ -148,7 +153,7 @@ async function load() {
   skew = new Date(data.now).getTime() - Date.now();
   draw();
 }
-setInterval(() => document.querySelectorAll('.clock[data-ends]').forEach((c) => { const [t, soon] = left(c.dataset.ends); c.textContent = t; c.classList.toggle('soon', soon); }), 1000);
+setInterval(() => document.querySelectorAll('.clock[data-ends]').forEach((c) => { const [t, soon] = left(c.dataset.ends, c.dataset.mode); c.textContent = t; c.classList.toggle('soon', soon); }), 1000);
 (async () => {
   me = await fetch('/api/me').then((r) => r.json()).catch(() => null);
   $('who').replaceChildren(me ? RbxAuth.menu(me, async () => { await fetch('/api/logout', { method: 'POST' }); location.reload(); })
