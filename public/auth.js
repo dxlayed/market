@@ -812,7 +812,7 @@
     const pic = document.createElement('span'); pic.className = 'pic';
     if (g.image_url && /^(https:\/\/|\/img\/item\/|\/items\/)/.test(g.image_url)) { const im = document.createElement('img'); im.src = g.image_url; im.alt = ''; im.referrerPolicy = 'no-referrer'; pic.append(im); }
     const txt = document.createElement('span');
-    const sm = document.createElement('small'); sm.textContent = 'Giveaway winner' + (g.entries ? ' · 1 of ' + g.entries : '');
+    const sm = document.createElement('small'); sm.textContent = g.mode === 'pick' ? 'Staff pick winner' : 'Giveaway winner' + (g.entries ? ' · 1 of ' + g.entries : '');
     const b = document.createElement('b'); const w = document.createElement('em'); w.textContent = g.winner; const it = document.createElement('em'); it.textContent = g.name;
     b.append('Yooo ', w, ' just won a ', it, '!');
     txt.append(sm, b); a.append(pic, txt); document.body.append(a);
