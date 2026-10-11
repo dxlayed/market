@@ -1260,7 +1260,7 @@ app.get('/api/admin/giveaways', owner, wrap(async (req, res) => {
 app.post('/api/admin/giveaways', owner, wrap(async (req, res) => {
   const ids = [...new Set((Array.isArray(req.body.inventory_ids) ? req.body.inventory_ids : [req.body.inventory_id]).map((x) => parseInt(x, 10)).filter((x) => x > 0))].slice(0, 20);
   const minutes = Math.round(parseFloat(req.body.minutes));
-  const mode = req.body.mode === 'pick' ? 'pick' : 'random';
+  const mode = 'random'; // every giveaway: random draw at the end unless an owner picks a winner first
   if (!ids.length) throw new Fail(400, 'Pick an item from your inventory.');
   if (!(minutes >= 1 && minutes <= 60 * 24 * 14)) throw new Fail(400, 'Pick a length between 1 minute and 14 days.');
   const out = await tx(async (db) => {
@@ -1294,7 +1294,6 @@ app.post('/api/admin/giveaways/:id/pick', owner, wrap(async (req, res) => {
     const g = (await db.query('SELECT * FROM giveaways WHERE id=$1 FOR UPDATE', [parseInt(req.params.id, 10)])).rows[0];
     if (!g) throw new Fail(404, 'Giveaway not found.');
     if (g.status !== 'active') throw new Fail(409, 'This giveaway already ended.');
-    if (g.mode !== 'pick') throw new Fail(400, 'This giveaway is random. Use Draw now.');
     const uid = parseInt(req.body.user_id, 10);
     const win = (await db.query('SELECT u.id, u.username, u.banned FROM giveaway_entries e JOIN users u ON u.id=e.user_id WHERE e.giveaway_id=$1 AND e.user_id=$2', [g.id, uid])).rows[0];
     if (!win) throw new Fail(400, 'Pick someone who entered this giveaway.');
@@ -1302,7 +1301,8 @@ app.post('/api/admin/giveaways/:id/pick', owner, wrap(async (req, res) => {
     const n = (await db.query('SELECT count(*)::int AS n FROM giveaway_entries WHERE giveaway_id=$1', [g.id])).rows[0].n;
     const item = (await db.query('SELECT name FROM items WHERE id=$1', [g.item_id])).rows[0];
     await db.query("UPDATE inventory SET user_id=$1, status='held' WHERE id=$2 AND status='giveaway'", [win.id, g.inventory_id]);
-    await db.query("UPDATE giveaways SET status='ended', winner_id=$1, entries_at_draw=$2, ended_at=now() WHERE id=$3", [win.id, n, g.id]);
+    // Recorded as a team pick so the public page shows the winner was chosen, not drawn.
+    await db.query("UPDATE giveaways SET status='ended', mode='pick', winner_id=$1, entries_at_draw=$2, ended_at=now() WHERE id=$3", [win.id, n, g.id]);
     await log(db, req.user.username, 'giveaway.picked', 'giveaway:' + g.id, { item: item.name, winner: win.username, entries: n });
     return { ok: true, winner: win.username, item: item.name, entries: n };
   });
