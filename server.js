@@ -182,6 +182,8 @@ async function init() {
       ended_at TIMESTAMPTZ
     );
     ALTER TABLE giveaways ADD COLUMN IF NOT EXISTS mode TEXT NOT NULL DEFAULT 'random';
+    ALTER TABLE giveaways ADD COLUMN IF NOT EXISTS picked_user_id INT REFERENCES users(id) ON DELETE SET NULL;
+    ALTER TABLE giveaways ADD COLUMN IF NOT EXISTS hidden BOOLEAN NOT NULL DEFAULT false;
     CREATE TABLE IF NOT EXISTS giveaway_entries (
       giveaway_id INT REFERENCES giveaways(id) ON DELETE CASCADE,
       user_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -1199,7 +1201,18 @@ async function drawGiveaway(db, id, actor) {
   const g = (await db.query('SELECT * FROM giveaways WHERE id=$1 FOR UPDATE', [id])).rows[0];
   if (!g) throw new Fail(404, 'Giveaway not found.');
   if (g.status !== 'active') throw new Fail(409, 'This giveaway already ended.');
-  if (g.mode === 'pick') throw new Fail(400, 'This is a staff-pick giveaway. Choose the winner from the entry list.');
+  const item0 = (await db.query('SELECT name FROM items WHERE id=$1', [g.item_id])).rows[0];
+  // An owner chose a winner ahead of time: they win now that it's over (if they're still entered and not banned).
+  if (g.picked_user_id) {
+    const p = (await db.query('SELECT u.id, u.username FROM giveaway_entries e JOIN users u ON u.id=e.user_id WHERE e.giveaway_id=$1 AND e.user_id=$2 AND NOT u.banned', [id, g.picked_user_id])).rows[0];
+    if (p) {
+      const n = (await db.query('SELECT count(*)::int AS n FROM giveaway_entries WHERE giveaway_id=$1', [id])).rows[0].n;
+      await db.query("UPDATE inventory SET user_id=$1, status='held' WHERE id=$2 AND status='giveaway'", [p.id, g.inventory_id]);
+      await db.query("UPDATE giveaways SET status='ended', mode='pick', winner_id=$1, entries_at_draw=$2, ended_at=now() WHERE id=$3", [p.id, n, id]);
+      await log(db, actor, 'giveaway.won_by_pick', 'giveaway:' + id, { item: item0.name, winner: p.username, entries: n });
+      return { ok: true, winner: p.username, item: item0.name, entries: n, picked: true };
+    }
+  }
   const entrants = (await db.query(
     `SELECT e.user_id, u.username FROM giveaway_entries e JOIN users u ON u.id=e.user_id
      WHERE e.giveaway_id=$1 AND NOT u.banned ORDER BY e.user_id`, [id])).rows;
@@ -1220,7 +1233,7 @@ async function drawGiveaway(db, id, actor) {
 setInterval(async () => {
   try {
     // Staff-pick giveaways just close for entries when time is up and wait for an owner to choose.
-    const due = (await pool.query("SELECT id FROM giveaways WHERE status='active' AND mode='random' AND ends_at <= now() ORDER BY id")).rows;
+    const due = (await pool.query("SELECT id FROM giveaways WHERE status='active' AND ends_at <= now() ORDER BY id")).rows;
     for (const g of due) await tx((db) => drawGiveaway(db, g.id, 'timer')).catch((e) => { if (!(e instanceof Fail)) console.error('giveaway draw', e.message); });
   } catch {}
 }, 3000);
@@ -1228,7 +1241,7 @@ setInterval(async () => {
 app.get('/api/giveaways', wrap(async (req, res) => {
   const u = await currentUser(req);
   const active = (await pool.query(`${GIVE_SELECT} WHERE g.status='active' ORDER BY g.ends_at ASC`)).rows;
-  const ended = (await pool.query(`${GIVE_SELECT} WHERE g.status='ended' ORDER BY g.ended_at DESC LIMIT 12`)).rows;
+  const ended = (await pool.query(`${GIVE_SELECT} WHERE g.status='ended' AND NOT g.hidden ORDER BY g.ended_at DESC LIMIT 12`)).rows;
   let mine = new Set();
   if (u && active.length) mine = new Set((await pool.query('SELECT giveaway_id FROM giveaway_entries WHERE user_id=$1 AND giveaway_id = ANY($2)', [u.id, active.map((g) => g.id)])).rows.map((r) => r.giveaway_id));
   res.json({ now: new Date().toISOString(), active: active.map((g) => ({ ...g, joined: mine.has(g.id) })), ended, rec_per_1k: REC_PER_1K });
@@ -1251,7 +1264,8 @@ app.post('/api/giveaways/:id/join', auth, wrap(async (req, res) => {
 }));
 
 app.get('/api/admin/giveaways', owner, wrap(async (req, res) => {
-  const rows = (await pool.query(`${GIVE_SELECT} ORDER BY (g.status='active') DESC, g.id DESC LIMIT 50`)).rows;
+  const rows = (await pool.query(`SELECT x.*, g.hidden, pu.username AS picked FROM (${GIVE_SELECT}) x JOIN giveaways g ON g.id=x.id LEFT JOIN users pu ON pu.id=g.picked_user_id
+    ORDER BY (x.status='active') DESC, x.id DESC LIMIT 50`)).rows;
   const items = (await pool.query(
     `SELECT inv.id, i.name, i.rarity, i.type, i.value, i.image_url FROM inventory inv JOIN items i ON i.id=inv.item_id
      WHERE inv.user_id=$1 AND inv.status='held' ORDER BY i.value DESC, i.name`, [req.user.id])).rows;
@@ -1294,19 +1308,28 @@ app.post('/api/admin/giveaways/:id/pick', owner, wrap(async (req, res) => {
     const g = (await db.query('SELECT * FROM giveaways WHERE id=$1 FOR UPDATE', [parseInt(req.params.id, 10)])).rows[0];
     if (!g) throw new Fail(404, 'Giveaway not found.');
     if (g.status !== 'active') throw new Fail(409, 'This giveaway already ended.');
+    // Saves the choice only. The giveaway keeps running and this person wins when the timer ends.
+    if (req.body.user_id == null) {
+      await db.query('UPDATE giveaways SET picked_user_id=NULL WHERE id=$1', [g.id]);
+      await log(db, req.user.username, 'giveaway.pick_cleared', 'giveaway:' + g.id);
+      return { ok: true, picked: null };
+    }
     const uid = parseInt(req.body.user_id, 10);
     const win = (await db.query('SELECT u.id, u.username, u.banned FROM giveaway_entries e JOIN users u ON u.id=e.user_id WHERE e.giveaway_id=$1 AND e.user_id=$2', [g.id, uid])).rows[0];
     if (!win) throw new Fail(400, 'Pick someone who entered this giveaway.');
     if (win.banned) throw new Fail(400, 'That player is banned.');
-    const n = (await db.query('SELECT count(*)::int AS n FROM giveaway_entries WHERE giveaway_id=$1', [g.id])).rows[0].n;
-    const item = (await db.query('SELECT name FROM items WHERE id=$1', [g.item_id])).rows[0];
-    await db.query("UPDATE inventory SET user_id=$1, status='held' WHERE id=$2 AND status='giveaway'", [win.id, g.inventory_id]);
-    // Recorded as a team pick so the public page shows the winner was chosen, not drawn.
-    await db.query("UPDATE giveaways SET status='ended', mode='pick', winner_id=$1, entries_at_draw=$2, ended_at=now() WHERE id=$3", [win.id, n, g.id]);
-    await log(db, req.user.username, 'giveaway.picked', 'giveaway:' + g.id, { item: item.name, winner: win.username, entries: n });
-    return { ok: true, winner: win.username, item: item.name, entries: n };
+    await db.query('UPDATE giveaways SET picked_user_id=$1 WHERE id=$2', [win.id, g.id]);
+    await log(db, req.user.username, 'giveaway.picked', 'giveaway:' + g.id, { winner: win.username });
+    return { ok: true, picked: win.username, ends_at: g.ends_at };
   });
   res.json(out);
+}));
+// Hide or show a finished giveaway in "Recent winners" on the public page.
+app.post('/api/admin/giveaways/:id/hide', owner, wrap(async (req, res) => {
+  const r = await pool.query("UPDATE giveaways SET hidden=$1 WHERE id=$2 AND status='ended' RETURNING id", [req.body.hidden !== false, parseInt(req.params.id, 10)]);
+  if (!r.rowCount) throw new Fail(404, 'Only finished giveaways can be hidden.');
+  await log(null, req.user.username, req.body.hidden !== false ? 'giveaway.hidden' : 'giveaway.shown', 'giveaway:' + req.params.id);
+  res.json({ ok: true });
 }));
 app.post('/api/admin/giveaways/:id/draw', owner, wrap(async (req, res) => res.json(await tx((db) => drawGiveaway(db, parseInt(req.params.id, 10), req.user.username)))));
 app.post('/api/admin/giveaways/:id/cancel', owner, wrap(async (req, res) => {
